@@ -3,78 +3,166 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>eli3xir - 个人主页</title>
-  <meta name="description" content="eli3xir 的个人主页">
-  <link rel="stylesheet" href="style.css">
+  <title>eli3xir — Creative Developer</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' font-weight='bold' text-anchor='middle' fill='%237c5cff'%3Ee3%3C/text%3E%3C/svg%3E">
+  <meta name="description" content="eli3xir 的个人作品集：代码、图形与交互。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.min.js" } }
+  </script>
 </head>
 <body>
-  <header class="site-header">
-    <nav class="nav container">
-      <span class="logo">eli3xir</span>
-      <ul class="nav-links">
-        <li><a href="#about">关于我</a></li>
-        <li><a href="#projects">项目</a></li>
-        <li><a href="#contact">联系</a></li>
-      </ul>
-      <button id="theme-toggle" class="theme-toggle" aria-label="切换主题">🌙</button>
+  <!-- 加载屏 -->
+  <div id="loader" aria-hidden="true">
+    <div class="loader-inner">
+      <span class="loader-name">eli3xir</span>
+      <span class="loader-count">0%</span>
+    </div>
+  </div>
+
+  <!-- 自定义光标（仅精确指针设备启用） -->
+  <div class="cursor-dot" aria-hidden="true"></div>
+  <div class="cursor-ring" aria-hidden="true"></div>
+
+  <!-- WebGL 背景 -->
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <!-- 噪点纹理层 -->
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="site-nav">
+    <a class="nav-logo" href="#top" data-hover>eli3xir<span class="accent">.</span></a>
+    <nav class="nav-links">
+      <a href="#about" data-hover>关于</a>
+      <a href="#work" data-hover>项目</a>
+      <a href="#play" data-hover>游戏</a>
+      <a href="#contact" data-hover>联系</a>
     </nav>
   </header>
 
-  <main>
-    <section class="hero container">
-      <h1>你好，我是 <span class="accent">eli3xir</span></h1>
-      <p class="subtitle">软件开发者 · 技术爱好者</p>
-      <p class="intro">欢迎来到我的个人主页。这里记录我的项目、想法与成长。</p>
-      <div class="hero-actions">
-        <a class="btn primary" href="#projects">查看项目</a>
-        <a class="btn" href="https://github.com/eli3xir" target="_blank" rel="noopener">GitHub</a>
-      </div>
-    </section>
-
-    <section id="about" class="container section">
-      <h2>关于我</h2>
-      <p>
-        在这里写一段自我介绍：你的方向、技术栈、正在学习的东西，以及你感兴趣的话题。
-        例如：我专注于 Web 开发，熟悉 Java / Python / JavaScript，喜欢折腾开源项目。
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero">
+      <p class="hero-kicker reveal">CREATIVE DEVELOPER · 作品集</p>
+      <h1 class="hero-title">
+        <span class="split">ELI3XIR</span>
+      </h1>
+      <p class="hero-sub">
+        <span id="typed"></span><span class="typed-caret">_</span>
       </p>
+      <div class="hero-hint" aria-hidden="true">
+        <span>SCROLL</span>
+        <div class="hint-line"></div>
+      </div>
     </section>
 
-    <section id="projects" class="container section">
-      <h2>项目</h2>
-      <div class="card-grid">
-        <article class="card">
+    <!-- 关于 -->
+    <section id="about" class="section">
+      <h2 class="section-title"><span class="split">关于我</span></h2>
+      <div class="about-grid">
+        <p class="about-lead reveal">
+          我把浏览器当作画布。喜欢研究实时渲染、交互动效，
+          也享受把复杂系统拆成优雅代码的过程。
+        </p>
+        <div class="about-facts">
+          <div class="fact reveal"><span class="fact-num" data-count="3">0</span><span class="fact-label">年开发经验</span></div>
+          <div class="fact reveal"><span class="fact-num" data-count="12">0</span><span class="fact-label">个人项目</span></div>
+          <div class="fact reveal"><span class="fact-num" data-count="999">0</span><span class="fact-label">杯咖啡</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 技能跑马灯 -->
+    <section class="marquee-section" aria-label="技能">
+      <div class="marquee" data-speed="1">
+        <div class="marquee-track">
+          <span>JavaScript</span><span>Three.js</span><span>WebGL</span><span>GLSL</span>
+          <span>GSAP</span><span>Python</span><span>Java</span><span>Git</span>
+        </div>
+      </div>
+      <div class="marquee reverse" data-speed="0.7">
+        <div class="marquee-track">
+          <span>Creative Coding</span><span>交互设计</span><span>实时渲染</span>
+          <span>动画</span><span>游戏开发</span><span>开源</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 项目 -->
+    <section id="work" class="section">
+      <h2 class="section-title"><span class="split">精选项目</span></h2>
+      <div class="work-grid">
+        <article class="card" data-tilt>
+          <div class="card-glow" aria-hidden="true"></div>
+          <span class="card-index">01</span>
           <h3>项目一</h3>
-          <p>一句话介绍这个项目做了什么、用了什么技术。</p>
-          <a href="https://github.com/eli3xir" target="_blank" rel="noopener">查看源码 →</a>
+          <p>一句话介绍这个项目做了什么、用了什么技术、解决了什么问题。</p>
+          <div class="card-tags"><span>WebGL</span><span>Three.js</span></div>
+          <a class="card-link" href="https://github.com/eli3xir" target="_blank" rel="noopener" data-hover>查看源码 →</a>
         </article>
-        <article class="card">
+        <article class="card" data-tilt>
+          <div class="card-glow" aria-hidden="true"></div>
+          <span class="card-index">02</span>
           <h3>项目二</h3>
-          <p>一句话介绍这个项目做了什么、用了什么技术。</p>
-          <a href="https://github.com/eli3xir" target="_blank" rel="noopener">查看源码 →</a>
+          <p>一句话介绍这个项目做了什么、用了什么技术、解决了什么问题。</p>
+          <div class="card-tags"><span>Python</span><span>ML</span></div>
+          <a class="card-link" href="https://github.com/eli3xir" target="_blank" rel="noopener" data-hover>查看源码 →</a>
         </article>
-        <article class="card">
+        <article class="card" data-tilt>
+          <div class="card-glow" aria-hidden="true"></div>
+          <span class="card-index">03</span>
           <h3>项目三</h3>
-          <p>一句话介绍这个项目做了什么、用了什么技术。</p>
-          <a href="https://github.com/eli3xir" target="_blank" rel="noopener">查看源码 →</a>
+          <p>一句话介绍这个项目做了什么、用了什么技术、解决了什么问题。</p>
+          <div class="card-tags"><span>Java</span><span>Backend</span></div>
+          <a class="card-link" href="https://github.com/eli3xir" target="_blank" rel="noopener" data-hover>查看源码 →</a>
         </article>
       </div>
     </section>
 
-    <section id="contact" class="container section">
-      <h2>联系我</h2>
-      <ul class="contact-list">
-        <li>GitHub：<a href="https://github.com/eli3xir" target="_blank" rel="noopener">github.com/eli3xir</a></li>
-        <li>邮箱：<a href="mailto:sg2019@bupt.edu.cn">sg2019@bupt.edu.cn</a></li>
-      </ul>
+    <!-- 游戏 -->
+    <section id="play" class="section">
+      <h2 class="section-title"><span class="split">休息一下</span></h2>
+      <p class="section-sub reveal">主页里藏了一条蛇。方向键 / WASD 控制，吃到霓虹块加速。</p>
+      <div class="game-wrap reveal">
+        <canvas id="snake" width="480" height="480" tabindex="0" aria-label="贪吃蛇小游戏"></canvas>
+        <div class="game-side">
+          <div class="game-score">SCORE <strong id="snake-score">0</strong></div>
+          <div class="game-best">BEST <strong id="snake-best">0</strong></div>
+          <button id="snake-btn" class="btn-primary" data-hover>开始游戏</button>
+          <div class="game-pad" aria-hidden="true">
+            <button data-dir="up" data-hover>▲</button>
+            <div>
+              <button data-dir="left" data-hover>◀</button>
+              <button data-dir="down" data-hover>▼</button>
+              <button data-dir="right" data-hover>▶</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 联系 -->
+    <section id="contact" class="section contact">
+      <h2 class="section-title"><span class="split">联系我</span></h2>
+      <a class="contact-mail reveal" href="mailto:sg2019@bupt.edu.cn" data-hover>sg2019@bupt.edu.cn</a>
+      <div class="contact-links reveal">
+        <a href="https://github.com/eli3xir" target="_blank" rel="noopener" data-hover>GitHub</a>
+        <span aria-hidden="true">·</span>
+        <a href="https://eli3xir.github.io" data-hover>eli3xir.github.io</a>
+      </div>
     </section>
   </main>
 
   <footer class="site-footer">
-    <div class="container">
-      <p>© <span id="year"></span> eli3xir · 由 GitHub Pages 托管</p>
-    </div>
+    <span>© <span id="year"></span> eli3xir</span>
+    <span>Built with Three.js · GSAP · Lenis</span>
   </footer>
 
-  <script src="main.js"></script>
+  <script src="vendor/gsap/gsap.min.js"></script>
+  <script src="vendor/gsap/ScrollTrigger.min.js"></script>
+  <script src="vendor/lenis/lenis.min.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
