@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>形式语言与自动机——语言及文法 · eli3xir</title>
+  <meta name="description" content="形式语言与自动机——语言及文法">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' font-weight='bold' text-anchor='middle' fill='%237c5cff'%3Ee3%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/blog.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.querySelector('.post-content'), { delimiters: [
+      { left: '$$', right: '$$', display: true },
+      { left: '$', right: '$', display: false },
+      { left: '\\(', right: '\\)', display: false },
+      { left: '\\[', right: '\\]', display: true }
+    ] });"></script>
+</head>
+<body>
+  <header class="blog-nav">
+    <a class="nav-logo" href="../index.html">eli3xir<span class="accent">.</span></a>
+    <nav>
+      <a href="../index.html">主页</a>
+      <a href="./index.html">文章</a>
+      <a href="https://github.com/eli3xir" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+  
+  <main class="post">
+    <div class="post-head">
+      <h1>形式语言与自动机——语言及文法</h1>
+      <div class="post-meta">
+        <time>2021-04-26</time>
+        <span class="chip cat">专业课</span><span class="chip cat">形式语言与自动机</span>
+        <span class="chip">形式语言与自动机</span>
+      </div>
+    </div>
+    <article class="post-content"><h1>语言及文法</h1>
+<p>主要内容：</p>
+<ul>
+<li>定义形式语言的术语</li>
+<li>给出文法的定义和文法的分类</li>
+</ul>
+<p>要求掌握：</p>
+<ul>
+<li>语言和文法的形式定义</li>
+<li>CHOMSKY文法体系的分类</li>
+</ul>
+<h2>语言的定义与运算</h2>
+<ul>
+<li>
+<p>字母表：字符的有限集合</p>
+</li>
+<li>
+<p>字符串：由字母表中的字符构成的<strong>有限</strong>序列</p>
+</li>
+</ul>
+<h3>关于字符串的运算</h3>
+<ul>
+<li>
+<p>连接（concatenation)</p>
+<p>性质：</p>
+<ul>
+<li>$(xy)z = x(yz)$</li>
+<li>$\epsilon x = x \epsilon = x$</li>
+<li>$|xy|=|x|+|y|$</li>
+</ul>
+</li>
+<li>
+<p>其他：去头字符，取尾部，子串匹配</p>
+<ul>
+<li>
+<p><strong>空串是任何字符的前缀，后缀及子串</strong></p>
+</li>
+<li>
+<p>字符串$\omega$的逆用$\tilde\omega$表示，是字符串$\omega$的倒置</p>
+</li>
+<li>
+<p>空串$\epsilon$的逆还是$\epsilon$</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3>字母表的幂运算</h3>
+<ul>
+<li>
+<p>$*$ 闭包</p>
+<p>$T^{ * } = T^{0} \cup T^{1} \cup T^{2} \cup \dots$</p>
+</li>
+<li>
+<p>$+$ 闭包</p>
+<p>$T^{+} = T^{1} \cup T^{2} \cup T^{3} \cup \dots$</p>
+</li>
+<li>
+<p>$T^{ * } = T^{+} \cup \{ \epsilon \}$，$T^{+} = T^{ * } - \{ \epsilon \}$</p>
+</li>
+</ul>
+<h3>闭包的物理意义</h3>
+<ul>
+<li>$T$的星闭包$T^{ * }$：字母表T上所有的字符串和空串的集合</li>
+<li>$T$的正（加）闭包$T^{+}$：字母表T上所有的字符串构成的集合</li>
+</ul>
+<h2>语言</h2>
+<p>语言是集合，对于几何的运算可以应用于对语言的计算，如：并、交、补、差……</p>
+<ul>
+<li>$L _ {1} = \{\epsilon\}$ 	只有一个空句子的语言</li>
+<li>$L _ 2 = \{\} = \varnothing$ 	空语言</li>
+</ul>
+<h3>语言的基本运算</h3>
+<ul>
+<li>
+<p>语言的积：两个语言的字符串连接所构成的字符串的集合</p>
+<p><strong>语言的积不可交换</strong></p>
+</li>
+<li>
+<p>语言的幂：</p>
+<p>$L^0 = \{\epsilon\}$</p>
+<p>$L^n = L \cdot L^{n-1} = L^{n-1} \cdot L$</p>
+</li>
+</ul>
+<h2>文法</h2>
+<p>定义：文法是用来定义语言的一个数学模型</p>
+<p>方法：</p>
+<ul>
+<li>有限集合：列举法</li>
+<li>无限集合：
+<ul>
+<li>文法产生系统</li>
+<li>机器识别系统</li>
+</ul>
+</li>
+</ul>
+<h3>元语言</h3>
+<p>元语言：描述语言的语言</p>
+<ul>
+<li>
+<p>BNF：巴科斯范式</p>
+<p>&lt;数字&gt; ::= 0|1|2|……9</p>
+<p>&lt;字母&gt; ::= A|B|C……Z|a|b|……z</p>
+<p>&lt;标识符&gt; ::= &lt;字母&gt; | &lt;标识符&gt;&lt;字母&gt; | &lt;标识符&gt;&lt;数字&gt;</p>
+</li>
+<li>
+<p>文法是一种元语言</p>
+</li>
+</ul>
+<h3>Chomsky文法体系</h3>
+<p>文法G是一个四元组<mark>$G=(N,P,T,S)$</mark>，其中：</p>
+<ul>
+<li>N：非终结符的有限集合</li>
+<li>T：终结符的有限集合，$N\cap T = \varnothing$</li>
+<li>P：形式为$\alpha \rightarrow \beta$的生成式的有限集合，且$\alpha \in (N\cup T)^{ * }N^{+}(N\cup T)^{ * }$，$\beta \in (N\cup T)^{ * }$</li>
+<li>S：起始符，且$S\in N$</li>
+</ul>
+<h3>文法产生的语言</h3>
+<p>文法G产生的语言为L(G)，L(G)中的一个字符串，必是由终结符组成的，并且是由起始符推导来的</p>
+<h2>Chomsky文法体系分类</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>文法</th>
+<th>形式语言</th>
+<th>自动机（接收机）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0型</td>
+<td>无限制文法</td>
+<td>非限定性语言</td>
+<td>图灵机</td>
+</tr>
+<tr>
+<td>1型</td>
+<td>上下文有关文法</td>
+<td>上下文有关语言</td>
+<td>线性有界自动机</td>
+</tr>
+<tr>
+<td>2型</td>
+<td>上下文无关文法</td>
+<td>上下文无关语言</td>
+<td>下推（存贮）自动机</td>
+</tr>
+<tr>
+<td>3型</td>
+<td>右线性文法 &amp; 左线型文法</td>
+<td>正则语言</td>
+<td>有限自动机</td>
+</tr>
+</tbody>
+</table>
+<p>$$
+G=(N,P,T,S)
+$$</p>
+<h3>0型文法</h3>
+<p>$$
+P: \alpha \rightarrow \beta
+$$</p>
+<p>其中，$\alpha \in (N\cup T)^{ * }N^{+}(N\cup T)^{ * }$，<mark>$\beta \in (N\cup T)^{ * }$</mark></p>
+<h3>1型文法</h3>
+<p>$$
+P: \alpha \rightarrow \beta
+$$</p>
+<p>其中，$|\alpha|\le|\beta|$，$\alpha \in (N\cup T)^{ * }N^{+}(N\cup T)^{ * }$，<mark>$\beta \in (N\cup T)^{+}$</mark></p>
+<p>隐含条件：$\beta$ 不能取 $\epsilon$</p>
+<h3>2型文法</h3>
+<p>$$
+P: A \rightarrow \beta
+$$</p>
+<p>其中，$A \in N$，$\beta \in (N\cup T)^{ * }$</p>
+<h3>3型文法</h3>
+<ul>
+<li>右线性文法</li>
+</ul>
+<p>$$
+P: A \rightarrow \omega B \text{ 或 } A \rightarrow \omega
+$$</p>
+<ul>
+<li>左线性文法</li>
+</ul>
+<p>$$
+P: A \rightarrow B \omega \text{ 或 } A \rightarrow \omega
+$$</p>
+<p>其中，$A、B \in N$，$\omega \in T^{ * }$</p>
+</article>
+    <a class="back-link" href="./index.html">← 返回文章列表</a>
+  </main>
+  <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+</body>
+</html>

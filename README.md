@@ -23,10 +23,27 @@ python -m http.server 8000
 
 ```
 ├── index.html          # 单页结构：Hero / 关于 / 技能 / 项目 / 文章 / 联系
-├── css/style.css       # 暗色主题样式
+├── css/style.css       # 主页暗色主题样式
+├── css/blog.css        # 博客页样式
 ├── js/main.js          # shader 背景 + 交互逻辑（ES Module）
+├── js/blog.js          # 博客列表搜索/标签过滤
+├── blog/               # 生成的博客静态页（文章列表 + 39 篇文章）
+├── tools/
+│   ├── posts/          # Markdown 源文件（迁移自原 Hexo 博客）
+│   └── build-blog.js   # 静态博客构建脚本（markdown-it + highlight.js）
 └── vendor/             # three / gsap / lenis 本地化依赖
 ```
+
+## 博客构建
+
+不用任何博客框架，只有一个 ~150 行的 Node 脚本：
+
+```bash
+cd tools && npm install   # 仅首次
+node build-blog.js        # 读取 tools/posts/*.md → 生成 blog/*.html
+```
+
+文章含数学公式时自动注入 KaTeX（CDN）；代码块用 highlight.js 构建期高亮。
 
 ## 部署
 

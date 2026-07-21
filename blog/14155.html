@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C++指针、引用、const · eli3xir</title>
+  <meta name="description" content="C++指针、引用、const">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' font-weight='bold' text-anchor='middle' fill='%237c5cff'%3Ee3%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/blog.css">
+  
+</head>
+<body>
+  <header class="blog-nav">
+    <a class="nav-logo" href="../index.html">eli3xir<span class="accent">.</span></a>
+    <nav>
+      <a href="../index.html">主页</a>
+      <a href="./index.html">文章</a>
+      <a href="https://github.com/eli3xir" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+  
+  <main class="post">
+    <div class="post-head">
+      <h1>C++指针、引用、const</h1>
+      <div class="post-meta">
+        <time>2021-04-16</time>
+        <span class="chip cat">技术</span><span class="chip cat">C++</span>
+        <span class="chip">C++</span><span class="chip">指针</span><span class="chip">引用</span><span class="chip">const</span>
+      </div>
+    </div>
+    <article class="post-content"><h2>指针</h2>
+<h3>指针和指针变量</h3>
+<p><strong>指针</strong>：内存地址，用于间接访问内存单元
+<strong>指针变量</strong>：用于存放地址的变量，指针变量是有类型的</p>
+<h3>指针变量的算术运算</h3>
+<p><strong>指针与整数的加减运算</strong>：指针p加上或减去n，等于指针当前指向位置的前方或后方第n个数据对象的地址，这种运算的结果值取决于指针指向对象的<strong>数据类型</strong>。</p>
+<p><strong>指针加1，减,1运算</strong>：指向后一个或前一个数据对象的地址</p>
+<p>注：<code>*</code>和<code>++</code>、<code>--</code>优先级相同，自右向左运算</p>
+<pre class="hljs"><code>*px++ = *(px++)
+</code></pre>
+<h3>指针变量的关系运算</h3>
+<p>指向<strong>相同类型数据</strong>的指针变量之间可以进行各种关系运算</p>
+<p>指针可以和零之间进行等于或不等于的关系运算，例如： <code>p==0</code> 或 <code>p!=0</code>（相当于<code>NULL</code>）</p>
+<h3>指针变量的赋值运算</h3>
+<p>向指针变量赋的值必须是<strong>地址常量或变量</strong>，不能是普通整数。但可以赋值为整数 0 ，表示空指针。</p>
+</article>
+    <a class="back-link" href="./index.html">← 返回文章列表</a>
+  </main>
+  <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+</body>
+</html>

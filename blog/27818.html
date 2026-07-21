@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>分类算法的数学原理 · eli3xir</title>
+  <meta name="description" content="机器学习中的三种分类算法：支持向量机（SVM）、AdaBoost、PCA">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' font-weight='bold' text-anchor='middle' fill='%237c5cff'%3Ee3%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/blog.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.querySelector('.post-content'), { delimiters: [
+      { left: '$$', right: '$$', display: true },
+      { left: '$', right: '$', display: false },
+      { left: '\\(', right: '\\)', display: false },
+      { left: '\\[', right: '\\]', display: true }
+    ] });"></script>
+</head>
+<body>
+  <header class="blog-nav">
+    <a class="nav-logo" href="../index.html">eli3xir<span class="accent">.</span></a>
+    <nav>
+      <a href="../index.html">主页</a>
+      <a href="./index.html">文章</a>
+      <a href="https://github.com/eli3xir" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+  
+  <main class="post">
+    <div class="post-head">
+      <h1>分类算法的数学原理</h1>
+      <div class="post-meta">
+        <time>2021-03-17</time>
+        <span class="chip cat">数学</span><span class="chip cat">机器学习</span>
+        <span class="chip">算法</span><span class="chip">机器学习</span><span class="chip">SVM</span><span class="chip">AdaBoost</span><span class="chip">PCA</span>
+      </div>
+    </div>
+    <article class="post-content"><h2>向量 &amp; 距离</h2>
+<h3>向量的范数</h3>
+<p>向量的范数表示向量自身的一种性质。在线性代数、泛函分析及相关的数学领域，范数是一个函数，其为向量空间内的所有向量赋予非零的正长度或大小。</p>
+<p>常用的几种向量范数如下：（均以向量$\boldsymbol{a}$为例）</p>
+<table>
+<thead>
+<tr>
+<th>范数</th>
+<th>意义</th>
+<th>表示</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0范数</td>
+<td>向量中非零元素的个数</td>
+<td>$${\left\|\boldsymbol{a}\right \|}_{0}$$</td>
+</tr>
+<tr>
+<td>1范数</td>
+<td>向量中所有元素绝对值之和</td>
+<td>$${\left\|\boldsymbol{a}\right \|}_{1}=\sum\limits_{i}{|a_i|}$$</td>
+</tr>
+<tr>
+<td>2范数（欧几里得范数）</td>
+<td>向量的模长</td>
+<td>$${\left\|\boldsymbol{a}\right \|}_{2}=\sqrt{\sum\limits_{i}{a_i^2}}$$</td>
+</tr>
+<tr>
+<td>$\infin$范数</td>
+<td>想两种元素的最大值</td>
+<td></td>
+</tr>
+<tr>
+<td>$-\infin$范数</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>$p$范数</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3>距离度量</h3>
+</article>
+    <a class="back-link" href="./index.html">← 返回文章列表</a>
+  </main>
+  <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+</body>
+</html>

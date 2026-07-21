@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C++类与对象的实现 · eli3xir</title>
+  <meta name="description" content="C++类与对象的实现">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' font-weight='bold' text-anchor='middle' fill='%237c5cff'%3Ee3%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/blog.css">
+  
+</head>
+<body>
+  <header class="blog-nav">
+    <a class="nav-logo" href="../index.html">eli3xir<span class="accent">.</span></a>
+    <nav>
+      <a href="../index.html">主页</a>
+      <a href="./index.html">文章</a>
+      <a href="https://github.com/eli3xir" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+  
+  <main class="post">
+    <div class="post-head">
+      <h1>C++类与对象的实现</h1>
+      <div class="post-meta">
+        <time>2021-05-04</time>
+        <span class="chip cat">技术</span><span class="chip cat">C++</span>
+        <span class="chip">C++</span><span class="chip">面向对象</span><span class="chip">基础</span><span class="chip">const</span>
+      </div>
+    </div>
+    <article class="post-content"><h2>定义及访问控制</h2>
+<ul>
+<li>
+<p>类：用户定义类型</p>
+</li>
+<li>
+<p>类包括<strong>属性</strong>和<strong>行为</strong>两个主要部分</p>
+</li>
+<li>
+<p>类是具有相同属性和行为的一组对象的集合，它为属于该类的全部对象提供了<strong>统一的抽象描述</strong></p>
+</li>
+<li>
+<p>利用类可以实现数据的<strong>封装、隐藏、继承与派生</strong></p>
+</li>
+<li>
+<p>利用类易于编写大型复杂程序，其模块化程度比 C 中采用函数更高</p>
+</li>
+</ul>
+<pre class="hljs"><code><span class="hljs-keyword">class</span> <span class="hljs-title class_">Point</span>{
+<span class="hljs-keyword">public</span>:
+	<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">getX</span><span class="hljs-params">()</span></span>;
+	<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">getY</span><span class="hljs-params">()</span></span>;
+<span class="hljs-keyword">private</span>:
+	<span class="hljs-type">int</span> X, Y;
+};
+<span class="hljs-type">int</span> Point :: <span class="hljs-built_in">getX</span> () { <span class="hljs-keyword">return</span> X; };
+<span class="hljs-type">int</span> Point :: <span class="hljs-built_in">getY</span> () { <span class="hljs-keyword">return</span> Y; };
+</code></pre>
+<h3>类的声明形式</h3>
+<pre class="hljs"><code><span class="hljs-keyword">class</span> 类名称
+{
+<span class="hljs-keyword">public</span>:
+	公有成员（外部接口）
+<span class="hljs-keyword">private</span>:
+	私有成员
+<span class="hljs-keyword">protected</span>:
+	保护型成员
+};
+</code></pre>
+<h3>公有类型成员：public</h3>
+<ul>
+<li>在关键字 public 后面声明</li>
+<li>它们是<strong>类与外部的接口</strong>，任何外部函数都可以访问公有类型数据和函数</li>
+<li>一个类如果想让别人使用它，一定要设计公有成员</li>
+</ul>
+<h3>私有类型成员：private</h3>
+<ul>
+<li>
+<p>在关键字 private 后面声明</p>
+</li>
+<li>
+<p>如果紧跟在类名称的后面声明私有成员，则关键字 private 可以 省略</p>
+</li>
+<li>
+<p>只允许<strong>本类中的函数和友元访问</strong>，而类外部的其它任何函数都不能访问，包括派生类</p>
+</li>
+<li>
+<p>一般情况下，<strong>类的数据成员应该声明为私有成员</strong></p>
+</li>
+</ul>
+<h2>友元</h2>
+<h2>构造与折构</h2>
+<h2>静态与非静态成员</h2>
+<h2>const成员</h2>
+<h2>前向引用声明</h2>
+<h2>类的使用例：string</h2>
+</article>
+    <a class="back-link" href="./index.html">← 返回文章列表</a>
+  </main>
+  <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+</body>
+</html>

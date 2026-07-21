@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>人脸检测+识别项目：MTCNN+FaceNet · eli3xir</title>
+  <meta name="description" content="人脸检测+识别项目：MTCNN+FaceNet">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' font-weight='bold' text-anchor='middle' fill='%237c5cff'%3Ee3%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/blog.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.querySelector('.post-content'), { delimiters: [
+      { left: '$$', right: '$$', display: true },
+      { left: '$', right: '$', display: false },
+      { left: '\\(', right: '\\)', display: false },
+      { left: '\\[', right: '\\]', display: true }
+    ] });"></script>
+</head>
+<body>
+  <header class="blog-nav">
+    <a class="nav-logo" href="../index.html">eli3xir<span class="accent">.</span></a>
+    <nav>
+      <a href="../index.html">主页</a>
+      <a href="./index.html">文章</a>
+      <a href="https://github.com/eli3xir" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+  
+  <main class="post">
+    <div class="post-head">
+      <h1>人脸检测+识别项目：MTCNN+FaceNet</h1>
+      <div class="post-meta">
+        <time>2021-04-21</time>
+        <span class="chip cat">技术</span><span class="chip cat">计算机视觉</span>
+        <span class="chip">MTCNN</span><span class="chip">人脸识别</span><span class="chip">神经网络</span><span class="chip">FaceNet</span><span class="chip">Flask</span><span class="chip">Keras</span><span class="chip">python</span>
+      </div>
+    </div>
+    <article class="post-content"><p>项目地址：<a href="https://gitee.com/sg2019/flask-face-recognition-api">https://gitee.com/sg2019/flask-face-recognition-api</a></p>
+<p>发行版下载地址：</p>
+<ul>
+<li>
+<p>Windows/Mac：<a href="https://gitee.com/sg2019/flask-face-recognition-api/repository/archive/v1.1.0?format=zip">https://gitee.com/sg2019/flask-face-recognition-api/repository/archive/v1.1.0?format=zip</a></p>
+</li>
+<li>
+<p>Linux：<a href="https://gitee.com/sg2019/flask-face-recognition-api/repository/archive/v1.1.0?format=tar.gz">https://gitee.com/sg2019/flask-face-recognition-api/repository/archive/v1.1.0?format=tar.gz</a></p>
+</li>
+</ul>
+<h1>MTCNN人脸检测</h1>
+<h2>MTCNN概述</h2>
+<p>MTCNN，英文全称是Multi-task convolutional neural network，中文全称是多任务卷积神经网络，总体可分为P-Net、R-Net、和O-Net三层网络结构。MTCNN在同一个网络里实现了人脸区域检测与人脸关键点五点标定的模型，主要通过CNN模型级联实现多任务学习网络，从而实现人脸检测与对齐。</p>
+<p>整个模型分为三个阶段：</p>
+<ul>
+<li>第一阶段（P-Net）：通过一个浅层的CNN网络快速产生一系列的候选窗口</li>
+<li>第二阶段（R-Net）：通过一个能力更强的CNN网络过滤掉绝大部分非人脸候选窗口</li>
+<li>第三阶段（O-Net）：通过一个能力更加强的网络找到人脸上面的五个标记点</li>
+</ul>
+<p>完整的MTCNN模型级联如下：</p>
+<p><img src="https://gitee.com/sg2019/picgo/raw/master/image-20210420144945504.png" alt="image-20210420144945504"></p>
+<p>该模型的特征跟HAAR级联检测在某些程度上有一定的相通之处，都是采用了级联方式，都是在初期就拒绝了绝大多数的图像区域，有效的降低了后期CNN网络的计算量与计算时间。</p>
+<p>MTCNN模型主要贡献在于：</p>
+<ul>
+<li>提供一种基于CNN方式的级联检测方法，基于轻量级的CNN模型实现人脸检测与点位标定，而且性能实时</li>
+<li>实现了对难样本挖掘在线训练提升性能</li>
+<li>一次可以完成多个任务</li>
+</ul>
+<h2>MTCNN实现</h2>
+<h3>1. 构建图像金字塔</h3>
+<h4>原理</h4>
+<p>图像金字塔是图像多尺度表达的一种常用方法，构造一系列以金字塔形状排列的、分辨率逐步降低、且来源于同一张原始图的图像集合，以适应不同大小的人脸，进行多尺度人脸检测。</p>
+<p>构建方式是通过不同的缩放系数factor对图片进行缩放，每次缩小为原来的factor大小，在MTCNN代码中，按照习惯设为<code>factor = 0.709</code>。</p>
+<p>对应图解：</p>
+<p><img src="https://gitee.com/sg2019/picgo/raw/master/image-20210420151632498.png" alt="image-20210420151632498"></p>
+<h4>代码</h4>
+<pre class="hljs"><code><span class="hljs-comment"># 计算原始输入图像每一次缩放的比例</span>
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">calculateScales</span>(<span class="hljs-params">img</span>):
+    pr_scale = <span class="hljs-number">1.0</span>
+    h, w, _ = img.shape
+
+    <span class="hljs-comment"># 如果图像的短边大于500，则将短边固定为500</span>
+    <span class="hljs-comment"># 如果图像的长边小于500，则将长边固定为500</span>
+    <span class="hljs-keyword">if</span> <span class="hljs-built_in">min</span>(w, h) &gt; <span class="hljs-number">500</span>:
+        pr_scale = <span class="hljs-number">500.0</span> / <span class="hljs-built_in">min</span>(h, w)
+        w = <span class="hljs-built_in">int</span>(w * pr_scale)
+        h = <span class="hljs-built_in">int</span>(h * pr_scale)
+    <span class="hljs-keyword">elif</span> <span class="hljs-built_in">max</span>(w, h) &lt; <span class="hljs-number">500</span>:
+        pr_scale = <span class="hljs-number">500.0</span> / <span class="hljs-built_in">max</span>(h, w)
+        w = <span class="hljs-built_in">int</span>(w * pr_scale)
+        h = <span class="hljs-built_in">int</span>(h * pr_scale)
+
+    <span class="hljs-comment"># 建立图像金字塔的scales，防止图像的宽高小于12</span>
+    scales = []
+    factor = <span class="hljs-number">0.709</span>
+    factor_count = <span class="hljs-number">0</span>
+    min_len = <span class="hljs-built_in">min</span>(h, w)
+    <span class="hljs-keyword">while</span> min_len &gt;= <span class="hljs-number">12</span>:
+        scales.append(pr_scale * <span class="hljs-built_in">pow</span>(factor, factor_count))
+        min_len *= factor
+        factor_count += <span class="hljs-number">1</span>
+    <span class="hljs-keyword">return</span> scales
+</code></pre>
+<h3>2. P-Net</h3>
+<h4>原理</h4>
+<p>P-Net的全称为Proposal Network，即推荐网络，其基本的构造是一个全卷积网络。对上一步构建完成的图像金字塔，通过一个FCN进行初步特征提取与标定边框。</p>
+<p>P-Net网络较为简单，但在完成初步提取后，还需要进行Bounding-Box Regression调整窗口与NMS进行大部分窗口的过滤。</p>
+<p>P-Net有两个输出，<code>classifier</code>用于判断这个网格点上的框的可信度，<code>bbox_regress</code>表示框的位置。</p>
+<p><code>bbox_regress</code>并不代表这个框在图片上的真实位置，如果需要将<code>bbox_regress</code>映射到真实图像上，还需要进行一次解码过程。</p>
+<p>解码过程利用<code>detect_face_12net</code>函数实现，其实现步骤如下（需要配合代码理解）：</p>
+<ol>
+<li>判断哪些网格点的置信度较高，即该网格点内存在人脸</li>
+<li>记录该网格点的x、y轴</li>
+<li>利用函数计算<code>bb1</code>和<code>bb2</code>，分别代表图中框的左上角基点和右下角基点，二者之间差了11个像素，堆叠得到<code>bounding_box </code></li>
+<li>利用<code>bbox_regress</code>计算解码结果，解码公式为<code>bounding_box = bounding_box + offset*12.0*scale</code></li>
+</ol>
+<p>P-Net的输出将整个网格分割成若干个网格点，每个网格点初始状态下是一个11x11的框，之后<code>bbox_regress</code>代表每个网格点确定的框的<strong>左上角基点和右下角基点</strong>的偏移情况。</p>
+<h4>代码</h4>
+<pre class="hljs"><code><span class="hljs-comment"># 粗略获取人脸框</span>
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">create_Pnet</span>(<span class="hljs-params">weight_path</span>):
+    inputs = Input(shape=[<span class="hljs-literal">None</span>, <span class="hljs-literal">None</span>, <span class="hljs-number">3</span>])
+
+    x = Conv2D(<span class="hljs-number">10</span>, (<span class="hljs-number">3</span>, <span class="hljs-number">3</span>), strides=<span class="hljs-number">1</span>, padding=<span class="hljs-string">&#x27;valid&#x27;</span>, name=<span class="hljs-string">&#x27;conv1&#x27;</span>)(inputs)
+    x = PReLU(shared_axes=[<span class="hljs-number">1</span>,<span class="hljs-number">2</span>],name=<span class="hljs-string">&#x27;PReLU1&#x27;</span>)(x)
+    x = MaxPool2D(pool_size=<span class="hljs-number">2</span>)(x)
+
+    x = Conv2D(<span class="hljs-number">16</span>, (<span class="hljs-number">3</span>, <span class="hljs-number">3</span>), strides=<span class="hljs-number">1</span>, padding=<span class="hljs-string">&#x27;valid&#x27;</span>, name=<span class="hljs-string">&#x27;conv2&#x27;</span>)(x)
+    x = PReLU(shared_axes=[<span class="hljs-number">1</span>,<span class="hljs-number">2</span>],name=<span class="hljs-string">&#x27;PReLU2&#x27;</span>)(x)
+
+    x = Conv2D(<span class="hljs-number">32</span>, (<span class="hljs-number">3</span>, <span class="hljs-number">3</span>), strides=<span class="hljs-number">1</span>, padding=<span class="hljs-string">&#x27;valid&#x27;</span>, name=<span class="hljs-string">&#x27;conv3&#x27;</span>)(x)
+    x = PReLU(shared_axes=[<span class="hljs-number">1</span>,<span class="hljs-number">2</span>],name=<span class="hljs-string">&#x27;PReLU3&#x27;</span>)(x)
+
+    classifier = Conv2D(<span class="hljs-number">2</span>, (<span class="hljs-number">1</span>, <span class="hljs-number">1</span>), activation=<span class="hljs-string">&#x27;softmax&#x27;</span>, name=<span class="hljs-string">&#x27;conv4-1&#x27;</span>)(x)
+    <span class="hljs-comment"># 无激活函数</span>
+    bbox_regress = Conv2D(<span class="hljs-number">4</span>, (<span class="hljs-number">1</span>, <span class="hljs-number">1</span>), name=<span class="hljs-string">&#x27;conv4-2&#x27;</span>)(x)
+
+    model = Model([inputs], [classifier, bbox_regress])
+    model.load_weights(weight_path, by_name=<span class="hljs-literal">True</span>)
+    <span class="hljs-keyword">return</span> model
+</code></pre>
+<pre class="hljs"><code><span class="hljs-comment"># 对Pnet处理后的结果进行处理</span>
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">detect_face_12net</span>(<span class="hljs-params">cls_prob, roi, out_side, scale, width, height, threshold</span>):
+    <span class="hljs-comment"># 计算特征点之间的步长</span>
+    stride = <span class="hljs-number">0</span>
+    <span class="hljs-keyword">if</span> out_side != <span class="hljs-number">1</span>:
+        stride = <span class="hljs-built_in">float</span>(<span class="hljs-number">2</span> * out_side - <span class="hljs-number">1</span>) / (out_side - <span class="hljs-number">1</span>)
+
+    <span class="hljs-comment"># 获得满足得分门限的特征点的坐标</span>
+    (y, x) = np.where(cls_prob &gt;= threshold)
+
+    <span class="hljs-comment"># 获得满足得分门限的特征点得分</span>
+    score = np.expand_dims(cls_prob[y, x], -<span class="hljs-number">1</span>)
+
+    <span class="hljs-comment"># 将对应的特征点的坐标转换成位于原图上的先验框的坐标</span>
+    bounding_box = np.concatenate([np.expand_dims(x, -<span class="hljs-number">1</span>), np.expand_dims(y, -<span class="hljs-number">1</span>)], axis=-<span class="hljs-number">1</span>)
+    top_left = np.fix(stride * bounding_box + <span class="hljs-number">0</span>)
+    bottom_right = np.fix(stride * bounding_box + <span class="hljs-number">11</span>)
+    bounding_box = np.concatenate((top_left, bottom_right), axis=-<span class="hljs-number">1</span>)
+    bounding_box = (bounding_box + roi[y, x] * <span class="hljs-number">12.0</span>) * scale
+
+    <span class="hljs-comment"># 将预测框和得分堆叠，转换成正方形</span>
+    rectangles = np.concatenate((bounding_box, score), axis=-<span class="hljs-number">1</span>)
+    rectangles = rect2square(rectangles)
+
+    rectangles[:, [<span class="hljs-number">1</span>, <span class="hljs-number">3</span>]] = np.clip(rectangles[:, [<span class="hljs-number">1</span>, <span class="hljs-number">3</span>]], <span class="hljs-number">0</span>, height)
+    rectangles[:, [<span class="hljs-number">0</span>, <span class="hljs-number">2</span>]] = np.clip(rectangles[:, [<span class="hljs-number">0</span>, <span class="hljs-number">2</span>]], <span class="hljs-number">0</span>, width)
+    <span class="hljs-keyword">return</span> rectangles
+</code></pre>
+<h3>3. R-Net</h3>
+<h4>原理</h4>
+<p>R-Net全称为Refine Network，即优化网络，其基本的构造是一个卷积神经网络。相对于第一层的P-Net来说，增加了一个全连接层，因此对于输入数据的筛选会更加严格。在图片经过P-Net后，会留下许多预测窗口，我们将所有的预测窗口送入R-Net，这个网络会滤除大量效果比较差的候选框。</p>
+<p>最后对选定的候选框进行Bounding-Box Regression和NMS进一步优化预测结果。</p>
+<p>R-Net有两个输出，<code>classifier</code>用于判断这个网格点上的框的可信度，<code>bbox_regress</code>表示框的位置。</p>
+<p><code>bbox_regress</code>并不代表这个框在图片上的真实位置，如果需要将<code>bbox_regress</code>映射到真实图像上，还需要进行一次解码过程。</p>
+<h4>代码</h4>
+<pre class="hljs"><code><span class="hljs-comment"># 精修框</span>
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">create_Rnet</span>(<span class="hljs-params">weight_path</span>):
+    inputs = Input(shape=[<span class="hljs-number">24</span>, <span class="hljs-number">24</span>, <span class="hljs-number">3</span>])
+    <span class="hljs-comment"># 24,24,3 -&gt; 22,22,28 -&gt; 11,11,28</span>
+    x = Conv2D(<span class="hljs-number">28</span>, (<span class="hljs-number">3</span>, <span class="hljs-number">3</span>), strides=<span class="hljs-number">1</span>, padding=<span class="hljs-string">&#x27;valid&#x27;</span>, name=<span class="hljs-string">&#x27;conv1&#x27;</span>)(inputs)
+    x = PReLU(shared_axes=[<span class="hljs-number">1</span>, <span class="hljs-number">2</span>], name=<span class="hljs-string">&#x27;prelu1&#x27;</span>)(x)
+    x = MaxPool2D(pool_size=<span class="hljs-number">3</span>,strides=<span class="hljs-number">2</span>, padding=<span class="hljs-string">&#x27;same&#x27;</span>)(x)
+
+    <span class="hljs-comment"># 11,11,28 -&gt; 9,9,48 -&gt; 4,4,48</span>
+    x = Conv2D(<span class="hljs-number">48</span>, (<span class="hljs-number">3</span>, <span class="hljs-number">3</span>), strides=<span class="hljs-number">1</span>, padding=<span class="hljs-string">&#x27;valid&#x27;</span>, name=<span class="hljs-string">&#x27;conv2&#x27;</span>)(x)
+    x = PReLU(shared_axes=[<span class="hljs-number">1</span>, <span class="hljs-number">2</span>], name=<span class="hljs-string">&#x27;prelu2&#x27;</span>)(x)
+    x = MaxPool2D(pool_size=<span class="hljs-number">3</span>, strides=<span class="hljs-number">2</span>)(x)
+
+    <span class="hljs-comment"># 4,4,48 -&gt; 3,3,64</span>
+    x = Conv2D(<span class="hljs-number">64</span>, (<span class="hljs-number">2</span>, <span class="hljs-number">2</span>), strides=<span class="hljs-number">1</span>, padding=<span class="hljs-string">&#x27;valid&#x27;</span>, name=<span class="hljs-string">&#x27;conv3&#x27;</span>)(x)
+    x = PReLU(shared_axes=[<span class="hljs-number">1</span>, <span class="hljs-number">2</span>], name=<span class="hljs-string">&#x27;prelu3&#x27;</span>)(x)
+
+    <span class="hljs-comment"># 3,3,64 -&gt; 64,3,3</span>
+    x = Permute((<span class="hljs-number">3</span>, <span class="hljs-number">2</span>, <span class="hljs-number">1</span>))(x)
+    x = Flatten()(x)
+
+    <span class="hljs-comment"># 576 -&gt; 128</span>
+    x = Dense(<span class="hljs-number">128</span>, name=<span class="hljs-string">&#x27;conv4&#x27;</span>)(x)
+    x = PReLU( name=<span class="hljs-string">&#x27;prelu4&#x27;</span>)(x)
+
+    <span class="hljs-comment"># 128 -&gt; 2</span>
+    classifier = Dense(<span class="hljs-number">2</span>, activation=<span class="hljs-string">&#x27;softmax&#x27;</span>, name=<span class="hljs-string">&#x27;conv5-1&#x27;</span>)(x)
+    <span class="hljs-comment"># 128 -&gt; 4</span>
+    bbox_regress = Dense(<span class="hljs-number">4</span>, name=<span class="hljs-string">&#x27;conv5-2&#x27;</span>)(x)
+
+    model = Model([inputs], [classifier, bbox_regress])
+    model.load_weights(weight_path, by_name=<span class="hljs-literal">True</span>)
+    <span class="hljs-keyword">return</span> model
+</code></pre>
+<pre class="hljs"><code><span class="hljs-comment"># 对R-Net处理后的结果进行处理</span>
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">filter_face_24net</span>(<span class="hljs-params">cls_prob, roi, rectangles, width, height, threshold</span>):
+    <span class="hljs-comment"># 利用得分进行筛选</span>
+    pick = cls_prob[:, <span class="hljs-number">1</span>] &gt;= threshold
+    
+    score = cls_prob[pick, <span class="hljs-number">1</span>:<span class="hljs-number">2</span>]
+    rectangles = rectangles[pick, :<span class="hljs-number">4</span>]
+    roi = roi[pick, :]
+    
+    <span class="hljs-comment"># 利用R-Net网络的预测结果对粗略预测框进行调整</span>
+    w = np.expand_dims(rectangles[:, <span class="hljs-number">2</span>] - rectangles[:, <span class="hljs-number">0</span>], -<span class="hljs-number">1</span>)
+    h = np.expand_dims(rectangles[:, <span class="hljs-number">3</span>] - rectangles[:, <span class="hljs-number">1</span>], -<span class="hljs-number">1</span>)
+    rectangles[:, [<span class="hljs-number">0</span>, <span class="hljs-number">2</span>]] = rectangles[:, [<span class="hljs-number">0</span>, <span class="hljs-number">2</span>]] + roi[:, [<span class="hljs-number">0</span>, <span class="hljs-number">2</span>]] * w
+    rectangles[:, [<span class="hljs-number">1</span>, <span class="hljs-number">3</span>]] = rectangles[:, [<span class="hljs-number">1</span>, <span class="hljs-number">3</span>]] + roi[:, [<span class="hljs-number">1</span>, <span class="hljs-number">3</span>]] * w
+    
+    <span class="hljs-comment"># 将预测框和得分进行堆叠，并转换成正方形</span>
+    rectangles = np.concatenate((rectangles, score), axis=-<span class="hljs-number">1</span>)
+    rectangles = rect2square(rectangles)
+    
+    rectangles[:, [<span class="hljs-number">1</span>, <span class="hljs-number">3</span>]] = np.clip(rectangles[:, [<span class="hljs-number">1</span>, <span class="hljs-number">3</span>]], <span class="hljs-number">0</span>, height)
+    rectangles[:, [<span class="hljs-number">0</span>, <span class="hljs-number">2</span>]] = np.clip(rectangles[:, [<span class="hljs-number">0</span>, <span class="hljs-number">2</span>]], <span class="hljs-number">0</span>, width)
+    <span class="hljs-keyword">return</span> np.array(NMS(rectangles, <span class="hljs-number">0.7</span>))
+</code></pre>
+<h3>4. O-Net</h3>
+<h4>原理</h4>
+<p>O-Net与R-Net工作流程类似，全称为Output Network，基本结构是一个较为复杂的卷积神经网络，相对于R-Net来说多了一个卷积层。O-Net的效果与R-Net的区别在于这一层结构会通过更多的监督来识别面部的区域，而且会对人的面部特征点进行回归，最终输出五个人脸面部特征点。</p>
+<h4>代码</h4>
+<pre class="hljs"><code><span class="hljs-comment">#   精修框并定位五点</span>
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">create_Onet</span>(<span class="hljs-params">weight_path</span>):
+    inputs = Input(shape = [<span class="hljs-number">48</span>,<span class="hljs-number">48</span>,<span class="hljs-number">3</span>])
+    <span class="hljs-comment"># 48,48,3 -&gt; 46,46,32 -&gt; 23,23,32</span>
+    x = Conv2D(<span class="hljs-number">32</span>, (<span class="hljs-number">3</span>, <span class="hljs-number">3</span>), strides=<span class="hljs-number">1</span>, padding=<span class="hljs-string">&#x27;valid&#x27;</span>, name=<span class="hljs-string">&#x27;conv1&#x27;</span>)(inputs)
+    x = PReLU(shared_axes=[<span class="hljs-number">1</span>,<span class="hljs-number">2</span>],name=<span class="hljs-string">&#x27;prelu1&#x27;</span>)(x)
+    x = MaxPool2D(pool_size=<span class="hljs-number">3</span>, strides=<span class="hljs-number">2</span>, padding=<span class="hljs-string">&#x27;same&#x27;</span>)(x)
+
+    <span class="hljs-comment"># 23,23,32 -&gt; 21,21,64 -&gt; 10,10,64</span>
+    x = Conv2D(<span class="hljs-number">64</span>, (<span class="hljs-number">3</span>, <span class="hljs-number">3</span>), strides=<span class="hljs-number">1</span>, padding=<span class="hljs-string">&#x27;valid&#x27;</span>, name=<span class="hljs-string">&#x27;conv2&#x27;</span>)(x)
+    x = PReLU(shared_axes=[<span class="hljs-number">1</span>,<span class="hljs-number">2</span>],name=<span class="hljs-string">&#x27;prelu2&#x27;</span>)(x)
+    x = MaxPool2D(pool_size=<span class="hljs-number">3</span>, strides=<span class="hljs-number">2</span>)(x)
+
+    <span class="hljs-comment"># 8,8,64 -&gt; 4,4,64</span>
+    x = Conv2D(<span class="hljs-number">64</span>, (<span class="hljs-number">3</span>, <span class="hljs-number">3</span>), strides=<span class="hljs-number">1</span>, padding=<span class="hljs-string">&#x27;valid&#x27;</span>, name=<span class="hljs-string">&#x27;conv3&#x27;</span>)(x)
+    x = PReLU(shared_axes=[<span class="hljs-number">1</span>,<span class="hljs-number">2</span>],name=<span class="hljs-string">&#x27;prelu3&#x27;</span>)(x)
+    x = MaxPool2D(pool_size=<span class="hljs-number">2</span>)(x)
+
+    <span class="hljs-comment"># 4,4,64 -&gt; 3,3,128</span>
+    x = Conv2D(<span class="hljs-number">128</span>, (<span class="hljs-number">2</span>, <span class="hljs-number">2</span>), strides=<span class="hljs-number">1</span>, padding=<span class="hljs-string">&#x27;valid&#x27;</span>, name=<span class="hljs-string">&#x27;conv4&#x27;</span>)(x)
+    x = PReLU(shared_axes=[<span class="hljs-number">1</span>,<span class="hljs-number">2</span>],name=<span class="hljs-string">&#x27;prelu4&#x27;</span>)(x)
+
+    <span class="hljs-comment"># 3,3,128 -&gt; 128,12,12</span>
+    x = Permute((<span class="hljs-number">3</span>,<span class="hljs-number">2</span>,<span class="hljs-number">1</span>))(x)
+    x = Flatten()(x)
+
+    <span class="hljs-comment"># 1152 -&gt; 256</span>
+    x = Dense(<span class="hljs-number">256</span>, name=<span class="hljs-string">&#x27;conv5&#x27;</span>) (x)
+    x = PReLU(name=<span class="hljs-string">&#x27;prelu5&#x27;</span>)(x)
+
+    <span class="hljs-comment"># 256 -&gt; 2 </span>
+    classifier = Dense(<span class="hljs-number">2</span>, activation=<span class="hljs-string">&#x27;softmax&#x27;</span>,name=<span class="hljs-string">&#x27;conv6-1&#x27;</span>)(x)
+    <span class="hljs-comment"># 256 -&gt; 4 </span>
+    bbox_regress = Dense(<span class="hljs-number">4</span>,name=<span class="hljs-string">&#x27;conv6-2&#x27;</span>)(x)
+    <span class="hljs-comment"># 256 -&gt; 10 </span>
+    landmark_regress = Dense(<span class="hljs-number">10</span>,name=<span class="hljs-string">&#x27;conv6-3&#x27;</span>)(x)
+
+    model = Model([inputs], [classifier, bbox_regress, landmark_regress])
+    model.load_weights(weight_path, by_name=<span class="hljs-literal">True</span>)
+    <span class="hljs-keyword">return</span> model
+</code></pre>
+<h1>FaceNet特征提取</h1>
+<h2>FaceNet概述</h2>
+<p>谷歌人脸识别算法，发表于 CVPR 2015，利用相同人脸在不同角度等姿态的照片下有高内聚性，不同人脸有低耦合性，提出使用 CNN + Triplet mining 方法，在 LFW 数据集上准确度达到 99.63%。</p>
+<p>通过 CNN 将人脸映射到欧式空间的特征向量上，实质上：不同图片人脸特征的距离较大；通过相同个体的人脸的距离，总是小于不同个体的人脸这一先验知识训练网络。</p>
+<p>测试时只需要计算人脸特征Embedding，然后计算距离使用阈值即可判定两张人脸照片是否属于相同的个体。</p>
+<h2>FaceNet实现</h2>
+<p>FaceNet的主干网络起到提取特征的作用，传统的FaceNet以Inception-ResNetV1为主干特征提取网络。</p>
+<p>MobilenetV1模型是Google针对手机等嵌入式设备提出的一种轻量级的深层神经网络，其使用的核心思想便是depthwise separable convolution（深度可分离卷积块）。</p>
+<p>深度可分离卷积块由两个部分组成，分别是深度可分离卷积和1x1普通卷积，深度可分离卷积的卷积核大小一般是3x3的，便于理解的话我们可以把它当作是特征提取，1x1的普通卷积可以完成通道数的调整。</p>
+<p><img src="https://gitee.com/sg2019/picgo/raw/master/20191030154355407.png" alt="20191030154355407"></p>
+<blockquote>
+<p>**深度可分离卷积块的目的是使用更少的参数来代替普通的3x3卷积。**与普通卷积相比，深度可分离卷积结构块可以减少模型的参数。</p>
+</blockquote>
+<pre class="hljs"><code><span class="hljs-keyword">import</span> math
+<span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+<span class="hljs-keyword">import</span> tensorflow <span class="hljs-keyword">as</span> tf
+
+<span class="hljs-keyword">from</span> keras <span class="hljs-keyword">import</span> backend
+<span class="hljs-keyword">from</span> keras <span class="hljs-keyword">import</span> backend <span class="hljs-keyword">as</span> K
+<span class="hljs-keyword">from</span> keras.preprocessing <span class="hljs-keyword">import</span> image
+<span class="hljs-keyword">from</span> keras.models <span class="hljs-keyword">import</span> Model
+<span class="hljs-keyword">from</span> keras.layers.normalization <span class="hljs-keyword">import</span> BatchNormalization
+<span class="hljs-keyword">from</span> keras.layers <span class="hljs-keyword">import</span> Conv2D, Add, ZeroPadding2D, GlobalAveragePooling2D, Dropout, Dense, Lambda
+<span class="hljs-keyword">from</span> keras.layers <span class="hljs-keyword">import</span> MaxPooling2D,Activation,DepthwiseConv2D,Input,GlobalMaxPooling2D
+<span class="hljs-keyword">from</span> keras.applications <span class="hljs-keyword">import</span> imagenet_utils
+<span class="hljs-keyword">from</span> keras.applications.imagenet_utils <span class="hljs-keyword">import</span> decode_predictions
+<span class="hljs-keyword">from</span> keras.utils.data_utils <span class="hljs-keyword">import</span> get_file
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">_conv_block</span>(<span class="hljs-params">inputs, filters, kernel=(<span class="hljs-params"><span class="hljs-number">3</span>, <span class="hljs-number">3</span></span>), strides=(<span class="hljs-params"><span class="hljs-number">1</span>, <span class="hljs-number">1</span></span>)</span>):
+    x = Conv2D(filters, kernel,
+               padding=<span class="hljs-string">&#x27;same&#x27;</span>,
+               use_bias=<span class="hljs-literal">False</span>,
+               strides=strides,
+               name=<span class="hljs-string">&#x27;conv1&#x27;</span>)(inputs)
+    x = BatchNormalization(name=<span class="hljs-string">&#x27;conv1_bn&#x27;</span>)(x)
+    <span class="hljs-keyword">return</span> Activation(relu6, name=<span class="hljs-string">&#x27;conv1_relu&#x27;</span>)(x)
+
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">_depthwise_conv_block</span>(<span class="hljs-params">inputs, pointwise_conv_filters,
+                          depth_multiplier=<span class="hljs-number">1</span>, strides=(<span class="hljs-params"><span class="hljs-number">1</span>, <span class="hljs-number">1</span></span>), block_id=<span class="hljs-number">1</span></span>):
+
+    x = DepthwiseConv2D((<span class="hljs-number">3</span>, <span class="hljs-number">3</span>),
+                        padding=<span class="hljs-string">&#x27;same&#x27;</span>,
+                        depth_multiplier=depth_multiplier,
+                        strides=strides,
+                        use_bias=<span class="hljs-literal">False</span>,
+                        name=<span class="hljs-string">&#x27;conv_dw_%d&#x27;</span> % block_id)(inputs)
+    
+    x = BatchNormalization(name=<span class="hljs-string">&#x27;conv_dw_%d_bn&#x27;</span> % block_id)(x)
+    x = Activation(relu6, name=<span class="hljs-string">&#x27;conv_dw_%d_relu&#x27;</span> % block_id)(x)
+    
+    x = Conv2D(pointwise_conv_filters, (<span class="hljs-number">1</span>, <span class="hljs-number">1</span>),
+               padding=<span class="hljs-string">&#x27;same&#x27;</span>,
+               use_bias=<span class="hljs-literal">False</span>,
+               strides=(<span class="hljs-number">1</span>, <span class="hljs-number">1</span>),
+               name=<span class="hljs-string">&#x27;conv_pw_%d&#x27;</span> % block_id)(x)
+    x = BatchNormalization(name=<span class="hljs-string">&#x27;conv_pw_%d_bn&#x27;</span> % block_id)(x)
+    <span class="hljs-keyword">return</span> Activation(relu6, name=<span class="hljs-string">&#x27;conv_pw_%d_relu&#x27;</span> % block_id)(x)
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">relu6</span>(<span class="hljs-params">x</span>):
+    <span class="hljs-keyword">return</span> K.relu(x, max_value=<span class="hljs-number">6</span>)
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">MobileNet</span>(<span class="hljs-params">inputs, embedding_size=<span class="hljs-number">128</span>, dropout_keep_prob=<span class="hljs-number">0.8</span>, alpha=<span class="hljs-number">1.0</span>, depth_multiplier=<span class="hljs-number">1</span></span>):
+    x = _conv_block(inputs, <span class="hljs-number">32</span>, strides=(<span class="hljs-number">2</span>, <span class="hljs-number">2</span>))
+    x = _depthwise_conv_block(x, <span class="hljs-number">64</span>, depth_multiplier, block_id=<span class="hljs-number">1</span>)
+
+    x = _depthwise_conv_block(x, <span class="hljs-number">128</span>, depth_multiplier, strides=(<span class="hljs-number">2</span>, <span class="hljs-number">2</span>), block_id=<span class="hljs-number">2</span>)
+    x = _depthwise_conv_block(x, <span class="hljs-number">128</span>, depth_multiplier, block_id=<span class="hljs-number">3</span>)
+    
+    x = _depthwise_conv_block(x, <span class="hljs-number">256</span>, depth_multiplier, strides=(<span class="hljs-number">2</span>, <span class="hljs-number">2</span>), block_id=<span class="hljs-number">4</span>)
+    x = _depthwise_conv_block(x, <span class="hljs-number">256</span>, depth_multiplier, block_id=<span class="hljs-number">5</span>)
+    
+    x = _depthwise_conv_block(x, <span class="hljs-number">512</span>, depth_multiplier, strides=(<span class="hljs-number">2</span>, <span class="hljs-number">2</span>), block_id=<span class="hljs-number">6</span>)
+    x = _depthwise_conv_block(x, <span class="hljs-number">512</span>, depth_multiplier, block_id=<span class="hljs-number">7</span>)
+    x = _depthwise_conv_block(x, <span class="hljs-number">512</span>, depth_multiplier, block_id=<span class="hljs-number">8</span>)
+    x = _depthwise_conv_block(x, <span class="hljs-number">512</span>, depth_multiplier, block_id=<span class="hljs-number">9</span>)
+    x = _depthwise_conv_block(x, <span class="hljs-number">512</span>, depth_multiplier, block_id=<span class="hljs-number">10</span>)
+    x = _depthwise_conv_block(x, <span class="hljs-number">512</span>, depth_multiplier, block_id=<span class="hljs-number">11</span>)
+    
+    x = _depthwise_conv_block(x, <span class="hljs-number">1024</span>, depth_multiplier, strides=(<span class="hljs-number">2</span>, <span class="hljs-number">2</span>), block_id=<span class="hljs-number">12</span>)
+    x = _depthwise_conv_block(x, <span class="hljs-number">1024</span>, depth_multiplier, block_id=<span class="hljs-number">13</span>)
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/147042-b88cbde9287e4ce1.png?imageMogr2/auto-orient/strip%7CimageView2/2/format/webp" alt="img"></p>
+<p>FaceNet总体训练流程如下：</p>
+<ul>
+<li>将图像通过深度卷积神经网络映射到128维的特征空间（欧几里得空间）中，得到对应的128维特征向量</li>
+<li>对特征向量进行L2​正则化，筛选出有效特征</li>
+<li>使用正则化后的特征向量，计算Triplet Loss​</li>
+</ul>
+<p>本项目采用<a href="https://drive.google.com/open?id=1pwQ3H4aJ8a6yyJHZkTwtjcL4wYWQb7bn">Keras FaceNet 预训练模型</a>，可以从官网下载训练。</p>
+<h3>1. 根据初步特征获得128维特征向量</h3>
+<h4>原理</h4>
+<p>利用主干特征提取网络获得特征层，shape为<code>(batch_size, h, w, channels)</code>，可以将其取全局平均池化，方便后续的处理<code>(batch_size, channels)</code>。将平铺后的特征层进行神经元个数为128的全连接，此时相当于利用128维特征向量代替输入图片，128维特征向量即为输入图片的特征浓缩。</p>
+<h4>代码</h4>
+<pre class="hljs"><code>x = GlobalAveragePooling2D()(x)
+x = Dropout(<span class="hljs-number">1.0</span> - dropout_keep_prob, name=<span class="hljs-string">&#x27;Dropout&#x27;</span>)(x)
+x = Dense(classes, use_bias=<span class="hljs-literal">False</span>, name=<span class="hljs-string">&#x27;Bottleneck&#x27;</span>)(x)
+x = BatchNormalization(momentum=<span class="hljs-number">0.995</span>, epsilon=<span class="hljs-number">0.001</span>, scale=<span class="hljs-literal">False</span>,
+                      name=<span class="hljs-string">&#x27;BatchNorm_Bottleneck&#x27;</span>)(x)
+</code></pre>
+<h3>2. L2标准化</h3>
+<h4>原理</h4>
+<p>在获得128维特征向量后，进行L2标准化处理，使得不同人脸的特征向量方便比较。在Keras中L2标准化很容易实现。</p>
+<h4>代码</h4>
+<pre class="hljs"><code>x= Lambda(<span class="hljs-keyword">lambda</span>  x: K.l2_normalize(x, axis=-<span class="hljs-number">1</span>))(x)
+<span class="hljs-comment"># 创建模型</span>
+model = Model(inputs, x, name=<span class="hljs-string">&#x27;inception_resnet_v1&#x27;</span>)
+</code></pre>
+<h3>3. 构建分类器</h3>
+<h4>原理</h4>
+<p>仅考虑Triplet Loss会使得整个网络难以收敛，结合Cross-Entropy Loss和Triplet Loss作为总体loss。</p>
+<ul>
+<li>Triplet Loss用于进行不同人的人脸特征向量欧几里得距离的扩张，同一个人的不同状态的人脸特征向量欧几里得距离的缩小。</li>
+<li>Cross-Entropy Loss用于人脸分类，辅助Triplet Loss收敛。</li>
+</ul>
+<blockquote>
+<p><strong>关于Triplet Loss</strong></p>
+<p>其输入是一个三元组(a, p, n)：</p>
+<ul>
+<li>
+<p>a：anchor，基准图片获得的128维人脸特征向量</p>
+</li>
+<li>
+<p>p：positive，与基准图片属于同一张人脸的图片获得的128维人脸特征向量</p>
+</li>
+<li>
+<p>n：negative，与基准图片不属于同一张人脸的图片获得的128维人脸特征向量</p>
+</li>
+</ul>
+<p>将anchor和positive求欧几里得距离，并使其尽量小；将negative和positive求欧几里得距离，并使其尽量大。</p>
+<p>公式为：
+$$
+>L=max(d(a,p)−d(a,n)+margin,0)
+> $$</p>
+<p>d(a, p)是anchor和positive的欧几里得距离，d(a, n)是negative和positive的欧几里得距离，margin是常数。</p>
+</blockquote>
+<p>对第2步获得的结果再次进行一个全连接用于分类。</p>
+<h4>代码</h4>
+<pre class="hljs"><code><span class="hljs-keyword">def</span> <span class="hljs-title function_">facenet</span>(<span class="hljs-params">input_shape, num_classes=<span class="hljs-literal">None</span>, backbone=<span class="hljs-string">&quot;mobilenet&quot;</span>, mode=<span class="hljs-string">&quot;train&quot;</span></span>):
+    inputs = Input(shape=input_shape)
+    <span class="hljs-keyword">if</span> backbone==<span class="hljs-string">&quot;mobilenet&quot;</span>:
+        model = MobileNet(inputs)
+    <span class="hljs-keyword">elif</span> backbone==<span class="hljs-string">&quot;inception_resnetv1&quot;</span>:
+        model = InceptionResNetV1(inputs)
+    <span class="hljs-keyword">else</span>:
+        <span class="hljs-keyword">raise</span> ValueError(<span class="hljs-string">&#x27;Unsupported backbone - `{}`, Use mobilenet, inception_resnetv1.&#x27;</span>.<span class="hljs-built_in">format</span>(backbone))
+
+    <span class="hljs-keyword">if</span> mode == <span class="hljs-string">&quot;train&quot;</span>:
+        x = Dense(num_classes)(model.output)
+        x = Activation(<span class="hljs-string">&quot;softmax&quot;</span>, name = <span class="hljs-string">&quot;Softmax&quot;</span>)(x)
+        combine_model = Model(inputs,[x, model.output])
+        <span class="hljs-keyword">return</span> combine_model
+    <span class="hljs-keyword">elif</span> mode == <span class="hljs-string">&quot;predict&quot;</span>:
+        <span class="hljs-keyword">return</span> model
+    <span class="hljs-keyword">else</span>:
+        <span class="hljs-keyword">raise</span> ValueError(<span class="hljs-string">&#x27;Unsupported mode - `{}`, Use train, predict.&#x27;</span>.<span class="hljs-built_in">format</span>(mode))
+</code></pre>
+<h2>FaceNet使用</h2>
+<p>FaceNet的使用步骤可以简化为如下四步：</p>
+<ol>
+<li>输入一张人脸图片</li>
+<li>通过深度卷积网络提取特征</li>
+<li>L2标准化</li>
+<li>得到一个长度为128特征向量</li>
+</ol>
+<h1>MTCNN人脸识别</h1>
+<h2>数据库初始化</h2>
+<p>在人脸识别前，需要将存放已知人脸的数据库进行初始化。具体执行过程为：</p>
+<ol>
+<li>遍历数据库中所有的图片</li>
+<li>检测每个图片中的人脸位置</li>
+<li>利用MTCNN将人脸截取下载</li>
+<li>将获取到的人脸进行对齐</li>
+<li>利用FaceNet将人脸进行编码</li>
+<li>将所有人脸编码的结果存入列表</li>
+</ol>
+<p>之后<strong>获得的实时图片中的人脸</strong>与<strong>已知人脸进行比对</strong>，即可计算门限值，从而得到得分最高的人脸。</p>
+<h2>实时图片处理</h2>
+<h3>1. 人脸截取与对齐</h3>
+<h4>原理</h4>
+<p>本项目通过双眼坐标进行旋正，需要用到两个参数，分别是：</p>
+<ol>
+<li>眼睛连线相对于水平线的倾斜角。</li>
+<li>图片的中心。</li>
+</ol>
+<p>通过上述两个参数，可以计算出<strong>图片旋转的角度及中心</strong>，<code>landmark</code>是五个人脸特征点的位置。</p>
+<h4>代码</h4>
+<pre class="hljs"><code><span class="hljs-keyword">def</span> <span class="hljs-title function_">Alignment_1</span>(<span class="hljs-params">img,landmark</span>):
+
+    <span class="hljs-keyword">if</span> landmark.shape[<span class="hljs-number">0</span>]==<span class="hljs-number">68</span>:
+        x = landmark[<span class="hljs-number">36</span>,<span class="hljs-number">0</span>] - landmark[<span class="hljs-number">45</span>,<span class="hljs-number">0</span>]
+        y = landmark[<span class="hljs-number">36</span>,<span class="hljs-number">1</span>] - landmark[<span class="hljs-number">45</span>,<span class="hljs-number">1</span>]
+    <span class="hljs-keyword">elif</span> landmark.shape[<span class="hljs-number">0</span>]==<span class="hljs-number">5</span>:
+        x = landmark[<span class="hljs-number">0</span>,<span class="hljs-number">0</span>] - landmark[<span class="hljs-number">1</span>,<span class="hljs-number">0</span>]
+        y = landmark[<span class="hljs-number">0</span>,<span class="hljs-number">1</span>] - landmark[<span class="hljs-number">1</span>,<span class="hljs-number">1</span>]
+    <span class="hljs-comment"># 眼睛连线相对于水平线的倾斜角</span>
+    <span class="hljs-keyword">if</span> x==<span class="hljs-number">0</span>:
+        angle = <span class="hljs-number">0</span>
+    <span class="hljs-keyword">else</span>: 
+        <span class="hljs-comment"># 计算它的弧度制</span>
+        angle = math.atan(y/x)*<span class="hljs-number">180</span>/math.pi
+
+    center = (img.shape[<span class="hljs-number">1</span>]//<span class="hljs-number">2</span>, img.shape[<span class="hljs-number">0</span>]//<span class="hljs-number">2</span>)
+    
+    RotationMatrix = cv2.getRotationMatrix2D(center, angle, <span class="hljs-number">1</span>)
+    <span class="hljs-comment"># 仿射函数</span>
+    new_img = cv2.warpAffine(img,RotationMatrix,(img.shape[<span class="hljs-number">1</span>],img.shape[<span class="hljs-number">0</span>])) 
+
+    RotationMatrix = np.array(RotationMatrix)
+    new_landmark = []
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(landmark.shape[<span class="hljs-number">0</span>]):
+        pts = []    
+        pts.append(RotationMatrix[<span class="hljs-number">0</span>,<span class="hljs-number">0</span>]*landmark[i,<span class="hljs-number">0</span>]+RotationMatrix[<span class="hljs-number">0</span>,<span class="hljs-number">1</span>]*landmark[i,<span class="hljs-number">1</span>]+RotationMatrix[<span class="hljs-number">0</span>,<span class="hljs-number">2</span>])
+        pts.append(RotationMatrix[<span class="hljs-number">1</span>,<span class="hljs-number">0</span>]*landmark[i,<span class="hljs-number">0</span>]+RotationMatrix[<span class="hljs-number">1</span>,<span class="hljs-number">1</span>]*landmark[i,<span class="hljs-number">1</span>]+RotationMatrix[<span class="hljs-number">1</span>,<span class="hljs-number">2</span>])
+        new_landmark.append(pts)
+
+    new_landmark = np.array(new_landmark)
+
+    <span class="hljs-keyword">return</span> new_img, new_landmark
+</code></pre>
+<h3>2. FaceNet编码矫正的人脸</h3>
+<h4>原理</h4>
+<p>将第1步获得的对齐人脸传入facenet模型，可以得到每个人脸的特征向量。将所有特征向量保存在一个列表中，在第3步进行比对。</p>
+<h4>代码</h4>
+<pre class="hljs"><code>height,width,_ = np.shape(draw)
+draw_rgb = cv2.cvtColor(draw,cv2.COLOR_BGR2RGB)
+
+<span class="hljs-comment"># 检测人脸</span>
+rectangles = <span class="hljs-variable language_">self</span>.mtcnn_model.detectFace(draw_rgb, <span class="hljs-variable language_">self</span>.threshold)
+<span class="hljs-built_in">print</span>(np.shape(rectangles))
+<span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(rectangles)==<span class="hljs-number">0</span>:
+    <span class="hljs-keyword">return</span>
+
+<span class="hljs-comment"># 转化成正方形</span>
+rectangles = utils.rect2square(np.array(rectangles,dtype=np.int32))
+rectangles[:,<span class="hljs-number">0</span>] = np.clip(rectangles[:,<span class="hljs-number">0</span>],<span class="hljs-number">0</span>,width)
+rectangles[:,<span class="hljs-number">1</span>] = np.clip(rectangles[:,<span class="hljs-number">1</span>],<span class="hljs-number">0</span>,height)
+rectangles[:,<span class="hljs-number">2</span>] = np.clip(rectangles[:,<span class="hljs-number">2</span>],<span class="hljs-number">0</span>,width)
+rectangles[:,<span class="hljs-number">3</span>] = np.clip(rectangles[:,<span class="hljs-number">3</span>],<span class="hljs-number">0</span>,height)
+
+face_encodings = []
+<span class="hljs-keyword">for</span> rectangle <span class="hljs-keyword">in</span> rectangles:
+    <span class="hljs-comment"># 获取landmark坐标</span>
+    landmark = (np.reshape(rectangle[<span class="hljs-number">5</span>:<span class="hljs-number">15</span>],(<span class="hljs-number">5</span>,<span class="hljs-number">2</span>)) - np.array([<span class="hljs-built_in">int</span>(rectangle[<span class="hljs-number">0</span>]),<span class="hljs-built_in">int</span>(rectangle[<span class="hljs-number">1</span>])]))/(rectangle[<span class="hljs-number">3</span>]-rectangle[<span class="hljs-number">1</span>])*<span class="hljs-number">160</span>
+    <span class="hljs-comment"># 截取图像</span>
+    crop_img = draw_rgb[<span class="hljs-built_in">int</span>(rectangle[<span class="hljs-number">1</span>]):<span class="hljs-built_in">int</span>(rectangle[<span class="hljs-number">3</span>]), <span class="hljs-built_in">int</span>(rectangle[<span class="hljs-number">0</span>]):<span class="hljs-built_in">int</span>(rectangle[<span class="hljs-number">2</span>])]
+    crop_img = cv2.resize(crop_img,(<span class="hljs-number">160</span>,<span class="hljs-number">160</span>))
+    <span class="hljs-comment"># 对齐</span>
+    new_img,_ = utils.Alignment_1(crop_img,landmark)
+    new_img = np.expand_dims(new_img,<span class="hljs-number">0</span>)
+    <span class="hljs-comment"># 计算128维特征向量</span>
+    face_encoding = utils.calc_128_vec(<span class="hljs-variable language_">self</span>.facenet_model,new_img)
+    face_encodings.append(face_encoding)
+</code></pre>
+<h3>3. 比对实时图片与数据库的人脸特征</h3>
+<h4>原理</h4>
+<p>比对过程大致如下：</p>
+<ol>
+<li>获取每一张实时图片的人脸特征</li>
+<li>将每一张图片的人脸特征和数据库中所有的人脸特征进行比较，计算距离</li>
+<li>如果距离小于门限值，则认为其具有一定的相似度</li>
+<li>获得每一张人脸在数据库中最相似的人脸的序号</li>
+<li>判断这个序号对应的人脸距离是否小于门限，是则认为人脸识别成功，否则认为无法识别（Unkown）</li>
+</ol>
+<h4>代码</h4>
+<pre class="hljs"><code>face_names = []
+<span class="hljs-keyword">for</span> face_encoding <span class="hljs-keyword">in</span> face_encodings:
+    <span class="hljs-comment"># 取出一张脸并与数据库中所有的人脸进行对比，计算得分</span>
+    matches = utils.compare_faces(<span class="hljs-variable language_">self</span>.known_face_encodings, face_encoding, tolerance = <span class="hljs-number">0.9</span>)
+    name = <span class="hljs-string">&quot;Unknown&quot;</span>
+    <span class="hljs-comment"># 找出距离最近的人脸</span>
+    face_distances = utils.face_distance(<span class="hljs-variable language_">self</span>.known_face_encodings, face_encoding)
+    <span class="hljs-comment"># 取出这个最近人脸的评分</span>
+    best_match_index = np.argmin(face_distances)
+    <span class="hljs-keyword">if</span> matches[best_match_index]:
+        name = <span class="hljs-variable language_">self</span>.known_face_names[best_match_index]
+    face_names.append(name)
+</code></pre>
+<h1>Flask 实现 RESTful API</h1>
+<h2>Flask概述</h2>
+<p>flask是一个使用Python编写的轻量级<strong>Web应用框架</strong>，WSGI工具箱采用Werkzeug，<strong>模板引擎</strong>则使用Jinja2。它没有默认使用的数据库、窗体验证工具，但保留了扩增的弹性，可以用flask-extension加入这些功能。由于其书写简单，扩展性强，成为了python最受欢迎的web框架之一。</p>
+<h2>RESTful API</h2>
+<p>REST 是 Representational State Transfer的缩写，如果一个架构符合REST原则，就称它为RESTful架构。</p>
+<ul>
+<li>RESTful 架构可以充分的利用 HTTP 协议的各种功能，是 HTTP 协议的最佳实践</li>
+<li>RESTful API 是一种软件架构风格、设计风格，可以让软件更加清晰，更简洁，更有层次，可维护性更好</li>
+</ul>
+<h2>Flask RESTful API 实现</h2>
+<h3>1. 微信小程序数据转码</h3>
+<h4>原理</h4>
+<p>微信小程序调用摄像头获取视频帧，以数据流的形式存入<code>json</code>格式的接口，数据流采用<code>base64</code>算法编码。后端接收数据流后，需要先对<code>base64</code>格式的数据进行解码，再将解码得到的字符串转换为<code>numpy</code>列表，最后编码为<code>opencv</code>常用的<code>BGR</code>格式。</p>
+<h4>代码</h4>
+<pre class="hljs"><code><span class="hljs-keyword">def</span> <span class="hljs-title function_">base64_to_image</span>(<span class="hljs-params">base64_code</span>):
+    img_data = base64.b64decode(base64_code)
+    img_array = np.fromstring(img_data, np.uint8)
+    img = cv2.imdecode(img_array, cv2.COLOR_RGB2BGR)
+
+    <span class="hljs-keyword">return</span> img
+</code></pre>
+<h3>2. 上传图片 API</h3>
+<h4>原理</h4>
+<p>如果要将图片上传至服务端，需要判断图片格式是否符合要求，进而获取图片存储路径，上传图片。</p>
+<h4>代码</h4>
+<pre class="hljs"><code><span class="hljs-keyword">def</span> <span class="hljs-title function_">allowed_file</span>(<span class="hljs-params">filename</span>):
+    <span class="hljs-keyword">return</span> <span class="hljs-string">&#x27;.&#x27;</span> <span class="hljs-keyword">in</span> filename <span class="hljs-keyword">and</span> \
+           filename.rsplit(<span class="hljs-string">&#x27;.&#x27;</span>, <span class="hljs-number">1</span>)[<span class="hljs-number">1</span>] <span class="hljs-keyword">in</span> ALLOWED_EXTENSIONS
+
+    
+<span class="hljs-meta">@app.route(<span class="hljs-params"><span class="hljs-string">&#x27;/api/upload&#x27;</span>, methods=[<span class="hljs-string">&#x27;POST&#x27;</span>, <span class="hljs-string">&#x27;GET&#x27;</span>]</span>)</span>
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">upload</span>():
+    <span class="hljs-keyword">if</span> request.method == <span class="hljs-string">&#x27;POST&#x27;</span>:
+        pic = request.files.get(<span class="hljs-string">&#x27;pic&#x27;</span>)
+        base_path = os.path.dirname(__file__)
+
+        <span class="hljs-keyword">if</span> pic <span class="hljs-keyword">and</span> allowed_file(pic.filename):
+            filename = secure_filename(pic.filename)
+
+            upload_path = os.path.join(base_path, app.config[<span class="hljs-string">&#x27;UPLOAD_FOLDER&#x27;</span>], filename)
+            upload_path = os.path.abspath(upload_path)
+
+            pic.save(upload_path)
+            <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;{} Upload Success!&quot;</span>.<span class="hljs-built_in">format</span>(filename)
+    <span class="hljs-keyword">return</span> <span class="hljs-string">&#x27;&#x27;&#x27;
+        &lt;!DOCTYPE html&gt;
+        &lt;title&gt;Upload new File&lt;/title&gt;
+        &lt;h1&gt;Upload new File&lt;/h1&gt;
+        &lt;form action=&quot;&quot; method=post enctype=multipart/form-data&gt;
+          &lt;p&gt;&lt;input type=file name=file&gt;
+             &lt;input type=submit value=Upload&gt;&lt;/p&gt;
+        &lt;/form&gt;
+        &#x27;&#x27;&#x27;</span>
+</code></pre>
+<h3>3. 人脸特征提取 API</h3>
+<h4>原理</h4>
+<p>通过以上实现的MTCNN + FaceNet，先进行人脸对齐，再对人脸特征进行提取，获得128维特征向量。最终，将提取的128维人脸特征向量转化为<code>json</code>格式，返回至前端。</p>
+<h4>代码</h4>
+<pre class="hljs"><code><span class="hljs-meta">@app.route(<span class="hljs-params"><span class="hljs-string">&#x27;/api/base64/align&#x27;</span>, methods=[<span class="hljs-string">&#x27;POST&#x27;</span>, <span class="hljs-string">&#x27;GET&#x27;</span>]</span>)</span>
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">base64_align</span>():
+    <span class="hljs-keyword">if</span> request.method == <span class="hljs-string">&#x27;POST&#x27;</span>:
+        pic = request.data.get(<span class="hljs-string">&#x27;photo&#x27;</span>)
+        pic = base64_to_image(pic)
+        <span class="hljs-keyword">return</span> json.dump(align.img_128_vec(pic))
+    <span class="hljs-keyword">return</span> <span class="hljs-string">&#x27;&#x27;&#x27;
+        WeiXin Camera data get failed
+        &#x27;&#x27;&#x27;</span>
+</code></pre>
+</article>
+    <a class="back-link" href="./index.html">← 返回文章列表</a>
+  </main>
+  <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+</body>
+</html>

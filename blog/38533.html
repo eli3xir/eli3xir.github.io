@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qt5网络通信——TCP网络聊天室 · eli3xir</title>
+  <meta name="description" content="Qt5网络通信——TCP网络聊天室">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' font-weight='bold' text-anchor='middle' fill='%237c5cff'%3Ee3%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/blog.css">
+  
+</head>
+<body>
+  <header class="blog-nav">
+    <a class="nav-logo" href="../index.html">eli3xir<span class="accent">.</span></a>
+    <nav>
+      <a href="../index.html">主页</a>
+      <a href="./index.html">文章</a>
+      <a href="https://github.com/eli3xir" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+  
+  <main class="post">
+    <div class="post-head">
+      <h1>Qt5网络通信——TCP网络聊天室</h1>
+      <div class="post-meta">
+        <time>2021-06-15</time>
+        <span class="chip cat">技术</span><span class="chip cat">C++</span>
+        <span class="chip">Qt</span><span class="chip">TCP</span><span class="chip">Socket</span>
+      </div>
+    </div>
+    <article class="post-content"><h3>服务端程序构建</h3>
+<p>设计和前一个实验类似的服务端显示界面，如下图所示：</p>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210616020318.png" alt="avatar"></p>
+<p>实际上作为网络聊天室的服务端运行流程与前一个实验的 UDP 服务器管理方式类似，在 TCP 服务器内建立一个 <code>TcpServer</code> 类作为 TCP 服务器的类，在该类中包含一个 <code>TcpServerSocket</code> 链表容器，通过这个链表来管理当前与服务器建立连接的客户端，并与之进行数据交互。</p>
+<p>首先，创建 Qt 工程 <code>TcpServerDemo</code> 。</p>
+<p>在 <code>TcpServerDemo.pro</code> 工程文件中添加如下内容：</p>
+<pre class="hljs"><code>QT += network
+</code></pre>
+<p>首先添加界面控件的相关代码，打开主界面类的头文件 <code>mainwidget.h</code> ，添加如下代码：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">ifndef</span> MAINWIDGET_H</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> MAINWIDGET_H</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QWidget&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QListWidget&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QLabel&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QLineEdit&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QPushButton&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QGridLayout&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QTcpServer&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QTcpSocket&gt;</span></span>
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">mainWidget</span> : <span class="hljs-keyword">public</span> QWidget
+{
+    Q_OBJECT
+
+<span class="hljs-keyword">public</span>:
+    <span class="hljs-built_in">mainWidget</span>(QWidget *parent = <span class="hljs-number">0</span>);
+    ~<span class="hljs-built_in">mainWidget</span>();
+
+<span class="hljs-keyword">private</span>:
+    QListWidget *ContentListWidegt;
+    QLabel      *PortLabel;
+    QLineEdit   *PortLineEdit;
+    QPushButton *CreateBtn;
+    QPushButton *QuitBtn;
+    QPushButton *CloseBtn;
+    QGridLayout *mainLayout;
+
+};
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">// MAINWIDGET_H</span></span>
+</code></pre>
+<p>打开 <code>mainwidget.cpp</code> 源文件，添加如下代码：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;mainwidget.h&quot;</span></span>
+
+mainWidget::<span class="hljs-built_in">mainWidget</span>(QWidget *parent)
+    : <span class="hljs-built_in">QWidget</span>(parent)
+{
+    <span class="hljs-built_in">setWindowTitle</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;TCP Server&quot;</span>));
+
+    ContentListWidegt = <span class="hljs-keyword">new</span> QListWidget;
+    PortLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Port:&quot;</span>));
+    PortLineEdit = <span class="hljs-keyword">new</span> QLineEdit;
+    PortLineEdit-&gt;<span class="hljs-built_in">setInputMask</span>(<span class="hljs-string">&quot;9999&quot;</span>);
+    CreateBtn = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QPushButton</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Create Room&quot;</span>));
+    QuitBtn = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QPushButton</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Quit Room&quot;</span>));
+    CloseBtn = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QPushButton</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Close&quot;</span>));
+
+    <span class="hljs-comment">//布局</span>
+    mainLayout = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QGridLayout</span>(<span class="hljs-keyword">this</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(ContentListWidegt, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(PortLabel, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(PortLineEdit, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(CreateBtn, <span class="hljs-number">2</span>, <span class="hljs-number">0</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(QuitBtn, <span class="hljs-number">2</span>, <span class="hljs-number">1</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(CloseBtn, <span class="hljs-number">3</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>);
+
+}
+
+mainWidget::~<span class="hljs-built_in">mainWidget</span>()
+{
+}
+</code></pre>
+<p>构建运行项目。</p>
+<p>界面设计好后，就需要向项目中添加 TCP 服务器相关的类文件，添加新类文件，在 <code>Base class</code> 后面设置继承的基类名称为 <code>QTcpSocket</code> ，勾选 <code>Include Object</code> 复选框，在 <code>Class name</code> 后面的文本框输入新建的新类名称 <code>TcpServerSocket</code> 。</p>
+<p>添加新类文件后，打开新添加的头文件 <code>tcpserversocket.h</code> ，添加如下代码：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">ifndef</span> TCPSERVERSOCKET_H</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> TCPSERVERSOCKET_H</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QObject&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QTcpSocket&gt;</span></span>
+
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">TcpServerSocket</span> : <span class="hljs-keyword">public</span> QTcpSocket
+{
+    Q_OBJECT
+<span class="hljs-keyword">public</span>:
+    <span class="hljs-built_in">TcpServerSocket</span>(QObject *parent);
+
+signals:
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">updateServer</span><span class="hljs-params">(QString, <span class="hljs-type">int</span>)</span></span>;
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">disconnected</span><span class="hljs-params">(<span class="hljs-type">int</span>)</span></span>;
+
+<span class="hljs-keyword">protected</span> slots:
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">dataReceived</span><span class="hljs-params">()</span></span>;
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">slotDisconnected</span><span class="hljs-params">()</span></span>;
+
+
+};
+
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">// TCPSERVERSOCKET_H</span></span>
+</code></pre>
+<p>打开类源文件 <code>tcpserversocket.cpp</code> ，添加代码如下：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;tcpserversocket.h&quot;</span></span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> RECVLENGTH    1024</span>
+
+TcpServerSocket::<span class="hljs-built_in">TcpServerSocket</span>(QObject *parent)
+{
+    <span class="hljs-built_in">connect</span>(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">readyRead</span>()), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">dataReceived</span>()));
+    <span class="hljs-built_in">connect</span>(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">disconnect</span>()), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">slotDisconnected</span>()));
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">TcpServerSocket::dataReceived</span><span class="hljs-params">()</span>
+</span>{
+    <span class="hljs-keyword">while</span>(<span class="hljs-built_in">bytesAvailable</span>() &gt; <span class="hljs-number">0</span>)
+    {
+        <span class="hljs-type">int</span> length = <span class="hljs-built_in">bytesAvailable</span>();
+        <span class="hljs-type">char</span> buf[RECVLENGTH];
+        <span class="hljs-built_in">read</span>(buf, RECVLENGTH);
+        QString msg = <span class="hljs-built_in">QString</span>(buf);
+        <span class="hljs-function">emit <span class="hljs-title">updateServer</span><span class="hljs-params">(msg, length)</span></span>;
+    }
+}
+
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">TcpServerSocket::slotDisconnected</span><span class="hljs-params">()</span>
+</span>{
+    <span class="hljs-function">emit <span class="hljs-title">disconnected</span><span class="hljs-params">(<span class="hljs-keyword">this</span>-&gt;socketDescriptor())</span></span>;
+}
+</code></pre>
+<p>上面构建的这个类作为最基本的客户端连接类对象使用，接下来需要添加服务器管理设计类，使用之前类似的方式进行类文件添加，添加类名 <code>TcpServer</code> 继承基类 <code>QTcpServer</code> ，添加类后，打开添加后的类文件 <code>tcpserver.h</code> ，添加代码如下：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">ifndef</span> TCPSERVER_H</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> TCPSERVER_H</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QObject&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QTcpServer&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QList&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;tcpserversocket.h&quot;</span></span>
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">TcpServer</span> : <span class="hljs-keyword">public</span> QTcpServer
+{
+    Q_OBJECT
+<span class="hljs-keyword">public</span>:
+    <span class="hljs-built_in">TcpServer</span>(QObject *parent, <span class="hljs-type">int</span> port);
+    QList&lt;TcpServerSocket *&gt; tcpServerSocketList;
+
+signals:
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">updateServer</span><span class="hljs-params">(QString, <span class="hljs-type">int</span>)</span></span>;
+<span class="hljs-keyword">public</span> slots:
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">updateClients</span><span class="hljs-params">(QString, <span class="hljs-type">int</span>)</span></span>;
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">slotDistconnected</span><span class="hljs-params">(<span class="hljs-type">int</span>)</span></span>;
+
+<span class="hljs-keyword">protected</span>:
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">incomingConnection</span><span class="hljs-params">(qintptr handle)</span> <span class="hljs-keyword">override</span></span>;
+
+};
+
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">// TCPSERVER_H</span></span>
+</code></pre>
+<p>在向源文件 <code>tcpserver.cpp</code> 中添加以下代码：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;tcpserver.h&quot;</span></span>
+
+TcpServer::<span class="hljs-built_in">TcpServer</span>(QObject *parent, <span class="hljs-type">int</span> port): <span class="hljs-built_in">QTcpServer</span>(parent)
+{
+    <span class="hljs-built_in">listen</span>(QHostAddress::Any, port);
+}
+
+
+<span class="hljs-comment">//将连接成功的客户端保存下来</span>
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">TcpServer::incomingConnection</span><span class="hljs-params">(qintptr handle)</span>
+</span>{
+    TcpServerSocket *tcpserversocket = <span class="hljs-keyword">new</span> <span class="hljs-built_in">TcpServerSocket</span>(<span class="hljs-keyword">this</span>);
+
+    <span class="hljs-built_in">connect</span>(tcpserversocket, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">updateServer</span>(QString, <span class="hljs-type">int</span>)), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">updateClients</span>(QString, <span class="hljs-type">int</span>)));
+    <span class="hljs-built_in">connect</span>(tcpserversocket, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">disconnected</span>(<span class="hljs-type">int</span>)), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">slotDistconnected</span>(<span class="hljs-type">int</span>)));
+
+    tcpserversocket-&gt;<span class="hljs-built_in">setSocketDescriptor</span>(handle);
+    tcpServerSocketList.<span class="hljs-built_in">append</span>(tcpserversocket);
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">TcpServer::updateClients</span><span class="hljs-params">(QString msg, <span class="hljs-type">int</span> length)</span>
+</span>{
+    <span class="hljs-function">emit <span class="hljs-title">updateServer</span><span class="hljs-params">(msg, length)</span></span>;
+    <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; tcpServerSocketList.<span class="hljs-built_in">count</span>(); i++)
+    {
+        TcpServerSocket *item = tcpServerSocketList.<span class="hljs-built_in">at</span>(i);
+        <span class="hljs-keyword">if</span>(item-&gt;<span class="hljs-built_in">write</span>(msg.<span class="hljs-built_in">toLatin1</span>(), length) != length)
+        {
+            <span class="hljs-keyword">continue</span>;
+        }
+    }
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">TcpServer::slotDistconnected</span><span class="hljs-params">(<span class="hljs-type">int</span> descriptor)</span>
+</span>{
+    <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; tcpServerSocketList.<span class="hljs-built_in">count</span>(); i++)
+    {
+        TcpServerSocket *item = tcpServerSocketList.<span class="hljs-built_in">at</span>(i);
+        <span class="hljs-keyword">if</span>(item-&gt;<span class="hljs-built_in">socketDescriptor</span>() == descriptor)
+        {
+            tcpServerSocketList.<span class="hljs-built_in">removeAt</span>(i);
+            <span class="hljs-keyword">return</span> ;
+        }
+    }
+    <span class="hljs-keyword">return</span> ;
+}
+</code></pre>
+<p>在设计完服务管理类后，向主界面类中添加对应的成员变量和相关事件关联，打开 <code>mainwidget.h</code> 头文件，向类中添加如下代码：</p>
+<pre class="hljs"><code>...
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;tcpserver.h&quot;</span></span>
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">mainWidget</span> : <span class="hljs-keyword">public</span> QWidget
+{
+    Q_OBJECT
+    ...
+<span class="hljs-keyword">public</span> slots:
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">slotCreateServer</span><span class="hljs-params">()</span></span>;
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">slotQuit</span><span class="hljs-params">()</span></span>;
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">slotClose</span><span class="hljs-params">()</span></span>;
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">updateServer</span><span class="hljs-params">(QString, <span class="hljs-type">int</span>)</span></span>;
+
+<span class="hljs-keyword">private</span>:
+    ...
+    <span class="hljs-type">int</span>         port;
+    TcpServer   *server;
+
+};
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">// MAINWIDGET_H</span></span>
+</code></pre>
+<p>然后在源文件 <code>mainwidget.cpp</code> 中添加对应的变量初始化和函数实现，具体如下：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;mainwidget.h&quot;</span></span>
+
+mainWidget::<span class="hljs-built_in">mainWidget</span>(QWidget *parent)
+    : <span class="hljs-built_in">QWidget</span>(parent)
+{
+    <span class="hljs-built_in">setWindowTitle</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;TCP Server&quot;</span>));
+
+    ContentListWidegt = <span class="hljs-keyword">new</span> QListWidget;
+    PortLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Port:&quot;</span>));
+    PortLineEdit = <span class="hljs-keyword">new</span> QLineEdit;
+    PortLineEdit-&gt;<span class="hljs-built_in">setInputMask</span>(<span class="hljs-string">&quot;9999&quot;</span>);
+    CreateBtn = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QPushButton</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Create Room&quot;</span>));
+    QuitBtn = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QPushButton</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Quit Room&quot;</span>));
+    CloseBtn = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QPushButton</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Close&quot;</span>));
+
+    <span class="hljs-comment">//布局</span>
+    mainLayout = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QGridLayout</span>(<span class="hljs-keyword">this</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(ContentListWidegt, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(PortLabel, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(PortLineEdit, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(CreateBtn, <span class="hljs-number">2</span>, <span class="hljs-number">0</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(QuitBtn, <span class="hljs-number">2</span>, <span class="hljs-number">1</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(CloseBtn, <span class="hljs-number">3</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>);
+
+    port = <span class="hljs-number">8888</span>;
+    PortLineEdit-&gt;<span class="hljs-built_in">setText</span>(QString::<span class="hljs-built_in">number</span>(port));
+    <span class="hljs-built_in">connect</span>(CreateBtn, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">clicked</span>()), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">slotCreateServer</span>()));
+    <span class="hljs-built_in">connect</span>(QuitBtn, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">clicked</span>()), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">slotQuit</span>()));
+    <span class="hljs-built_in">connect</span>(CloseBtn, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">clicked</span>()), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">slotClose</span>()));
+    CreateBtn-&gt;<span class="hljs-built_in">setEnabled</span>(<span class="hljs-literal">true</span>);
+    QuitBtn-&gt;<span class="hljs-built_in">setEnabled</span>(<span class="hljs-literal">false</span>);
+    CloseBtn-&gt;<span class="hljs-built_in">setEnabled</span>(<span class="hljs-literal">true</span>);
+}
+
+mainWidget::~<span class="hljs-built_in">mainWidget</span>()
+{
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mainWidget::slotCreateServer</span><span class="hljs-params">()</span>
+</span>{
+    server = <span class="hljs-keyword">new</span> <span class="hljs-built_in">TcpServer</span>(<span class="hljs-keyword">this</span>, port);
+    <span class="hljs-built_in">connect</span>(server, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">updateServer</span>(QString, <span class="hljs-type">int</span>)), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">updateServer</span>(QString, <span class="hljs-type">int</span>)));
+    CreateBtn-&gt;<span class="hljs-built_in">setEnabled</span>(<span class="hljs-literal">false</span>);
+    QuitBtn-&gt;<span class="hljs-built_in">setEnabled</span>(<span class="hljs-literal">true</span>);
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mainWidget::updateServer</span><span class="hljs-params">(QString msg, <span class="hljs-type">int</span> length)</span>
+</span>{
+    ContentListWidegt-&gt;<span class="hljs-built_in">addItem</span>(msg.<span class="hljs-built_in">left</span>(length));
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mainWidget::slotQuit</span><span class="hljs-params">()</span>
+</span>{
+    server-&gt;<span class="hljs-built_in">close</span>();
+    CreateBtn-&gt;<span class="hljs-built_in">setEnabled</span>(<span class="hljs-literal">true</span>);
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mainWidget::slotClose</span><span class="hljs-params">()</span>
+</span>{
+    <span class="hljs-built_in">close</span>();
+}
+</code></pre>
+<p>若编译时出现warning，可以在<code>.pro</code>文件中添加：</p>
+<pre class="hljs"><code>CONFIG += c+<span class="hljs-number">+11</span>
+</code></pre>
+<h3>构建客户端程序</h3>
+<p>设计与之对应的客户端显示界面，如下图所示：</p>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210616022713.png" alt="avatar"></p>
+<p>首先，创建 Qt 工程 <code>TcpClientDemo</code>。</p>
+<p>同样，在项目文件 <code>TcpClientDemo.pro</code> 中添加如下内容：</p>
+<pre class="hljs"><code>QT += network
+</code></pre>
+<p>首先添加界面控件的相关代码，打开主界面类的头文件 <code>mainwidget.h</code> ，添加如下代码：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">ifndef</span> MAINWIDGET_H</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> MAINWIDGET_H</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QWidget&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QListWidget&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QPushButton&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QLineEdit&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QLabel&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QGridLayout&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QHostAddress&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QTcpSocket&gt;</span></span>
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">mainWidget</span> : <span class="hljs-keyword">public</span> QWidget
+{
+    Q_OBJECT
+
+<span class="hljs-keyword">public</span>:
+    <span class="hljs-built_in">mainWidget</span>(QWidget *parent = <span class="hljs-number">0</span>);
+    ~<span class="hljs-built_in">mainWidget</span>();
+
+<span class="hljs-keyword">public</span> slots:
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">slotEnter</span><span class="hljs-params">()</span></span>;
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">slotConnected</span><span class="hljs-params">()</span></span>;
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">slotDisconnected</span><span class="hljs-params">()</span></span>;
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">dataReceived</span><span class="hljs-params">()</span></span>;
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">slotSend</span><span class="hljs-params">()</span></span>;
+
+<span class="hljs-keyword">private</span>:
+    QListWidget *contentListWidget;
+    QLineEdit   *sendLineEdit;
+    QPushButton *sendBtn;
+    QLabel      *userNameLabel;
+    QLineEdit   *userNameLineEdit;
+    QLabel      *serverIpLabel;
+    QLineEdit   *serverIpLineEdit;
+    QLabel      *portLabel;
+    QLineEdit   *portLineEdit;
+    QPushButton *enterBtn;
+    QGridLayout *mainLayout;
+
+    <span class="hljs-type">bool</span>        status;
+    <span class="hljs-type">int</span>         port;
+    QHostAddress    *serverIp;
+    QString         userName;
+    QTcpSocket      *tcpsocket;
+};
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">// MAINWIDGET_H</span></span>
+</code></pre>
+<p>打开 <code>mainwidget.cpp</code> 源文件，添加如下代码：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;mainwidget.h&quot;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QMessageBox&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QHostInfo&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QDebug&gt;</span></span>
+
+mainWidget::<span class="hljs-built_in">mainWidget</span>(QWidget *parent)
+    : <span class="hljs-built_in">QWidget</span>(parent)
+{
+    <span class="hljs-built_in">setWindowTitle</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Tcp Client&quot;</span>));
+    contentListWidget = <span class="hljs-keyword">new</span> QListWidget;
+    sendLineEdit = <span class="hljs-keyword">new</span> QLineEdit;
+    sendBtn = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QPushButton</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Send&quot;</span>));
+    userNameLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Name:&quot;</span>));
+    userNameLineEdit = <span class="hljs-keyword">new</span> QLineEdit;
+    serverIpLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Server Ip:&quot;</span>));
+    serverIpLineEdit = <span class="hljs-keyword">new</span> QLineEdit;
+    portLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Port:&quot;</span>));
+    portLineEdit = <span class="hljs-keyword">new</span> QLineEdit;
+    portLineEdit-&gt;<span class="hljs-built_in">setInputMask</span>(<span class="hljs-string">&quot;9999&quot;</span>);
+    enterBtn = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QPushButton</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Enter&quot;</span>));
+
+    <span class="hljs-comment">//总体布局</span>
+    mainLayout = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QGridLayout</span>(<span class="hljs-keyword">this</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(contentListWidget, <span class="hljs-number">0</span> , <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(sendLineEdit, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(sendBtn, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(userNameLabel, <span class="hljs-number">2</span>, <span class="hljs-number">0</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(userNameLineEdit, <span class="hljs-number">2</span>, <span class="hljs-number">1</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(serverIpLabel, <span class="hljs-number">3</span>, <span class="hljs-number">0</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(serverIpLineEdit, <span class="hljs-number">3</span>, <span class="hljs-number">1</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(portLabel, <span class="hljs-number">4</span>, <span class="hljs-number">0</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(portLineEdit, <span class="hljs-number">4</span>, <span class="hljs-number">1</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(enterBtn, <span class="hljs-number">5</span>, <span class="hljs-number">0</span>);
+
+    status = <span class="hljs-literal">false</span>;
+    port = <span class="hljs-number">8010</span>;
+    portLineEdit-&gt;<span class="hljs-built_in">setText</span>(QString::<span class="hljs-built_in">number</span>(port));
+    serverIp = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QHostAddress</span>();
+
+    <span class="hljs-built_in">connect</span>(enterBtn, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">clicked</span>()), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">slotEnter</span>()));
+    <span class="hljs-built_in">connect</span>(sendBtn, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">clicked</span>()), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">slotSend</span>()));
+    sendBtn-&gt;<span class="hljs-built_in">setEnabled</span>(<span class="hljs-literal">false</span>);
+
+}
+
+mainWidget::~<span class="hljs-built_in">mainWidget</span>()
+{
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mainWidget::slotEnter</span><span class="hljs-params">()</span>
+</span>{
+    <span class="hljs-keyword">if</span>(!status)
+    {
+        <span class="hljs-comment">//完成输入合法性检验</span>
+        QString ip = serverIpLineEdit-&gt;<span class="hljs-built_in">text</span>();
+        <span class="hljs-keyword">if</span>(!serverIp-&gt;<span class="hljs-built_in">setAddress</span>(ip))
+        {
+            QMessageBox::<span class="hljs-built_in">information</span>(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;error&quot;</span>), <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Server ip address error!&quot;</span>));
+            <span class="hljs-keyword">return</span>;
+        }
+        <span class="hljs-keyword">if</span>(userNameLineEdit-&gt;<span class="hljs-built_in">text</span>() == <span class="hljs-string">&quot;&quot;</span>)
+        {
+            QMessageBox::<span class="hljs-built_in">information</span>(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;error&quot;</span>), <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;User name error!&quot;</span>));
+            <span class="hljs-keyword">return</span>;
+        }
+        <span class="hljs-comment">//获取端口</span>
+        port = portLineEdit-&gt;<span class="hljs-built_in">text</span>().<span class="hljs-built_in">toInt</span>();
+        userName = userNameLineEdit-&gt;<span class="hljs-built_in">text</span>();
+
+        <span class="hljs-comment">//创建一个 QTcpSocket 对象，将信号和槽关联起来</span>
+        tcpsocket = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QTcpSocket</span>(<span class="hljs-keyword">this</span>);
+        <span class="hljs-built_in">connect</span>(tcpsocket, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">connected</span>()), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">slotConnected</span>()));
+        <span class="hljs-built_in">connect</span>(tcpsocket, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">disconnected</span>()), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">slotDisconnected</span>()));
+        <span class="hljs-built_in">connect</span>(tcpsocket, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">readyRead</span>()), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">dataReceived</span>()));
+        tcpsocket-&gt;<span class="hljs-built_in">connectToHost</span>(*serverIp, port);
+        status = <span class="hljs-literal">true</span>;
+    }
+    <span class="hljs-keyword">else</span> {
+        <span class="hljs-type">int</span> length = <span class="hljs-number">0</span>;
+        QString msg = userName + <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;: Leave Chat Room!&quot;</span>);
+        <span class="hljs-keyword">if</span>((length = tcpsocket-&gt;<span class="hljs-built_in">write</span>(msg.<span class="hljs-built_in">toLatin1</span>(), msg.<span class="hljs-built_in">length</span>())) != msg.<span class="hljs-built_in">length</span>())
+        {
+            <span class="hljs-built_in">qDebug</span>() &lt;&lt; <span class="hljs-string">&quot;length error!&quot;</span>;
+            <span class="hljs-keyword">return</span>;
+        }
+        tcpsocket-&gt;<span class="hljs-built_in">disconnectFromHost</span>();
+        status = <span class="hljs-literal">false</span>;
+    }
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mainWidget::slotConnected</span><span class="hljs-params">()</span>
+</span>{
+    sendBtn-&gt;<span class="hljs-built_in">setEnabled</span>(<span class="hljs-literal">true</span>);
+    enterBtn-&gt;<span class="hljs-built_in">setText</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Quit&quot;</span>));
+    <span class="hljs-type">int</span> length = <span class="hljs-number">0</span>;
+    QString msg = userName + <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;: Enter Chat Room!&quot;</span>);
+    <span class="hljs-keyword">if</span>((length = tcpsocket-&gt;<span class="hljs-built_in">write</span>(msg.<span class="hljs-built_in">toLatin1</span>(), msg.<span class="hljs-built_in">length</span>())) != msg.<span class="hljs-built_in">length</span>())
+    {
+        <span class="hljs-comment">//发送信息不完全，不作处理</span>
+        <span class="hljs-keyword">return</span>;
+    }
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mainWidget::slotSend</span><span class="hljs-params">()</span>
+</span>{
+    <span class="hljs-keyword">if</span>(sendLineEdit-&gt;<span class="hljs-built_in">text</span>() == <span class="hljs-string">&quot;&quot;</span>)
+    {
+        <span class="hljs-comment">//发送消息为空</span>
+        <span class="hljs-keyword">return</span> ;
+    }
+    QString msg = userName + <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot; : &quot;</span>) + sendLineEdit-&gt;<span class="hljs-built_in">text</span>();
+    tcpsocket-&gt;<span class="hljs-built_in">write</span>(msg.<span class="hljs-built_in">toLatin1</span>(), msg.<span class="hljs-built_in">length</span>());
+    sendLineEdit-&gt;<span class="hljs-built_in">clear</span>();
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mainWidget::slotDisconnected</span><span class="hljs-params">()</span>
+</span>{
+    sendBtn-&gt;<span class="hljs-built_in">setEnabled</span>(<span class="hljs-literal">false</span>);
+    enterBtn-&gt;<span class="hljs-built_in">setText</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Enter Chat Room&quot;</span>));
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mainWidget::dataReceived</span><span class="hljs-params">()</span>
+</span>{
+    <span class="hljs-comment">//处理接收数据</span>
+    <span class="hljs-keyword">while</span> (tcpsocket-&gt;<span class="hljs-built_in">bytesAvailable</span>() &gt; <span class="hljs-number">0</span>) {
+        <span class="hljs-comment">//有效数据</span>
+        QByteArray datagram;
+        datagram.<span class="hljs-built_in">resize</span>(tcpsocket-&gt;<span class="hljs-built_in">bytesAvailable</span>());
+        tcpsocket-&gt;<span class="hljs-built_in">read</span>(datagram.<span class="hljs-built_in">data</span>(), datagram.<span class="hljs-built_in">size</span>());
+        QString msg = datagram.<span class="hljs-built_in">data</span>();
+        contentListWidget-&gt;<span class="hljs-built_in">addItem</span>(msg.<span class="hljs-built_in">left</span>(datagram.<span class="hljs-built_in">size</span>()));
+    }
+}
+</code></pre>
+<p>构建运行项目。</p>
+<h3>服务端和客户端同时执行</h3>
+<p>在 TCP 服务端和 TCP 客户端程序都构建完成后，进入构建完成后的可执行文件目录下。</p>
+<p>首先运行 TCP 服务端程序，在终端界面中进入可执行目录，并执行。</p>
+<p>此时，TCP 服务器已经在运行了，以同样的方式启动 TCP 客户端程序。需要注意，网络聊天室就是多人的聊天应用，所以需要启动多个客户端程序来进行试验，在执行命令后使用 <code>&amp;</code> 将程序放入后台运行。</p>
+<p>接下来，将三个客户端分别填写需要的信息，因为是本机，所以通信地址统一使用本地环回地址 <code>127.0.0.1</code> ，服务端监听端口为 <code>8888</code> ，具体如下（需要先点击服务端 Server 中的 <code>Create Room</code> 按钮创建房间，然后客户端 Client 才能加入房间）。</p>
+<p>可以看到，已经能够正式使用聊天室的功能了，多个客户端之间都可以同时发送消息并且接收对方的消息了。</p>
+</article>
+    <a class="back-link" href="./index.html">← 返回文章列表</a>
+  </main>
+  <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+</body>
+</html>

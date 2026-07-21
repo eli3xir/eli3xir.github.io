@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C++聊天室项目：多线程+MySQL · eli3xir</title>
+  <meta name="description" content="项目过程实录：用C++语言实现的聊天室，主要在linux环境下进行测试，采用多线程并发，利用MySQL数据库对用户信息进行存储。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' font-weight='bold' text-anchor='middle' fill='%237c5cff'%3Ee3%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/blog.css">
+  
+</head>
+<body>
+  <header class="blog-nav">
+    <a class="nav-logo" href="../index.html">eli3xir<span class="accent">.</span></a>
+    <nav>
+      <a href="../index.html">主页</a>
+      <a href="./index.html">文章</a>
+      <a href="https://github.com/eli3xir" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+  
+  <main class="post">
+    <div class="post-head">
+      <h1>C++聊天室项目：多线程+MySQL</h1>
+      <div class="post-meta">
+        <time>2021-06-24</time>
+        <span class="chip cat">技术</span><span class="chip cat">C++</span>
+        <span class="chip">C++</span><span class="chip">TCP/IP</span><span class="chip">TCP</span><span class="chip">Socket</span><span class="chip">Linux</span><span class="chip">多线程</span><span class="chip">MySQL</span>
+      </div>
+    </div>
+    <article class="post-content"><h3>服务器和客户端进行简单的TCP通信</h3>
+<ul>
+<li>没学过计算机网络，或想复习传输层基本概念，请看[附录一](#附录一 传输层的基本概念)</li>
+<li>没有接触过 Socket 编程，或想复习 TCP 网络编程，请看[附录二](#附录二 用C++进行TCP套接字网络编程 )</li>
+</ul>
+<p>编写两个程序：一个服务器、一个客户端，让用户能在客户端不断输入信息并发送到服务器终端上显示。</p>
+<h4>服务器程序编写</h4>
+<p>新建 <code>server.cpp</code> 文件，在其中写服务器的代码：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/types.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/socket.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;netinet/in.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;arpa/inet.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdlib.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;fcntl.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/shm.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span>
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;
+
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span>
+</span>{
+    <span class="hljs-comment">//定义sockfd</span>
+    <span class="hljs-type">int</span> server_sockfd = <span class="hljs-built_in">socket</span>(AF_INET,SOCK_STREAM, <span class="hljs-number">0</span>);
+
+    <span class="hljs-comment">//定义sockaddr_in</span>
+    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">sockaddr_in</span> server_sockaddr;
+    server_sockaddr.sin_family = AF_INET;<span class="hljs-comment">//TCP/IP协议族</span>
+    server_sockaddr.sin_port = <span class="hljs-built_in">htons</span>(<span class="hljs-number">8023</span>);<span class="hljs-comment">//端口号</span>
+    server_sockaddr.sin_addr.s_addr = <span class="hljs-built_in">inet_addr</span>(<span class="hljs-string">&quot;127.0.0.1&quot;</span>);<span class="hljs-comment">//ip地址，127.0.0.1是环回地址，相当于本机ip</span>
+
+    <span class="hljs-comment">//bind，成功返回0，出错返回-1</span>
+    <span class="hljs-keyword">if</span>(<span class="hljs-built_in">bind</span>(server_sockfd,(<span class="hljs-keyword">struct</span> sockaddr *)&amp;server_sockaddr,<span class="hljs-built_in">sizeof</span>(server_sockaddr))==<span class="hljs-number">-1</span>)
+    {
+        <span class="hljs-built_in">perror</span>(<span class="hljs-string">&quot;bind&quot;</span>);<span class="hljs-comment">//输出错误原因</span>
+        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<span class="hljs-comment">//结束程序</span>
+    }
+
+    <span class="hljs-comment">//listen，成功返回0，出错返回-1</span>
+    <span class="hljs-keyword">if</span>(<span class="hljs-built_in">listen</span>(server_sockfd,<span class="hljs-number">20</span>) == <span class="hljs-number">-1</span>)
+    {
+        <span class="hljs-built_in">perror</span>(<span class="hljs-string">&quot;listen&quot;</span>);<span class="hljs-comment">//输出错误原因</span>
+        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<span class="hljs-comment">//结束程序</span>
+    }
+
+    <span class="hljs-comment">//客户端套接字</span>
+    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">sockaddr_in</span> client_addr;
+    <span class="hljs-type">socklen_t</span> length = <span class="hljs-built_in">sizeof</span>(client_addr);
+
+    <span class="hljs-comment">//成功返回非负描述字，出错返回-1</span>
+    <span class="hljs-type">int</span> conn = <span class="hljs-built_in">accept</span>(server_sockfd, (<span class="hljs-keyword">struct</span> sockaddr*)&amp;client_addr, &amp;length);
+    <span class="hljs-keyword">if</span>(conn&lt;<span class="hljs-number">0</span>)
+    {
+        <span class="hljs-built_in">perror</span>(<span class="hljs-string">&quot;connect&quot;</span>);<span class="hljs-comment">//输出错误原因</span>
+        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<span class="hljs-comment">//结束程序</span>
+    }
+    cout&lt;&lt;<span class="hljs-string">&quot;客户端成功连接\n&quot;</span>;
+
+    <span class="hljs-comment">//接收缓冲区</span>
+    <span class="hljs-type">char</span> buffer[<span class="hljs-number">1000</span>];
+
+    <span class="hljs-comment">//不断接收数据</span>
+    <span class="hljs-keyword">while</span>(<span class="hljs-number">1</span>)
+    {
+        <span class="hljs-built_in">memset</span>(buffer,<span class="hljs-number">0</span>,<span class="hljs-built_in">sizeof</span>(buffer));
+        <span class="hljs-type">int</span> len = <span class="hljs-built_in">recv</span>(conn, buffer, <span class="hljs-built_in">sizeof</span>(buffer),<span class="hljs-number">0</span>);
+        <span class="hljs-comment">//客户端发送exit或者异常结束时，退出</span>
+        <span class="hljs-keyword">if</span>(<span class="hljs-built_in">strcmp</span>(buffer,<span class="hljs-string">&quot;exit&quot;</span>)==<span class="hljs-number">0</span> || len&lt;=<span class="hljs-number">0</span>)
+            <span class="hljs-keyword">break</span>;
+        cout&lt;&lt;<span class="hljs-string">&quot;收到客户端信息：&quot;</span>&lt;&lt;buffer&lt;&lt;endl;
+    }
+    <span class="hljs-built_in">close</span>(conn);
+    <span class="hljs-built_in">close</span>(server_sockfd);
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+</code></pre>
+<h4>客户端程序编写</h4>
+<p>新建创建 <code>client.cpp</code> 文件，在其中写客户端的代码：</p>
+<p>client.cpp:</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/types.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/socket.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;netinet/in.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;arpa/inet.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdlib.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;fcntl.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/shm.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span>
+<span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;
+
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span>
+</span>{
+    <span class="hljs-comment">//定义sockfd</span>
+    <span class="hljs-type">int</span> sock_cli = <span class="hljs-built_in">socket</span>(AF_INET,SOCK_STREAM, <span class="hljs-number">0</span>);
+
+    <span class="hljs-comment">//定义sockaddr_in</span>
+    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">sockaddr_in</span> servaddr;
+    <span class="hljs-built_in">memset</span>(&amp;servaddr, <span class="hljs-number">0</span>, <span class="hljs-built_in">sizeof</span>(servaddr));
+    servaddr.sin_family = AF_INET;<span class="hljs-comment">//TCP/IP协议族</span>
+    servaddr.sin_port = <span class="hljs-built_in">htons</span>(<span class="hljs-number">8023</span>);  <span class="hljs-comment">//服务器端口</span>
+    servaddr.sin_addr.s_addr = <span class="hljs-built_in">inet_addr</span>(<span class="hljs-string">&quot;127.0.0.1&quot;</span>);  <span class="hljs-comment">//服务器ip</span>
+
+    <span class="hljs-comment">//连接服务器，成功返回0，错误返回-1</span>
+    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">connect</span>(sock_cli, (<span class="hljs-keyword">struct</span> sockaddr *)&amp;servaddr, <span class="hljs-built_in">sizeof</span>(servaddr)) &lt; <span class="hljs-number">0</span>)
+    {
+        <span class="hljs-built_in">perror</span>(<span class="hljs-string">&quot;connect&quot;</span>);
+        <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);
+    }
+    cout&lt;&lt;<span class="hljs-string">&quot;连接服务器成功！\n&quot;</span>;
+
+    <span class="hljs-type">char</span> sendbuf[<span class="hljs-number">100</span>];
+    <span class="hljs-type">char</span> recvbuf[<span class="hljs-number">100</span>];
+    <span class="hljs-keyword">while</span> (<span class="hljs-number">1</span>)
+    {
+        <span class="hljs-built_in">memset</span>(sendbuf, <span class="hljs-number">0</span>, <span class="hljs-built_in">sizeof</span>(sendbuf));
+        cin&gt;&gt;sendbuf;
+        <span class="hljs-built_in">send</span>(sock_cli, sendbuf, <span class="hljs-built_in">strlen</span>(sendbuf),<span class="hljs-number">0</span>); <span class="hljs-comment">//发送</span>
+        <span class="hljs-keyword">if</span>(<span class="hljs-built_in">strcmp</span>(sendbuf,<span class="hljs-string">&quot;exit&quot;</span>)==<span class="hljs-number">0</span>)
+            <span class="hljs-keyword">break</span>;
+    }
+    <span class="hljs-built_in">close</span>(sock_cli);
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+</code></pre>
+<h4>测试结果</h4>
+<p>接下来编译这两个 cpp 文件，如下：</p>
+<pre class="hljs"><code>g++ -o server server.cpp
+g++ -o client client.cpp
+</code></pre>
+<hr>
+<h3>附录一 传输层的基本概念</h3>
+<blockquote>
+<p>在 TCP/IP 四层参考模型中，从上往下有四种层次：应用层、传输层、网络层、网络接口层，应用层包括 HTTP、FTP、DNS 等协议，而传输层包括 TCP、UDP 两种协议，网络层则包含 IP、ARP 等协议，网络接口层较为底层，一般不是我们研究的对象。其中，传输层是我们在编程开发中较为重要的一层，需要对其中的两种协议尤其是 TCP 理解透彻。</p>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210625064944.jpeg" alt="图片描述"></p>
+<h4>传输层的作用</h4>
+<p>传输层的根本目的是在网络层提供的数据通信服务基础上，实现主机的进程间通信的可靠服务。</p>
+<p>有以下两个要点：为位于两个主机内部的两个应用进程之间提供通信服务、提供可靠的通信服务。</p>
+<h4>套接字</h4>
+<p>“套接字”表示一个 IP 地址与对应的一个端口号。例如，一个 IP 地址为 172.31.75.8 的客户端使用 8050 端口号，那么标识客户端的套接字为“172.31.75.8:8050”。</p>
+<h4>端口号</h4>
+<p>端口号为 0-65535 之间的整数，有 3 种类型：熟知端口号、注册端口号、临时端口号。</p>
+<p>熟知端口号：给每种服务器分配确定的全局端口号。每个用户进程都知道相应的服务器进程的熟知端口号，范围为 0-1023，它是统一分配和控制的。</p>
+<p>注册端口号：在 IANA 注册的端口号，数值范围为 1024-49151。</p>
+<p>临时端口号：客户端程序使用临时端口号，它是运行在客户端上的 TCP/IP 软件随机选取的，范围为 49152-65535。</p>
+<p>我们平时进行网络编程时服务器最好使用注册端口号，而客户端的端口号则是系统随机分配的，即临时端口号。</p>
+<h4>UDP 用户数据报协议</h4>
+<p>UDP 协议主要有以下一些特点：</p>
+<ul>
+<li>无连接的：发送数据之前不需要建立连接，因此减少了开销和发送数据之前的时延。</li>
+<li>尽最大努力交付：即不保证可靠交付，因此主机不需要维持复杂的连接状态表。</li>
+<li>面向报文的：UDP 对应用层传递下来的报文，既不合并，也不拆分，而是保留这些报文的边界。UDP 对于应用程序提交的报文，添加头部后就向下提交给网络层。</li>
+<li>没有拥塞控制：网络出现的拥塞时，UDP 不会使源主机的发送速率降低。这对某些实时应用是很重要的，很适合多媒体通信的要求。</li>
+<li>支持多对多的交互通信</li>
+</ul>
+<p>UDP 的适用场景：</p>
+<ul>
+<li>适用于少量（几百个字节）的数据。</li>
+<li>对性能的要求高于对数据完整性的要求，如视频播放、P2P、DNS 等。</li>
+<li>需要“简短快捷”的数据交换 简单的请求与应答报文交互，如在线游戏。</li>
+<li>需要多播和广播的应用，源主机以恒定速率发送报文，拥塞发生时允许丢弃部分报文，如本地广播、隧道 VPN。</li>
+</ul>
+<h4>TCP 传输控制协议</h4>
+<p>TCP 协议有以下特点：</p>
+<ul>
+<li>面向连接的传输服务。打电话式、会话式通信。</li>
+<li>面向字节流传输服务（而 UDP 是面向报文）。字节管道、字节按序传输和到达。</li>
+<li>全双工通信。一个应用进程可以同时接收和发送数据、捎带确认；通信双方都设置有发送和接收缓冲区，应用程序将要发送的数据字节提交给发送缓冲区，实际发送由 TCP 协议控制，接收方收到数据字节后将它存放在接收缓冲区，等待高层应用程序读取。</li>
+<li>可建立多个并发的 TCP 连接。如 Web 服务器可同时与多个客户端建立的连接会话。</li>
+<li>可靠传输服务。不丢失数据、保持数据有序、向上层不重复提交数据（通过确认机制、拥塞控制等方式实现）， 想象一下 ATM 机转帐应用就需要上述可靠性。</li>
+</ul>
+<p>TCP 的报头如下图所示。</p>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210625065050.jpeg" alt="图片描述"></p>
+<p>重点关注几个标志位的意义，如下：</p>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210625065054.jpeg" alt="图片描述"></p>
+<p>TCP 连接包括连接建立、报文传输、连接释放三个阶段，其中连接建立的三次握手过程较为重要。</p>
+<p>建立连接的三次握手过程：</p>
+<p>（1）当客户端准备发起一次 TCP 连接，首先向服务器发送第一个“SYN”报文（控制位 SYN=1）。</p>
+<p>（2）服务器收到 SYN 报文后，如果同意建立连接，则向客户端发送第二个“SYN+ACK”报文（控制位 SYN=1，ACK=1），该报文表示对第一个 SYN 报文请求的确认。</p>
+<p>（3）接收到 SYN+ACK 报文后，客户端发送第三个 ACK 报文，表示对 SYN+ACK 报文的确认。</p>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210625065103.jpeg" alt="图片描述"></p>
+</blockquote>
+<h3>附录二 用C++进行TCP套接字网络编程</h3>
+<blockquote>
+<p>网络编程中我们一般会使用 C/S 架构，即包含服务器端和客户端。</p>
+<h4>TCP 网络编程的服务器端</h4>
+<p>服务器端一般先用 <code>socket</code> 创建一个套接字，然后用 <code>bind</code> 给这个套接字绑定地址（即 ip + 端口号），然后调用 <code>listen</code> 把这个套接字置为监听状态，随后调用 <code>accept</code> 函数从已完成连接队列中取出成功建立连接的套接字，以后就在这个新的套接字上调用 <code>send</code>、<code>recv</code> 来发送数据、接收数据，最后调用 <code>close</code> 来断开连接释放资源即可。</p>
+<p>过程如下：</p>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210625065503.jpeg" alt="图片描述"></p>
+<h4>TCP 网络编程的客户端</h4>
+<p>与服务器不同，客户端并不需要 bind 绑定地址，因为端口号是系统自动分配的，而且客户端也不需要设置监听的套接字，因此也不需要 listen。客户端在用 socket 创建套接字后直接调用 connect 向服务器发起连接即可，connect 函数通知 Linux 内核完成 TCP 三次握手连接，最后把连接的结果作为返回值。成功建立连接后我们就可以调用 send 和 recv 来发送数据、接收数据，最后调用 close 来断开连接释放资源。</p>
+<p>过程如下：</p>
+<p><img src="https://doc.shiyanlou.com/courses/3573/1116908/e6a08660699bd4f0e26119e7de2c20bd-0" alt="图片描述"></p>
+<h4>完整流程</h4>
+<p>TCP 网络编程的整体流程如下图所示：</p>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210625065509.jpeg" alt="图片描述"></p>
+<h4>TCP 网络编程的相关数据结构</h4>
+<p>地址结构：</p>
+<pre class="hljs"><code><span class="hljs-keyword">struct</span> <span class="hljs-title class_">sockaddr_in</span> {
+    <span class="hljs-type">short</span> <span class="hljs-type">int</span> sin_family; <span class="hljs-comment">/* 地址族 */</span>
+    <span class="hljs-type">unsigned</span> <span class="hljs-type">short</span> <span class="hljs-type">int</span> sin_port; <span class="hljs-comment">/* 端口号 */</span>
+    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">in_addr</span> sin_addr; <span class="hljs-comment">/* ip地址 */</span>
+    <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> sin_zero[<span class="hljs-number">8</span>];
+};
+</code></pre>
+<p>上述结构体涉及到的另一个结构体 <code>in_addr</code> 如下：</p>
+<pre class="hljs"><code><span class="hljs-keyword">struct</span> <span class="hljs-title class_">in_addr</span> {
+    <span class="hljs-type">unsigned</span> <span class="hljs-type">long</span> s_addr;
+};
+</code></pre>
+<h4>TCP 网络编程各函数的定义</h4>
+<ul>
+<li><code>socket</code> 函数：</li>
+</ul>
+<pre class="hljs"><code><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">socket</span><span class="hljs-params">( <span class="hljs-type">int</span> domain, <span class="hljs-type">int</span> type,<span class="hljs-type">int</span> protocol)</span>
+<span class="hljs-comment">/*
+功能：创建一个新的套接字，返回套接字描述符
+参数说明：
+domain：域类型，指明使用的协议栈，如TCP/IP使用的是PF_INET，其他还有AF_INET6、AF_UNIX
+type:指明需要的服务类型, 如
+SOCK_DGRAM:数据报服务，UDP协议
+SOCK_STREAM:流服务，TCP协议
+protocol:一般都取0(由系统根据服务类型选择默认的协议)
+*/</span>
+</span></code></pre>
+<ul>
+<li><code>bind</code> 函数：</li>
+</ul>
+<pre class="hljs"><code><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">bind</span><span class="hljs-params">(<span class="hljs-type">int</span> sockfd,<span class="hljs-keyword">struct</span> sockaddr* my_addr,<span class="hljs-type">int</span> addrlen)</span>
+<span class="hljs-comment">/*
+功能：为套接字绑定地址
+TCP/IP协议使用sockaddr_in结构，包含IP地址和端口号，服务器使用它来指明熟知的端口号，然后等待连接
+参数说明：
+sockfd:套接字描述符，指明创建连接的套接字
+my_addr:本地地址，IP地址和端口号
+addrlen:地址长度
+*/</span>
+</span></code></pre>
+<ul>
+<li><code>listen</code> 函数：</li>
+</ul>
+<pre class="hljs"><code><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">listen</span><span class="hljs-params">(<span class="hljs-type">int</span> sockfd,<span class="hljs-type">int</span> backlog)</span>
+<span class="hljs-comment">/*
+功能：
+将一个套接字置为监听模式，准备接收传入连接。用于服务器，指明某个套接字连接是被动的监听状态。
+参数说明：
+Sockfd:套接字描述符，指明创建连接的套接字
+backlog: linux内核2.2之前，backlog参数=半连接队列长度+已连接队列长度；linux内核2.2之后，backlog参数=已连接队列（Accept队列）长度
+*/</span>
+</span></code></pre>
+<ul>
+<li><code>accept</code> 函数：</li>
+</ul>
+<pre class="hljs"><code><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">accept</span><span class="hljs-params">(<span class="hljs-type">int</span> sockfd, structsockaddr *addr, <span class="hljs-type">int</span> *addrlen)</span>
+<span class="hljs-comment">/*
+功能：从已完成连接队列中取出成功建立连接的套接字，返回成功连接的套接字描述符。
+参数说明：
+Sockfd:套接字描述符，指明正在监听的套接字
+addr:提出连接请求的主机地址
+addrlen:地址长度
+*/</span>
+</span></code></pre>
+<ul>
+<li><code>send</code> 函数：</li>
+</ul>
+<pre class="hljs"><code><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">send</span><span class="hljs-params">(<span class="hljs-type">int</span> sockfd, <span class="hljs-type">const</span> <span class="hljs-type">void</span> * data, <span class="hljs-type">int</span> data_len, <span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> flags)</span>
+<span class="hljs-comment">/*
+功能：在TCP连接上发送数据,返回成功传送数据的长度，出错时返回－1。send会将数据移到发送缓冲区中。
+参数说明：
+sockfd:套接字描述符
+data:指向要发送数据的指针
+data_len:数据长度
+flags:通常为0
+*/</span>
+</span></code></pre>
+<ul>
+<li><code>recv</code> 函数：</li>
+</ul>
+<pre class="hljs"><code><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">recv</span><span class="hljs-params">(<span class="hljs-type">int</span> sockfd, <span class="hljs-type">void</span> *buf, intbuf_len,<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span> flags)</span>
+<span class="hljs-comment">/*
+功能：接收数据,返回实际接收的数据长度，出错时返回－1。
+参数说明：
+Sockfd:套接字描述符
+Buf:指向内存块的指针
+Buf_len:内存块大小，以字节为单位
+flags:一般为0
+*/</span>
+</span></code></pre>
+<ul>
+<li><code>close</code> 函数：</li>
+</ul>
+<pre class="hljs"><code><span class="hljs-built_in">close</span>(<span class="hljs-type">int</span> sockfd)
+<span class="hljs-comment">/*
+功能：撤销套接字。如果只有一个进程使用，立即终止连接并撤销该套接字，如果多个进程共享该套接字，将引用数减一，如果引用数降到零，则关闭连接并撤销套接字。
+参数说明：
+sockfd:套接字描述符
+*/</span>
+</code></pre>
+<ul>
+<li><code>connect</code> 函数：</li>
+</ul>
+<pre class="hljs"><code><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">connect</span><span class="hljs-params">(<span class="hljs-type">int</span> sockfd,structsockaddr *server_addr,<span class="hljs-type">int</span> sockaddr_len)</span>
+<span class="hljs-comment">/*
+功能： 同远程服务器建立主动连接，成功时返回0，若连接失败返回－1。
+参数说明：
+Sockfd:套接字描述符，指明创建连接的套接字
+Server_addr:指明远程端点：IP地址和端口号
+sockaddr_len :地址长度
+*/</span>
+</span></code></pre>
+</blockquote>
+</article>
+    <a class="back-link" href="./index.html">← 返回文章列表</a>
+  </main>
+  <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+</body>
+</html>

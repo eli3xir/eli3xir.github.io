@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qt5数据库——SQLite实例 · eli3xir</title>
+  <meta name="description" content="Qt5数据库——SQLite实例">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' font-weight='bold' text-anchor='middle' fill='%237c5cff'%3Ee3%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/blog.css">
+  
+</head>
+<body>
+  <header class="blog-nav">
+    <a class="nav-logo" href="../index.html">eli3xir<span class="accent">.</span></a>
+    <nav>
+      <a href="../index.html">主页</a>
+      <a href="./index.html">文章</a>
+      <a href="https://github.com/eli3xir" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+  
+  <main class="post">
+    <div class="post-head">
+      <h1>Qt5数据库——SQLite实例</h1>
+      <div class="post-meta">
+        <time>2021-05-22</time>
+        <span class="chip cat">技术</span><span class="chip cat">C++</span>
+        <span class="chip">Qt</span><span class="chip">SQLite</span><span class="chip">数据库</span>
+      </div>
+    </div>
+    <article class="post-content"><h2>数据库基本概念</h2>
+<h3>数据和数据库</h3>
+<p>利用计算机进行数据处理，首先需要将信息以数据形式存储到计算机中，而数据是可以被计算机接收和处理的符号，所以根据数据信息的不同，可以将数据分为不同的种类，如数字、文字、图片、表格、音频等等。</p>
+<p>数据库 <code>DataBase</code> ，其实就是存放数据的仓库，主要特点是将数据按照数据模型组织分类，是高度结构化的，同一个数据库可以供多个用户共享并且具有一定的安全性。</p>
+<p>实际开发中用到的数据库几乎都是关系型的，而关系型数据库就是按照二维表结构方式组织的数据集合，二维表是由行和列组成的，表的行称为元组，列称为属性，对表的操作称为关系运算，主要的关系运算有投影、选择和连接等等。</p>
+<h3>数据库管理系统</h3>
+<p>数据库管理系统 <code>DBMS(DataBase Management System)</code> ，是位于用户应用程序和操作系统之间的数据库管理系统软件，主要功能就是组织、存储和管理数据，使得能够高效访问和维护数据，即提供数据定义、数据操作、数据控制和数据维护等功能。常用到的数据库管理系统有 <code>Oracle</code> 、 <code>Microsoft SQL Server</code> 和 <code>MySQL</code>等。</p>
+<p>在实际应用中，数据库系统通常分为桌面型和网络型两类：</p>
+<p>桌面型数据库系统是指：只在本机运行、不与其它计算机交换数据的系统，常用于小型信息管理系统，这类数据库系统的典型代表是 VFP 和 Access 。</p>
+<p>网络型数据库系统是指：能够通过计算机网络进行数据共享和交换的系统，常用于构建较复杂的 C/S 结构或 B/S 结构的分布式应用系统，大多数数据库系统均属于此类，如 <code>Oracle</code> 、<code>Microsoft SQL Server</code> 等。</p>
+<h3>结构化查询语言 SQL</h3>
+<p>目前，许多关系型数据库供应商都在自己的数据库中支持 SQL 语言，如 Access 、 MySQL 、 Oracle 和 Microsoft SQL Server 等，其中大部分数据库遵守的是 SQL-89 标准。 SQL 语言由以下三部分组成：</p>
+<ul>
+<li><strong>数据定义语言</strong> <code>Data Description Language, DDL</code> ，用于执行数据库定义的任务，对数据库及数据库中的各种对象进行创建、删除和修改等操作。数据库对象主要包括表、默认约束、规则、视图、触发器和存储过程等。</li>
+<li><strong>数据操作语言</strong> <code>Data Manipulation Language, DML</code> ，用于操作数据库中各种对象，检索和修改数据。</li>
+<li><strong>数据控制语言</strong> <code>Data Control Language, DCL</code> ，用于安全管理，确定哪些用户可以查看或修改数据库中的数据。</li>
+</ul>
+<h3>表和视图</h3>
+<p><strong>表</strong>：</p>
+<ul>
+<li><strong>表结构</strong>：每个数据库包含若干个表，每个表又具有一定的结构，称为表的 “型”。表型也就是指组成表的各列的名称和数据类型。</li>
+<li><strong>记录</strong>：每个表包含若干行数据，这些都是表的值，表中一行数据称为一条记录，所以表也是记录的有限集合。</li>
+<li><strong>字段</strong>：每条记录由若干个数据项构成，将构成记录的每个数据项称为字段。字段包含的属性有字段名、字段数据类型、字段长度以及是否为关键字等等。</li>
+<li><strong>关键字</strong>：若表中记录的某一字段或字段组合能够唯一标志记录，则称该字段或字段组合为候选关键字。若一个表有多个候选关键字，则选定其中一个为主关键字，也称为主键；当一个表仅有唯一的一个候选关键字时，该候选关键字就是主关键字。</li>
+</ul>
+<p><strong>视图</strong>：</p>
+<ul>
+<li>视图是从一个或多个表导出的表。</li>
+</ul>
+<p>视图与表不同，它是一个续表，即视图所对应的数据不进行实际存储，数据库中只存储视图的定义。对视图的数据进行操作时，系统根据视图的定义操作与视图相关联的基本表。视图一经定义后，就可以像表一样被查询、修改、删除和更新。使用视图具有便于数据共享、简化用户权限管理和屏蔽数据库的复杂性等优点。</p>
+<h2>常用SQL命令</h2>
+<h3>SELECT 数据查询</h3>
+<p><code>SELECT</code> 查询是 SQL 语言的核心，与 SQL 子句结合，可以完成各类复杂的查询操作。在数据库应用中，最常用的操作就是查询操作。完备的 <code>SELECT</code> 语句很复杂，主要子句如下：</p>
+<pre class="hljs"><code><span class="hljs-keyword">SELECT</span> [<span class="hljs-keyword">DISTINCT</span>] [别名.] 字段名或表达式 [<span class="hljs-keyword">AS</span> 列标题] \
+<span class="hljs-keyword">FROM</span> table_soruce \
+[<span class="hljs-keyword">WHERE</span> search_condition] \
+[<span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> group_by_expression] \
+[<span class="hljs-keyword">ORDER</span> <span class="hljs-keyword">BY</span> order_expression [<span class="hljs-keyword">ASC</span> <span class="hljs-operator">|</span> <span class="hljs-keyword">DESC</span>]]
+</code></pre>
+<p>其中：</p>
+<ul>
+<li><code>SELECT</code> 语句和 <code>FROM</code> 语句是必不可少的。</li>
+<li><code>WHERE</code> 语句定义了查询条件，且 <code>WHERE</code> 子句必须紧跟 <code>FROM</code> 子句之后，基本格式为：<code>WHERE &lt;search_condition&gt;</code> 。</li>
+<li><code>GROUP BY</code> 子句和 <code>ORDER BY</code> 子句分别对查询结果分组和排序。</li>
+</ul>
+<h3>数据操作</h3>
+<h4><code>INSERT</code> 插入数据语句</h4>
+<p><code>INSERT</code> 语句可以添加一条或多条记录到一个表中。它有两种语法形式：</p>
+<pre class="hljs"><code><span class="hljs-keyword">INSERT INTO</span> target [<span class="hljs-keyword">IN</span> externaldatabase] (fields_list) \
+{<span class="hljs-keyword">DEFAULT</span> <span class="hljs-keyword">VALUES</span> <span class="hljs-operator">|</span> <span class="hljs-keyword">VALUES</span>(<span class="hljs-keyword">DEFAULT</span> <span class="hljs-operator">|</span> expression_list)}
+
+<span class="hljs-keyword">INSERT INTO</span> target [<span class="hljs-keyword">IN</span> externaldatabase] fields_list \
+{<span class="hljs-keyword">SELECT</span> ...<span class="hljs-operator">|</span> <span class="hljs-keyword">EXECUTE</span> ...}
+</code></pre>
+<p>其中：</p>
+<ul>
+<li><code>target</code> 是要插入记录的表或视图的名称， <code>externaldatabase</code> 是外部数据库的路径和名称。</li>
+<li><code>expression_list</code> 是需要插入的字段值表达式列表，其个数应与记录的字段个数一致，若指定要插入值的字段 <code>fields_list</code> ，则应与 <code>field_list</code> 的字段个数一致。</li>
+</ul>
+<h4><code>DELETE</code> 删除语句</h4>
+<p><code>DELETE</code> 用于从一个或多个表中删除记录，其语法格式如下：</p>
+<pre class="hljs"><code><span class="hljs-keyword">DELETE</span> <span class="hljs-keyword">FROM</span> table_names [<span class="hljs-keyword">WHERE</span> ...]
+</code></pre>
+<h4><code>UPDATE</code> 更新数据语句</h4>
+<p><code>UPDATE</code> 语句用于更新表中的记录，其基本语法格式如下：</p>
+<pre class="hljs"><code><span class="hljs-keyword">UPDATE</span> table_name \
+<span class="hljs-keyword">SET</span> field_1<span class="hljs-operator">=</span>expression_1[,Field_2<span class="hljs-operator">=</span>expression_2...] \
+[<span class="hljs-keyword">FROM</span> table1_name <span class="hljs-operator">|</span> view1_name[, table2_name <span class="hljs-operator">|</span> view2_name...]] \
+[<span class="hljs-keyword">WHERE</span> ...]
+</code></pre>
+<p>其中：</p>
+<ul>
+<li><code>Field</code> 是需要更新的字段，而 <code>expression</code> 表示要更新字段的新值表达式。</li>
+</ul>
+<h2>Qt5数据库操作</h2>
+<h3>QtSql模块</h3>
+<p>Qt 提供的 QtSql 模块实现了对数据库的访问，同时提供了一套与平台和具体所用数据库均无关的调用接口。 Qt 的这个模块为不同层次的用户提供了丰富多样的数据库操作类：</p>
+<ul>
+<li>对于习惯使用 SQL 语法的用户，可以直接通过 <code>QSqlQuery</code> 类提供的方式执行任意的 SQL 语句来操作数据库；</li>
+<li>对于习惯使用较高层数据库接口而希望避免 SQL 语句的用户， Qt 中的 <code>QSqlTableModel</code> 和 <code>QSqlRelationalTableModel</code> 类则提供了合适的抽象调用方式。</li>
+</ul>
+<p>除了调用大型的通用数据库，Qt 还提供了一种进程内数据库 SQLite ，这是一个轻量级数据库，无需额外的安装配置并且支持大部分的 <code>ANSI SQL92</code> 标准。对于通用大型数据库在 Qt 中的使用与小型数据库方法类似，以下是Qt数据库的具体操作。</p>
+<h3>创建终端Qt工程</h3>
+<p>使用数据库的实例只需要用到终端输出就可以，所以就选择创建一个终端输出的项目，创建 Qt 工程 <code>SqliteDemo</code> ，创建步骤如下：</p>
+<ul>
+<li>打开 <code>QtCreator</code> 开发环境界面，进行新项目创建，选择 <code>New Project</code> 选项</li>
+<li>左边选择 <code>Appliction</code> ，然后选择 <code>Qt Console Application</code> 进行项目创建</li>
+<li>添加项目名称为 <code>SqliteDemo</code> ，选择项目存放路径</li>
+<li>选择项目编译工具链（全选即可）</li>
+</ul>
+<p>最后项目创建完成，但是还需要在工程中添加数据库。</p>
+<p>Qt 使用 SQLite 需要在 <code>SqliteDemo.pro</code> 项目文件中添加：</p>
+<pre class="hljs"><code>QT += core sql
+</code></pre>
+<h3>测试代码</h3>
+<p>打开 <code>main.cpp</code> 文件，添加如下代码：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QCoreApplication&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QTextCodec&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QtSql/QSqlDatabase&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QtSql/QSqlQuery&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QTime&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QtSql/QSqlError&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QtDebug&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QtSql/QSqlDriver&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QtSql/QSqlRecord&gt;</span></span>
+
+
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span> *argv[])</span>
+</span>{
+    <span class="hljs-function">QCoreApplication <span class="hljs-title">a</span><span class="hljs-params">(argc, argv)</span></span>;
+    <span class="hljs-comment">//设置中文显示</span>
+    QTextCodec::<span class="hljs-built_in">setCodecForLocale</span>(QTextCodec::<span class="hljs-built_in">codecForLocale</span>());
+
+    QSqlDatabase db = QSqlDatabase::<span class="hljs-built_in">addDatabase</span>(<span class="hljs-string">&quot;QSQLITE&quot;</span>);
+    db.<span class="hljs-built_in">setHostName</span>(<span class="hljs-string">&quot;easybook-testdemo&quot;</span>);    <span class="hljs-comment">//设置数据库主机名</span>
+    db.<span class="hljs-built_in">setDatabaseName</span>(<span class="hljs-string">&quot;qtDB.db&quot;</span>);      <span class="hljs-comment">//设置数据库名称</span>
+    db.<span class="hljs-built_in">setUserName</span>(<span class="hljs-string">&quot;zhangsan&quot;</span>);         <span class="hljs-comment">//设置数据库用户名</span>
+    db.<span class="hljs-built_in">setPassword</span>(<span class="hljs-string">&quot;123123&quot;</span>);           <span class="hljs-comment">//设置用户名的密码</span>
+    <span class="hljs-type">bool</span> success = db.<span class="hljs-built_in">open</span>();      <span class="hljs-comment">//打开连接</span>
+    <span class="hljs-keyword">if</span>(!success)
+    {
+        QSqlError lastError = db.<span class="hljs-built_in">lastError</span>();
+        <span class="hljs-built_in">qDebug</span>() &lt;&lt; lastError.<span class="hljs-built_in">driverText</span>() &lt;&lt; <span class="hljs-built_in">QString</span>(QObject::<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Open Connect!&quot;</span>));
+    }
+
+    <span class="hljs-comment">//创建数据库表</span>
+    QSqlQuery query;
+    success = query.<span class="hljs-built_in">exec</span>(<span class="hljs-string">&quot;CREATE TABLE automobile (&quot;</span>
+                    <span class="hljs-string">&quot;id INTEGER PRIMARY KEY AUTOINCREMENT, &quot;</span>
+                    <span class="hljs-string">&quot;attribute VARCHAR(40) NOT NULL, &quot;</span>
+                    <span class="hljs-string">&quot;type VARCHAR(40) NOT NULL, &quot;</span>
+                    <span class="hljs-string">&quot;kind VARCHAR(40) NOT NULL, &quot;</span>
+                    <span class="hljs-string">&quot;nation INTEGER, &quot;</span>
+                    <span class="hljs-string">&quot;carnumber INTEGER, &quot;</span>
+                    <span class="hljs-string">&quot;elevaltor INTEGER, &quot;</span>
+                    <span class="hljs-string">&quot;distance INTEGER, &quot;</span>
+                    <span class="hljs-string">&quot;oil INTEGER, &quot;</span>
+                    <span class="hljs-string">&quot;temperature INTEGER)&quot;</span>);
+
+    <span class="hljs-keyword">if</span>(success)
+        <span class="hljs-built_in">qDebug</span>() &lt;&lt; QObject::<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Data Base Table Create Success!&quot;</span>);
+    <span class="hljs-keyword">else</span>
+        <span class="hljs-built_in">qDebug</span>() &lt;&lt; QObject::<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Create Fail&quot;</span>) &lt;&lt; query.<span class="hljs-built_in">lastError</span>().<span class="hljs-built_in">driverText</span>();
+
+    <span class="hljs-comment">//查询</span>
+    query.<span class="hljs-built_in">exec</span>(<span class="hljs-string">&quot;select * from automobile&quot;</span>);
+    QSqlRecord rec = query.<span class="hljs-built_in">record</span>();
+    <span class="hljs-built_in">qDebug</span>() &lt;&lt; QObject::<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;automobile Table Keys Numbers:&quot;</span>) &lt;&lt; rec.<span class="hljs-built_in">count</span>();
+
+    <span class="hljs-comment">//插入数据</span>
+    QTime t;
+    t.<span class="hljs-built_in">start</span>();
+    query.<span class="hljs-built_in">prepare</span>(<span class="hljs-string">&quot;insert into automobile values(?,?,?,?,?,?,?,?,?,?)&quot;</span>);
+
+    <span class="hljs-type">long</span> records = <span class="hljs-number">100</span>;
+    <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; records; i++)
+    {
+        query.<span class="hljs-built_in">bindValue</span>(<span class="hljs-number">0</span>, i);
+        query.<span class="hljs-built_in">bindValue</span>(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;silun&quot;</span>);
+        query.<span class="hljs-built_in">bindValue</span>(<span class="hljs-number">2</span>, <span class="hljs-string">&quot;jiaoche&quot;</span>);
+        query.<span class="hljs-built_in">bindValue</span>(<span class="hljs-number">3</span>, <span class="hljs-string">&quot;fukang&quot;</span>);
+        query.<span class="hljs-built_in">bindValue</span>(<span class="hljs-number">4</span>, <span class="hljs-built_in">rand</span>()%<span class="hljs-number">100</span>);
+        query.<span class="hljs-built_in">bindValue</span>(<span class="hljs-number">5</span>, <span class="hljs-built_in">rand</span>()%<span class="hljs-number">10000</span>);
+        query.<span class="hljs-built_in">bindValue</span>(<span class="hljs-number">6</span>, <span class="hljs-built_in">rand</span>()%<span class="hljs-number">300</span>);
+        query.<span class="hljs-built_in">bindValue</span>(<span class="hljs-number">7</span>, <span class="hljs-built_in">rand</span>()%<span class="hljs-number">200000</span>);
+        query.<span class="hljs-built_in">bindValue</span>(<span class="hljs-number">8</span>, <span class="hljs-built_in">rand</span>()%<span class="hljs-number">52</span>);
+        query.<span class="hljs-built_in">bindValue</span>(<span class="hljs-number">9</span>, <span class="hljs-built_in">rand</span>()%<span class="hljs-number">100</span>);
+
+        success = query.<span class="hljs-built_in">exec</span>();
+        <span class="hljs-keyword">if</span>(!success)
+        {
+            QSqlError lastError = query.<span class="hljs-built_in">lastError</span>();
+            <span class="hljs-built_in">qDebug</span>() &lt;&lt; lastError.<span class="hljs-built_in">driverText</span>() &lt;&lt; <span class="hljs-built_in">QString</span>(QObject::<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Insert Fail&quot;</span>));
+        }
+    }
+    <span class="hljs-built_in">qDebug</span>() &lt;&lt; QObject::<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Insert %1 Count, Times：%2 ms&quot;</span>).<span class="hljs-built_in">arg</span>(records).<span class="hljs-built_in">arg</span>(t.<span class="hljs-built_in">elapsed</span>());
+
+    <span class="hljs-comment">//排序</span>
+    t.<span class="hljs-built_in">restart</span>();
+    success = query.<span class="hljs-built_in">exec</span>(<span class="hljs-string">&quot;select * from automobile order by id desc&quot;</span>);
+    <span class="hljs-keyword">if</span>(success)
+        <span class="hljs-built_in">qDebug</span>() &lt;&lt; QObject::<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Sort %1 Count, Times：%2 ms&quot;</span>).<span class="hljs-built_in">arg</span>(records).<span class="hljs-built_in">arg</span>(t.<span class="hljs-built_in">elapsed</span>());
+    <span class="hljs-keyword">else</span>
+        <span class="hljs-built_in">qDebug</span>() &lt;&lt; QObject::<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Sort Fail!&quot;</span>);
+
+    <span class="hljs-comment">//更新记录</span>
+    t.<span class="hljs-built_in">restart</span>();
+    <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; records; i++)
+    {
+        query.<span class="hljs-built_in">clear</span>();
+        query.<span class="hljs-built_in">prepare</span>(<span class="hljs-built_in">QString</span>(<span class="hljs-string">&quot;update automobile set attribute=?,type=?,&quot;</span>
+                              <span class="hljs-string">&quot;kind=?,nation=?,&quot;</span>
+                              <span class="hljs-string">&quot;carnumber=?,elevaltor=?,&quot;</span>
+                              <span class="hljs-string">&quot;distance=?,oil=?,&quot;</span>
+                              <span class="hljs-string">&quot;temperature=? where id = %1&quot;</span>).<span class="hljs-built_in">arg</span>(i));
+        query.<span class="hljs-built_in">bindValue</span>(<span class="hljs-number">0</span>, <span class="hljs-string">&quot;silun&quot;</span>);
+        query.<span class="hljs-built_in">bindValue</span>(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;jiaoche&quot;</span>);
+        query.<span class="hljs-built_in">bindValue</span>(<span class="hljs-number">2</span>, <span class="hljs-string">&quot;fukang&quot;</span>);
+        query.<span class="hljs-built_in">bindValue</span>(<span class="hljs-number">3</span>, <span class="hljs-built_in">rand</span>()%<span class="hljs-number">100</span>);
+        query.<span class="hljs-built_in">bindValue</span>(<span class="hljs-number">4</span>, <span class="hljs-built_in">rand</span>()%<span class="hljs-number">10000</span>);
+        query.<span class="hljs-built_in">bindValue</span>(<span class="hljs-number">5</span>, <span class="hljs-built_in">rand</span>()%<span class="hljs-number">300</span>);
+        query.<span class="hljs-built_in">bindValue</span>(<span class="hljs-number">6</span>, <span class="hljs-built_in">rand</span>()%<span class="hljs-number">200000</span>);
+        query.<span class="hljs-built_in">bindValue</span>(<span class="hljs-number">7</span>, <span class="hljs-built_in">rand</span>()%<span class="hljs-number">52</span>);
+        query.<span class="hljs-built_in">bindValue</span>(<span class="hljs-number">8</span>, <span class="hljs-built_in">rand</span>()%<span class="hljs-number">100</span>);
+        success = query.<span class="hljs-built_in">exec</span>();
+        <span class="hljs-keyword">if</span>(!success)
+        {
+            QSqlError lastError = query.<span class="hljs-built_in">lastError</span>();
+            <span class="hljs-built_in">qDebug</span>() &lt;&lt; lastError.<span class="hljs-built_in">driverText</span>() &lt;&lt; <span class="hljs-built_in">QString</span>(QObject::<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Update Fail&quot;</span>));
+        }
+    }
+
+    <span class="hljs-built_in">qDebug</span>() &lt;&lt; QObject::<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Update %1 Count, Times：%2 ms&quot;</span>).<span class="hljs-built_in">arg</span>(records).<span class="hljs-built_in">arg</span>(t.<span class="hljs-built_in">elapsed</span>());
+
+    <span class="hljs-comment">//删除</span>
+    t.<span class="hljs-built_in">restart</span>();
+    query.<span class="hljs-built_in">exec</span>(<span class="hljs-string">&quot;delete from automobile where id=15&quot;</span>);
+
+    <span class="hljs-comment">//输出操作耗时</span>
+    <span class="hljs-built_in">qDebug</span>() &lt;&lt; QObject::<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Delete one count, Times：%1 ms&quot;</span>).<span class="hljs-built_in">arg</span>(t.<span class="hljs-built_in">elapsed</span>());
+
+
+    <span class="hljs-keyword">return</span> a.<span class="hljs-built_in">exec</span>();
+}
+</code></pre>
+</article>
+    <a class="back-link" href="./index.html">← 返回文章列表</a>
+  </main>
+  <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+</body>
+</html>

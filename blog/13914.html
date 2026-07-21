@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML5基础 · eli3xir</title>
+  <meta name="description" content="HTML5基础">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' font-weight='bold' text-anchor='middle' fill='%237c5cff'%3Ee3%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/blog.css">
+  
+</head>
+<body>
+  <header class="blog-nav">
+    <a class="nav-logo" href="../index.html">eli3xir<span class="accent">.</span></a>
+    <nav>
+      <a href="../index.html">主页</a>
+      <a href="./index.html">文章</a>
+      <a href="https://github.com/eli3xir" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+  
+  <main class="post">
+    <div class="post-head">
+      <h1>HTML5基础</h1>
+      <div class="post-meta">
+        <time>2021-04-16</time>
+        <span class="chip cat">技术</span><span class="chip cat">基础</span>
+        <span class="chip">基础</span><span class="chip">Web</span><span class="chip">HTML</span>
+      </div>
+    </div>
+    <article class="post-content"><h2>HTML概述</h2>
+<p>HTML（超文本标记语言）是一种用于创建网页的标准标记语言。 HTML 不需要编译，可以直接由浏览器执行，它的解析依赖于浏览器的内核。 它不是一种编程语言，而是一种标记语言。</p>
+<blockquote>
+<p>前端语言常常见到ML，这是Markup Language（标记语言）的缩写。我们所熟知的HTML就是Hyper Text Markup Language的缩写，意为“超文本标记语言”。</p>
+</blockquote>
+<h3>HTML网页结构</h3>
+<pre class="hljs"><code><span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-keyword">html</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>HTML 简介<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre>
+<ul>
+<li><code>&lt;!DOCTYPE html&gt;</code> 是文档声明头，告诉浏览器，本文档处理的是 HTML 文档。</li>
+<li><code>html</code> 标签即根元素，此处表示文档的开始。</li>
+<li><code>head</code> 标签是网页的头部，设置网页的相关信息。</li>
+<li><code>title</code> 标签设置网页标题。</li>
+<li><code>body</code> 标签定义文档的主体，也即主要内容。</li>
+</ul>
+<h3>HTML注释</h3>
+<p>在 HTML 中满足以下格式的内容即为注释，被注释的内容将不会被渲染和显示。</p>
+<pre class="hljs"><code><span class="hljs-comment">&lt;!-- 在此处写注释 --&gt;</span>
+</code></pre>
+<h2>HTML常用标签</h2>
+<p>HTML 标签是 HTML 语言中最基本的单位。HTML 标签的大小写无关，例如 <code>&lt;body&gt;</code>和 <code>&lt;BODY&gt;</code> 表示的意思是一样的，推荐使用小写。</p>
+<h4>双标签（双标记）</h4>
+<p>双标记也称体标记，是指由开始和结束两个标记符组成的标记。其基本语法格式如下：</p>
+<pre class="hljs"><code>&lt;标记名&gt;&lt;/标记名&gt;
+</code></pre>
+<p>常见的双标签有：</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">a</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
+</code></pre>
+<h4>单标签（单标记）</h4>
+<p>单标记也称空标记，是指用一个标记符号即可完整地描述某个功能的标记。其基本语法格式如下：</p>
+<pre class="hljs"><code>&lt;标记名/&gt;
+</code></pre>
+<p>常见的单标签有：</p>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">br</span> /&gt;</span>
+<span class="hljs-comment">&lt;!--换行--&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">hr</span> /&gt;</span>
+<span class="hljs-comment">&lt;!--水平分隔线--&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">meta</span> /&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">img</span> /&gt;</span>
+</code></pre>
+<h4>标签的关系</h4>
+<ul>
+<li>嵌套关系</li>
+</ul>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span> <span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+</code></pre>
+<ul>
+<li>并列关系</li>
+</ul>
+<pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+</code></pre>
+<h3>HTML元素</h3>
+<p>HTML 元素指的是从开始标签（start tag）到结束标签（end tag）的所有代码。</p>
+<h3>HTML标签</h3>
+<h4>h 系类标签</h4>
+<p><code>h</code> 标签有六种 <code>h1</code>，<code>h2</code>，<code>h3</code>，<code>h4</code>，<code>h5</code>，<code>h6</code>，代表不同层级的标题。</p>
+<pre class="hljs"><code><span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-keyword">html</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>一级标题<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span>二级标题<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">h3</span>&gt;</span>三级标题<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">h4</span>&gt;</span>四级标题<span class="hljs-tag">&lt;/<span class="hljs-name">h4</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">h5</span>&gt;</span>五级标题<span class="hljs-tag">&lt;/<span class="hljs-name">h5</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">h6</span>&gt;</span>六级标题<span class="hljs-tag">&lt;/<span class="hljs-name">h6</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre>
+<!DOCTYPE html>
+<html>
+    <body>
+        <h1>一级标题</h1>
+        <h2>二级标题</h2>
+        <h3>三级标题</h3>
+        <h4>四级标题</h4>
+        <h5>五级标题</h5>
+        <h6>六级标题</h6>
+    </body>
+</html>
+<h4>p 标签</h4>
+<p><code>p</code> 标签是文本标签，通常用来表示段落。</p>
+<pre class="hljs"><code><span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-keyword">html</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>段落文字<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>段落文字<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span>
+</code></pre>
+<!DOCTYPE html>
+<html>
+    <body>
+        <p>段落文字</p>
+        <p>段落文字</p>
+    </body>
+</html></article>
+    <a class="back-link" href="./index.html">← 返回文章列表</a>
+  </main>
+  <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+</body>
+</html>

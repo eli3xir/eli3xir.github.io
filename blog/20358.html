@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trie树详解 · eli3xir</title>
+  <meta name="description" content="Trie树详解">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' font-weight='bold' text-anchor='middle' fill='%237c5cff'%3Ee3%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/blog.css">
+  
+</head>
+<body>
+  <header class="blog-nav">
+    <a class="nav-logo" href="../index.html">eli3xir<span class="accent">.</span></a>
+    <nav>
+      <a href="../index.html">主页</a>
+      <a href="./index.html">文章</a>
+      <a href="https://github.com/eli3xir" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+  
+  <main class="post">
+    <div class="post-head">
+      <h1>Trie树详解</h1>
+      <div class="post-meta">
+        <time>2021-06-01</time>
+        <span class="chip cat">技术</span><span class="chip cat">算法</span>
+        <span class="chip">算法</span><span class="chip">数据结构</span><span class="chip">树</span>
+      </div>
+    </div>
+    <article class="post-content"><h3>Trie树简介</h3>
+<p>Trie树，又叫字典树，因为它的搜索快捷的特性被单词搜索系统使用，故又称单词查找树。它是一种树形结构的数据结构。之所以快速，是因为它用空间代替了速度。</p>
+<p>字典树（Trie）可以保存一些字符串-&gt;值的对应关系。基本上，它跟 Java 的 HashMap 功能相同，都是 key-value 映射，只不过 Trie 的 key 只能是字符串。</p>
+<p>Trie 的强大之处就在于它的时间复杂度。它的插入和查询时间复杂度都为 $O(k)$ ，其中 $k$ 为 key 的长度，与 Trie 中保存了多少个元素无关。Hash 表号称是 $O(1)$ 的，但在计算 hash 的时候就肯定会是 $O(k)$ ，而且还有碰撞之类的问题；Trie 的缺点是空间消耗很高。</p>
+<p>至于Trie树的实现，可以用数组，也可以用指针动态分配。推荐使用数组，比较方便。</p>
+<p>Trie树，又称单词查找树或键树，是一种树形结构，是一种哈希树的变种。典型应用是用于统计和排序大量的字符串（但不仅限于字符串），所以经常被搜索引擎系统用于文本词频统计。它的优点是：最大限度地减少无谓的字符串比较，查询效率比哈希表高。</p>
+<p>Trie的核心思想是<strong>空间换时间</strong>。利用字符串的公共前缀来降低查询时间的开销以达到提高效率的目的。</p>
+<h3>Trie树特性</h3>
+<ol>
+<li>根节点不包含字符，除根节点外每一个节点都只包含一个字符。</li>
+<li>从根节点到某一节点，路径上经过的字符连接起来，为该节点对应的字符串。</li>
+<li>每个节点的所有子节点包含的字符都不相同。</li>
+<li>如果字符的种数为$n$，则每个结点的出度为$n$，这也是空间换时间的体现，浪费了很多的空间。</li>
+<li>插入查找的复杂度为$O(n)$，$n$为字符串长度。</li>
+</ol>
+<h3>Trie树基本思想（以字母树为例）</h3>
+<h4>1. 插入过程</h4>
+<p>对于一个单词，从根开始，沿着单词的各个字母所对应的树中的节点分支向下走，直到单词遍历完，将最后的节点标记为红色，表示该单词已插入Trie树。</p>
+<h4>2. 查询过程</h4>
+<p>同样的，从根开始按照单词的字母顺序向下遍历Trie树，一旦发现某个节点标记不存在或者单词遍历完成而最后的节点未标记为红色，则表示该单词不存在，若最后的节点标记为红色，表示该单词存在。</p>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210602010159.jpeg" alt="img"></p>
+<p>（图片来自百度百科）</p>
+<h3>Trie树数据结构</h3>
+<p>利用串构建一个字典树，这个字典树保存了串的公共前缀信息，因此可以降低查询操作的复杂度。</p>
+<p>下面以英文单词构建的字典树为例，这棵Trie树中每个结点包括26个孩子结点，因为总共有26个英文字母（假设单词都是小写字母组成）。</p>
+<p>则可声明包含Trie树的结点信息的结构体：</p>
+<pre class="hljs"><code><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Trie_node</span>
+
+{</span>
+
+	<span class="hljs-type">int</span> count;          <span class="hljs-comment">// 统计单词前缀出现的次数</span>
+
+	<span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Trie_node</span>* <span class="hljs-title">next</span>[26];</span>  <span class="hljs-comment">// 指向各个子树的指针</span>
+
+	<span class="hljs-type">bool</span> exist;          <span class="hljs-comment">// 标记该结点处是否构成单词 </span>
+
+}TrieNode , *Trie;
+</code></pre>
+<p>其中next是一个指针数组，存放着指向各个孩子结点的指针。</p>
+<p>如给出字符串<code>&quot;ab&quot;</code>、<code>&quot;acb&quot;</code>、<code>&quot;abc&quot;</code>、<code>&quot;a&quot;</code>、<code>&quot;abd&quot;</code>，根据该字符串序列构建一棵Trie树。则构建的树如下：</p>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210602010309.png" alt="image-20210602010309683"></p>
+<p>Trie树的根结点不包含任何信息，第一个字符串为<code>&quot;abc&quot;</code>，第一个字母为<code>'a'</code>，因此根结点中数组<code>next</code>下标为<code>'a'-97</code>的值不为<code>NULL</code>，其他同理，构建的Trie树如图所示，红色结点表示在该处可以构成一个单词。很显然，如果要查找单词&quot;abc&quot;是否存在，查找长度则为$O(len)$，$len$为要查找的字符串的长度。而若采用一般的逐个匹配查找，则查找长度为$O(len*n)$，$n$为字符串的个数。显然基于Trie树的查找效率要高很多。</p>
+<h3>Trie树查找域名</h3>
+<pre class="hljs"><code><span class="hljs-type">int</span> <span class="hljs-title function_">trieParser</span><span class="hljs-params">(<span class="hljs-type">char</span> ch)</span>
+{
+    <span class="hljs-keyword">if</span> (ch &gt;= <span class="hljs-string">&#x27;A&#x27;</span> &amp;&amp; ch &lt;= <span class="hljs-string">&#x27;Z&#x27;</span>)
+        ch = <span class="hljs-string">&#x27;a&#x27;</span> + ch - <span class="hljs-string">&#x27;A&#x27;</span>;
+    <span class="hljs-keyword">if</span> (ch &gt;= <span class="hljs-string">&#x27;a&#x27;</span> &amp;&amp; ch &lt;= <span class="hljs-string">&#x27;z&#x27;</span>)
+        <span class="hljs-keyword">return</span> ch - <span class="hljs-string">&#x27;a&#x27;</span>;
+    <span class="hljs-keyword">if</span> (ch &gt;= <span class="hljs-string">&#x27;0&#x27;</span> &amp;&amp; ch &lt;= <span class="hljs-string">&#x27;9&#x27;</span>)
+        <span class="hljs-keyword">return</span> ch - <span class="hljs-string">&#x27;0&#x27;</span> + <span class="hljs-number">26</span>;
+    <span class="hljs-keyword">if</span> (ch == <span class="hljs-string">&#x27;-&#x27;</span>)
+        <span class="hljs-keyword">return</span> <span class="hljs-number">36</span>;
+    <span class="hljs-keyword">if</span> (ch == <span class="hljs-string">&#x27;.&#x27;</span>)
+        <span class="hljs-keyword">return</span> <span class="hljs-number">37</span>;
+    <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;
+}
+
+<span class="hljs-comment">// Trie树数据结构</span>
+<span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Trie</span>
+{</span>
+    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Trie</span> *<span class="hljs-title">children</span>[38];</span>
+    <span class="hljs-type">bool</span> isEnd;
+} Trie;
+
+<span class="hljs-comment">// 创建Trie树，返回指针</span>
+Trie *<span class="hljs-title function_">trieCreate</span><span class="hljs-params">()</span>
+{
+    Trie *ret = (Trie *)<span class="hljs-built_in">malloc</span>(<span class="hljs-keyword">sizeof</span>(Trie));
+    <span class="hljs-built_in">memset</span>(ret-&gt;children, <span class="hljs-number">0</span>, <span class="hljs-keyword">sizeof</span>(ret-&gt;children));
+    ret-&gt;isEnd = <span class="hljs-literal">false</span>;
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%s called\n&quot;</span>, __FUNCTION__);
+    <span class="hljs-keyword">return</span> ret;
+}
+
+<span class="hljs-comment">// 插入新字符串</span>
+<span class="hljs-type">void</span> <span class="hljs-title function_">trieInsert</span><span class="hljs-params">(Trie *obj, <span class="hljs-type">char</span> *word)</span>
+{
+    <span class="hljs-type">int</span> n = <span class="hljs-built_in">strlen</span>(word);
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; n; i++)
+    {
+        <span class="hljs-type">int</span> ch = trieParser(word[i]);
+        <span class="hljs-keyword">if</span> (ch == <span class="hljs-number">-1</span>)
+        {
+        }
+        <span class="hljs-keyword">if</span> (obj-&gt;children[ch] == <span class="hljs-literal">NULL</span>)
+        {
+            obj-&gt;children[ch] = trieCreate();
+        }
+        obj = obj-&gt;children[ch];
+    }
+    obj-&gt;isEnd = <span class="hljs-literal">true</span>;
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%s called\n&quot;</span>, __FUNCTION__);
+}
+
+<span class="hljs-comment">// 查找完整字符串是否存在</span>
+<span class="hljs-type">bool</span> <span class="hljs-title function_">trieSearch</span><span class="hljs-params">(Trie *obj, <span class="hljs-type">char</span> *word)</span>
+{
+    <span class="hljs-type">int</span> n = <span class="hljs-built_in">strlen</span>(word);
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; n; i++)
+    {
+        <span class="hljs-type">int</span> ch = trieParser(word[i]);
+        <span class="hljs-keyword">if</span> (obj-&gt;children[ch] == <span class="hljs-literal">NULL</span>)
+        {
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+        }
+        obj = obj-&gt;children[ch];
+    }
+    <span class="hljs-keyword">return</span> obj-&gt;isEnd;
+}
+
+<span class="hljs-comment">// 查找字符串前缀是否存在</span>
+<span class="hljs-type">bool</span> <span class="hljs-title function_">trieStartWith</span><span class="hljs-params">(Trie *obj, <span class="hljs-type">char</span> *prefix)</span>
+{
+    <span class="hljs-type">int</span> n = <span class="hljs-built_in">strlen</span>(prefix);
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; n; i++)
+    {
+        <span class="hljs-type">int</span> ch = trieParser(prefix[i]);
+        <span class="hljs-keyword">if</span> (obj-&gt;children[ch] == <span class="hljs-literal">NULL</span>)
+        {
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+        }
+        obj = obj-&gt;children[ch];
+    }
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+}
+
+<span class="hljs-comment">// 释放Trie树</span>
+<span class="hljs-type">void</span> <span class="hljs-title function_">trieFree</span><span class="hljs-params">(Trie *obj)</span>
+{
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">38</span>; i++)
+    {
+        <span class="hljs-keyword">if</span> (obj-&gt;children[i])
+        {
+            trieFree(obj-&gt;children[i]);
+        }
+    }
+    <span class="hljs-built_in">free</span>(obj);
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%s called\n&quot;</span>, __FUNCTION__);
+}
+</code></pre>
+</article>
+    <a class="back-link" href="./index.html">← 返回文章列表</a>
+  </main>
+  <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+</body>
+</html>

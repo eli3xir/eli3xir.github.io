@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qt5基础——用户界面 · eli3xir</title>
+  <meta name="description" content="实现一个简单“修改用户信息”的Qt界面，通过简单实例的编写，熟悉Qt中常用控件的创建和使用方法、信号与槽机制的使用以及界面布局管理的方式方法。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' font-weight='bold' text-anchor='middle' fill='%237c5cff'%3Ee3%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/blog.css">
+  
+</head>
+<body>
+  <header class="blog-nav">
+    <a class="nav-logo" href="../index.html">eli3xir<span class="accent">.</span></a>
+    <nav>
+      <a href="../index.html">主页</a>
+      <a href="./index.html">文章</a>
+      <a href="https://github.com/eli3xir" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+  
+  <main class="post">
+    <div class="post-head">
+      <h1>Qt5基础——用户界面</h1>
+      <div class="post-meta">
+        <time>2021-04-14</time>
+        <span class="chip cat">技术</span><span class="chip cat">C++</span>
+        <span class="chip">基础</span><span class="chip">C++</span><span class="chip">Qt</span>
+      </div>
+    </div>
+    <article class="post-content"><h2>开始Qt</h2>
+<h3>Linux下安装Qt开发环境</h3>
+<ul>
+<li>
+<p>更新软件</p>
+<pre class="hljs"><code><span class="hljs-built_in">sudo</span> apt update
+</code></pre>
+</li>
+<li>
+<p>安装C++环境（若已安装可跳过）</p>
+<pre class="hljs"><code><span class="hljs-built_in">sudo</span> apt install build-essential
+</code></pre>
+</li>
+<li>
+<p>安装Qt</p>
+<pre class="hljs"><code><span class="hljs-built_in">sudo</span> apt install -y qtcreator qt5-default
+</code></pre>
+</li>
+</ul>
+<h3>新建Qt工程</h3>
+<ul>
+<li>
+<p>打开Qt Creator</p>
+<pre class="hljs"><code>qtcreator
+</code></pre>
+</li>
+<li>
+<p>创建新工程项目<code>New Project</code></p>
+</li>
+<li>
+<p>然后左边选择 <code>Application</code>，右边选择 <code>Qt Widgets Application</code>，单击 <code>Choose</code></p>
+</li>
+<li>
+<p>设置当前编译工具链环境（全选）</p>
+</li>
+<li>
+<p>进行主界面类创建</p>
+<p>选择整体界面继承基类，因为本项目使用对话框类 <code>QDialog</code> 为主界面，故类名命名为 <code>Content</code> ，基类选择 <code>QDialog</code> ，取消“创建界面”复选框的选中状态完成项目创建。</p>
+</li>
+<li>
+<p>汇总项目管理</p>
+<p>如果此项目位于git仓库中，可以添加到版本控制系统。</p>
+</li>
+</ul>
+<h3>主界面类设计</h3>
+<p>导航页面使用 Content 类实现。打开 <code>content.h</code> 头文件，修改 <code>Content</code> 类继承自 <code>QFrame</code> 类，类声明中包含自定义的三个页面类对象、两个按钮对象以及一个堆栈窗体对象，在 <code>Content</code> 类头文件中定义类成员变量，添加如下代码：</p>
+<pre class="hljs"><code><span class="hljs-comment">//添加的头文件</span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QStackedWidget&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QPushButton&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;baseinfo.h&quot;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;contact.h&quot;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;detail.h&quot;</span></span>
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">Content</span> : <span class="hljs-keyword">public</span> QFrame
+{
+    Q_OBJECT
+<span class="hljs-keyword">public</span>:
+    <span class="hljs-built_in">Content</span>(QWidget *parent=<span class="hljs-number">0</span>);
+    ~<span class="hljs-built_in">Content</span>();
+    QStackedWidget *stack;<span class="hljs-comment">//堆栈窗体对象声明</span>
+    QPushButton *AmendBtn;<span class="hljs-comment">//修改按钮声明</span>
+    QPushButton *CloseBtn;<span class="hljs-comment">//关闭按钮声明</span>
+    BaseInfo *baseInfo;<span class="hljs-comment">//基本信息窗口类</span>
+    Contact *contact;<span class="hljs-comment">//联系方式窗口类</span>
+    Detail *detail;<span class="hljs-comment">//详细信息窗口类</span>
+};
+</code></pre>
+<p>在头文件中声明了部分需要用到的 Qt 控件类，<code>QPushButton</code> 按钮控件类声明指针，在源文件中只需要使用 <code>new</code> 进行对应对象的创建即可。</p>
+<p>打开 <code>content.cpp</code> 文件，添加如下代码：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;content.h&quot;</span></span>
+
+Content::<span class="hljs-built_in">Content</span>(QWidget *parent) : <span class="hljs-built_in">QFrame</span>(parent)
+{
+    stack = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QStackedWidget</span>(<span class="hljs-keyword">this</span>);<span class="hljs-comment">//创建一个QStackedWidget对象</span>
+    <span class="hljs-comment">//对堆栈窗口的显示风格进行设置</span>
+    stack-&gt;<span class="hljs-built_in">setFrameStyle</span>(QFrame::Panel | QFrame::Raised);
+    <span class="hljs-comment">//插入三个页面</span>
+    baseInfo = <span class="hljs-keyword">new</span> <span class="hljs-built_in">BaseInfo</span>();
+    contact = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Contact</span>();
+    detail = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Detail</span>();
+    stack-&gt;<span class="hljs-built_in">addWidget</span>(baseInfo);
+    stack-&gt;<span class="hljs-built_in">addWidget</span>(contact);
+    stack-&gt;<span class="hljs-built_in">addWidget</span>(detail);
+    <span class="hljs-comment">//创建两个按钮</span>
+    AmendBtn = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QPushButton</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Amend&quot;</span>));
+    CloseBtn = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QPushButton</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Close&quot;</span>));
+    QHBoxLayout *BtnLayout = <span class="hljs-keyword">new</span> QHBoxLayout;
+    BtnLayout-&gt;<span class="hljs-built_in">addStretch</span>(<span class="hljs-number">1</span>);
+    BtnLayout-&gt;<span class="hljs-built_in">addWidget</span>(AmendBtn);
+    BtnLayout-&gt;<span class="hljs-built_in">addWidget</span>(CloseBtn);
+
+    <span class="hljs-comment">//整体布局</span>
+    QVBoxLayout *RightLayout = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QVBoxLayout</span>(<span class="hljs-keyword">this</span>);
+    RightLayout-&gt;<span class="hljs-built_in">setMargin</span>(<span class="hljs-number">10</span>);
+    RightLayout-&gt;<span class="hljs-built_in">setSpacing</span>(<span class="hljs-number">6</span>);
+    RightLayout-&gt;<span class="hljs-built_in">addWidget</span>(stack);
+    RightLayout-&gt;<span class="hljs-built_in">addLayout</span>(BtnLayout);
+}
+
+Content::~<span class="hljs-built_in">Content</span>()
+{
+}
+</code></pre>
+<p>其中：</p>
+<ul>
+<li><code>baseInfo = new BaseInfo();</code> 到 <code>stack-&gt;addWidget(detail);</code> 这段代码是在堆栈窗口中顺序插入”基本信息“、”联系方式“以及”详细资料“三个页面。</li>
+<li><code>AmendBtn = new QPushButton(tr(&quot;Amend&quot;));</code> 到 <code>BtnLayout-&gt;addWidget(CloseBtn);</code> 这段代码用于创建两个按钮，并利用 <code>QHBoxLayout</code> 对其进行布局。</li>
+</ul>
+<h3>“显示用户的详细资料”子界面设计</h3>
+<p>其中需要用到 <code>QPushButton</code> 、<code>Qlabel</code> 等控件，这里添加新的 <code>QWidget</code> 类，完成“显示用户的详细资料”子界面的设计。</p>
+<p>在 Qt 工程中添加新的类的方式如下：</p>
+<ul>
+<li>添加该工程的提供主要显示用户基本信息界面的函数所在的文件，在 <code>Example</code> 项目名上单击鼠标右键，在弹出的快捷菜单中选择 <code>添加新文件...</code> 菜单项。</li>
+<li>在弹出的对话框中选择 <code>C++ Class</code> 选项，单击 <code>Choose...</code> 按钮。</li>
+<li>弹出对话框，在 <code>Class name</code> 后面的文本框中输入类的名称 <code>BaseInfo</code> ，在 <code>Base class</code> 后面的下拉列表框中选择基类名 <code>QWidget</code> ，添加 <code>baseinfo.h</code> 头文件和 <code>baseinfo.cpp</code> 源文件。</li>
+<li>选择下一步后，默认当前选择，直接点击完成即可。</li>
+</ul>
+<p>打开 <code>baseinfo.h</code> 头文件，添加代码如下：</p>
+<pre class="hljs"><code><span class="hljs-comment">//添加头文件</span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QLabel&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QLineEdit&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QTextEdit&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QGridLayout&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QComboBox&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QPushButton&gt;</span></span>
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">BaseInfo</span> : <span class="hljs-keyword">public</span> QWidget
+{
+    Q_OBJECT
+<span class="hljs-keyword">public</span>:
+    <span class="hljs-function"><span class="hljs-keyword">explicit</span> <span class="hljs-title">BaseInfo</span><span class="hljs-params">(QWidget *parent = <span class="hljs-number">0</span>)</span></span>;
+signals:
+
+<span class="hljs-keyword">public</span> slots:
+<span class="hljs-keyword">private</span>:
+    <span class="hljs-comment">//左侧</span>
+    QLabel *UserNameLabel;<span class="hljs-comment">//用户名标签</span>
+    QLabel *NameLabel;<span class="hljs-comment">//姓名标签</span>
+    QLabel *SexLabel;<span class="hljs-comment">//性别标签</span>
+    QLabel *DepartmentLabel;<span class="hljs-comment">//部门标签</span>
+    QLabel *AgeLabel;<span class="hljs-comment">//年龄标签</span>
+    QLabel *OtherLabel;<span class="hljs-comment">//备注标签</span>
+    QLineEdit *UserNameLineEdit;<span class="hljs-comment">//用户名输入文本控件</span>
+    QLineEdit *NameLineEdit;<span class="hljs-comment">//姓名输入文本控件</span>
+    QComboBox *SexComboBox;<span class="hljs-comment">//性别选择ComboBox控件</span>
+    QTextEdit *DepartmentTextEdit;<span class="hljs-comment">//部门文本输入控件</span>
+    QLineEdit *AgeLineEdit;<span class="hljs-comment">//年龄文本输入控件</span>
+    QGridLayout *LeftLayout;<span class="hljs-comment">//左侧布局管理对象</span>
+    <span class="hljs-comment">//右侧</span>
+    QLabel *HeadLabel;<span class="hljs-comment">//头像标签</span>
+    QLabel *HeadIconLabel;<span class="hljs-comment">//头像图片显示控件</span>
+    QPushButton *UpdateHeadBtn;<span class="hljs-comment">//更新按钮控件</span>
+    QHBoxLayout *TopRightLayout;<span class="hljs-comment">//右侧上半部分布局管理对象</span>
+    QLabel *IntroductionLabel;<span class="hljs-comment">//个人介绍标签</span>
+    QTextEdit *IntroductionTextEdit;<span class="hljs-comment">//个人介绍文本输入控件</span>
+    QVBoxLayout *RightLayout;<span class="hljs-comment">//右侧整体布局管理对象</span>
+};
+</code></pre>
+<p>打开 <code>baseinfo.cpp</code> 文件，添加如下代码：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;baseinfo.h&quot;</span></span>
+
+BaseInfo::<span class="hljs-built_in">BaseInfo</span>(QWidget *parent) : <span class="hljs-built_in">QWidget</span>(parent)
+{
+    <span class="hljs-comment">//构建“显示用户详细资料”左侧部分控件创建及布局</span>
+    UserNameLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;User:&quot;</span>));
+    UserNameLineEdit = <span class="hljs-keyword">new</span> QLineEdit;
+    NameLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Name:&quot;</span>));
+    NameLineEdit = <span class="hljs-keyword">new</span> QLineEdit;
+    SexLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Sex:&quot;</span>));
+    SexComboBox = <span class="hljs-keyword">new</span> QComboBox;
+    SexComboBox-&gt;<span class="hljs-built_in">addItem</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Man&quot;</span>));
+    SexComboBox-&gt;<span class="hljs-built_in">addItem</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Woman&quot;</span>));
+    DepartmentLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Department:&quot;</span>));
+    DepartmentTextEdit = <span class="hljs-keyword">new</span> QTextEdit;
+    AgeLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Age:&quot;</span>));
+    AgeLineEdit = <span class="hljs-keyword">new</span> QLineEdit;
+    OtherLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Other:&quot;</span>));
+    OtherLabel-&gt;<span class="hljs-built_in">setFrameStyle</span>(QFrame::Panel | QFrame::Sunken);
+
+    <span class="hljs-comment">//新建左侧布局管理器，将前面创建好的控件添加到布局管理器中对应坐标的部分。</span>
+    LeftLayout = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QGridLayout</span>();
+    LeftLayout-&gt;<span class="hljs-built_in">addWidget</span>(UserNameLabel, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+    LeftLayout-&gt;<span class="hljs-built_in">addWidget</span>(UserNameLineEdit, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>);
+    LeftLayout-&gt;<span class="hljs-built_in">addWidget</span>(NameLabel, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>);
+    LeftLayout-&gt;<span class="hljs-built_in">addWidget</span>(NameLineEdit, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>);
+    LeftLayout-&gt;<span class="hljs-built_in">addWidget</span>(SexLabel, <span class="hljs-number">2</span>, <span class="hljs-number">0</span>);
+    LeftLayout-&gt;<span class="hljs-built_in">addWidget</span>(SexComboBox, <span class="hljs-number">2</span>, <span class="hljs-number">1</span>);
+    LeftLayout-&gt;<span class="hljs-built_in">addWidget</span>(DepartmentLabel, <span class="hljs-number">3</span>, <span class="hljs-number">0</span>);
+    LeftLayout-&gt;<span class="hljs-built_in">addWidget</span>(DepartmentTextEdit, <span class="hljs-number">3</span>, <span class="hljs-number">1</span>);
+    LeftLayout-&gt;<span class="hljs-built_in">addWidget</span>(AgeLabel, <span class="hljs-number">4</span>, <span class="hljs-number">0</span>);
+    LeftLayout-&gt;<span class="hljs-built_in">addWidget</span>(AgeLineEdit, <span class="hljs-number">4</span>, <span class="hljs-number">1</span>);
+    LeftLayout-&gt;<span class="hljs-built_in">addWidget</span>(OtherLabel, <span class="hljs-number">5</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>);
+    LeftLayout-&gt;<span class="hljs-built_in">setColumnStretch</span>(<span class="hljs-number">0</span>,<span class="hljs-number">1</span>);
+    LeftLayout-&gt;<span class="hljs-built_in">setColumnStretch</span>(<span class="hljs-number">1</span>,<span class="hljs-number">3</span>);
+
+    <span class="hljs-comment">//构建“显示用户详细资料”右侧部分控件创建及布局</span>
+    HeadLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Head:&quot;</span>));
+    HeadIconLabel = <span class="hljs-keyword">new</span> QLabel;
+    <span class="hljs-function">QPixmap <span class="hljs-title">icon</span><span class="hljs-params">(<span class="hljs-string">&quot;312.png&quot;</span>)</span></span>;
+    HeadIconLabel-&gt;<span class="hljs-built_in">setPixmap</span>(icon);
+    HeadIconLabel-&gt;<span class="hljs-built_in">resize</span>(icon.<span class="hljs-built_in">width</span>(), icon.<span class="hljs-built_in">height</span>());
+    UpdateHeadBtn = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QPushButton</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Update&quot;</span>));
+    TopRightLayout = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QHBoxLayout</span>();
+    TopRightLayout-&gt;<span class="hljs-built_in">setSpacing</span>(<span class="hljs-number">20</span>);
+    TopRightLayout-&gt;<span class="hljs-built_in">addWidget</span>(HeadLabel);
+    TopRightLayout-&gt;<span class="hljs-built_in">addWidget</span>(HeadIconLabel);
+    TopRightLayout-&gt;<span class="hljs-built_in">addWidget</span>(UpdateHeadBtn);
+    IntroductionLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Introduction:&quot;</span>));
+    IntroductionTextEdit = <span class="hljs-keyword">new</span> QTextEdit;
+    <span class="hljs-comment">//新建右侧布局管理器，将右侧需要的控件添加到布局管理器中对应坐标的部分。</span>
+    RightLayout = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QVBoxLayout</span>();
+    RightLayout-&gt;<span class="hljs-built_in">setMargin</span>(<span class="hljs-number">10</span>);
+    RightLayout-&gt;<span class="hljs-built_in">addLayout</span>(TopRightLayout);
+    RightLayout-&gt;<span class="hljs-built_in">addWidget</span>(IntroductionLabel);
+    RightLayout-&gt;<span class="hljs-built_in">addWidget</span>(IntroductionTextEdit);
+
+    <span class="hljs-comment">//新建整个界面全局布局管理器，将完成基本设置，将左侧布局和右侧布局添加进来完成全局布局显示。</span>
+    QGridLayout *mainLayout = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QGridLayout</span>(<span class="hljs-keyword">this</span>);
+    mainLayout-&gt;<span class="hljs-built_in">setMargin</span>(<span class="hljs-number">15</span>);<span class="hljs-comment">//设置控件与窗体的左右边距</span>
+    mainLayout-&gt;<span class="hljs-built_in">setSpacing</span>(<span class="hljs-number">10</span>);<span class="hljs-comment">//设置各个控件之间的上下间距</span>
+    mainLayout-&gt;<span class="hljs-built_in">addLayout</span>(LeftLayout, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addLayout</span>(RightLayout, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>);
+    mainLayout-&gt;<span class="hljs-built_in">setSizeConstraint</span>(QLayout::SetFixedSize);
+}
+</code></pre>
+<h3>子界面类设计</h3>
+<h4>“显示用户的联系方式”子界面设计</h4>
+<p>参考前面“修改用户基本信息”子界面的创建方式再次添加新的 <code>qwidget</code> 类，完成“显示用户的联系方式”子界面的设计，在子界面中添加对应的 <code>QPushButton</code> 、 <code>Qlabel</code> 等控件。</p>
+<p>在 <code>Example</code> 项目名上单击鼠标右键，在弹出的快捷菜单中选择 <code>添加新文件...</code> 菜单项，在弹出的对话框中选择 <code>C++ Class</code> 选项，单击 <code>Choose...</code> 按钮，弹出对话框，在 <code>Class name</code> 后面的文本框中输入类的名称 <code>Contact</code>，在 <code>Base class</code> 后面的下拉列表框中选择基类类名 <code>QWidget</code>。</p>
+<p>打开 <code>contact.h</code> 头文件，添加如下代码：</p>
+<pre class="hljs"><code><span class="hljs-comment">//添加头文件</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QLabel&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QGridLayout&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QLineEdit&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QCheckBox&gt;</span></span>
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">Contact</span> : <span class="hljs-keyword">public</span> QWidget
+{
+    Q_OBJECT
+<span class="hljs-keyword">public</span>:
+    <span class="hljs-function"><span class="hljs-keyword">explicit</span> <span class="hljs-title">Contact</span><span class="hljs-params">(QWidget *parent = <span class="hljs-number">0</span>)</span></span>;
+signals:
+
+<span class="hljs-keyword">public</span> slots:
+<span class="hljs-keyword">private</span>:
+    QLabel *EmailLabel;<span class="hljs-comment">//电子邮件标签</span>
+    QLineEdit *EmailLineEdit;<span class="hljs-comment">//电子邮件编辑控件</span>
+    QLabel *AddrLabel;<span class="hljs-comment">//联系地址标签</span>
+    QLineEdit *AddrLineEdit;<span class="hljs-comment">//联系地址文本编辑控件</span>
+    QLabel *CodeLabel;<span class="hljs-comment">//邮政编码标签</span>
+    QLineEdit *CodeLineEdit;<span class="hljs-comment">//邮政编码文本编辑控件</span>
+    QLabel *MoviTelLabel;<span class="hljs-comment">//移动电话标签</span>
+    QLineEdit *MoviTelLineEdit;<span class="hljs-comment">//移动电话文本编辑控件</span>
+    QCheckBox *MoviTelCheckBook;<span class="hljs-comment">//是否选择“接收留言”复选框</span>
+    QLabel *ProTelLabel;<span class="hljs-comment">//办公电话标签</span>
+    QLineEdit *ProTelLineEdit;<span class="hljs-comment">//办公电话文本编辑控件</span>
+    QGridLayout *mainLayout;<span class="hljs-comment">//全局布局管理器</span>
+};
+</code></pre>
+<p>打开 <code>contact.cpp</code> 文件，添加如下代码：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;contact.h&quot;</span></span>
+
+Contact::<span class="hljs-built_in">Contact</span>(QWidget *parent) : <span class="hljs-built_in">QWidget</span>(parent)
+{
+    <span class="hljs-comment">//新建电子邮件标签及文本编辑框</span>
+    EmailLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Email:&quot;</span>));
+    EmailLineEdit = <span class="hljs-keyword">new</span> QLineEdit;
+    <span class="hljs-comment">//新建联系地址标签及文本编辑框</span>
+    AddrLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Addr:&quot;</span>));
+    AddrLineEdit = <span class="hljs-keyword">new</span> QLineEdit;
+    <span class="hljs-comment">//新建邮政编码标签及文本编辑框</span>
+    CodeLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Code:&quot;</span>));
+    CodeLineEdit = <span class="hljs-keyword">new</span> QLineEdit;
+    <span class="hljs-comment">//新建移动电话标签及文本编辑框</span>
+    MoviTelLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;MoviTel:&quot;</span>));
+    MoviTelLineEdit = <span class="hljs-keyword">new</span> QLineEdit;
+    MoviTelCheckBook = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QCheckBox</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;MoviTelCheck&quot;</span>));
+    <span class="hljs-comment">//新建办公电话标签及文本编辑框</span>
+    ProTelLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;ProTel:&quot;</span>));
+    ProTelLineEdit = <span class="hljs-keyword">new</span> QLineEdit;
+
+    <span class="hljs-comment">//新建全局布局管理器，将上面新建的各个控件添加进来，完成当前界面的布局管理。</span>
+    mainLayout = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QGridLayout</span>(<span class="hljs-keyword">this</span>);
+    mainLayout-&gt;<span class="hljs-built_in">setMargin</span>(<span class="hljs-number">15</span>);
+    mainLayout-&gt;<span class="hljs-built_in">setSpacing</span>(<span class="hljs-number">10</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(EmailLabel, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(EmailLineEdit, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(AddrLabel, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(AddrLineEdit, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(CodeLabel, <span class="hljs-number">2</span>, <span class="hljs-number">0</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(CodeLineEdit, <span class="hljs-number">2</span>, <span class="hljs-number">1</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(MoviTelLabel, <span class="hljs-number">3</span>, <span class="hljs-number">0</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(MoviTelLineEdit, <span class="hljs-number">3</span>, <span class="hljs-number">1</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(MoviTelCheckBook, <span class="hljs-number">3</span>, <span class="hljs-number">2</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(ProTelLabel, <span class="hljs-number">4</span>, <span class="hljs-number">0</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(ProTelLineEdit, <span class="hljs-number">4</span>, <span class="hljs-number">1</span>);
+    mainLayout-&gt;<span class="hljs-built_in">setSizeConstraint</span>(QLayout::SetFixedSize);
+}
+</code></pre>
+<h4>“修改用户基本信息”子界面设计</h4>
+<p>再次添加新的类文件，完成“显示用户的详细资料”子界面的设计，在子界面中添加对应的 <code>QPushButton</code>、 <code>Qlabel</code> 等控件。</p>
+<p>添加主要显示用户的详细资料界面的函数所在的文件，在 <code>Example</code> 项目名上单击鼠标右键，在弹出的快捷菜单中选择 <code>添加新文件...</code> 菜单项，在弹出的对话框中选择 <code>C++ Class</code> 选项，单击 <code>Choose...</code> 按钮，弹出对话框，在 <code>Class name</code> 后面的文本框中输入类的名称 <code>Detail</code>，在 <code>Base class</code> 后面的下拉列表框中选择基类类名 <code>QWidget</code>。</p>
+<p>打开 <code>detail.h</code> 头文件，添加如下代码：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QLabel&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QComboBox&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QLineEdit&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QTextEdit&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QGridLayout&gt;</span></span>
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">Detail</span> : <span class="hljs-keyword">public</span> QWidget
+{
+    Q_OBJECT
+<span class="hljs-keyword">public</span>:
+    <span class="hljs-function"><span class="hljs-keyword">explicit</span> <span class="hljs-title">Detail</span><span class="hljs-params">(QWidget *parent = <span class="hljs-number">0</span>)</span></span>;
+signals:
+
+<span class="hljs-keyword">public</span> slots:
+<span class="hljs-keyword">private</span>:
+    QLabel *NationalLabel;<span class="hljs-comment">//地址标签</span>
+    QComboBox *NationalComboBox;<span class="hljs-comment">//地址选择控件</span>
+    QLabel *ProvinceLabel;<span class="hljs-comment">//省份标签</span>
+    QComboBox *ProvinceComboBox;<span class="hljs-comment">//省份选择控件</span>
+    QLabel *CityLabel;<span class="hljs-comment">//城市标签</span>
+    QLineEdit *CityLineEdit;<span class="hljs-comment">//城市文本编辑框</span>
+    QLabel *IntroductLabel;<span class="hljs-comment">//个人说明标签</span>
+    QTextEdit *IntroductTextEdit;<span class="hljs-comment">//个人说明文本编辑框</span>
+    QGridLayout *mainLayout;<span class="hljs-comment">//全局布局管理对象</span>
+};
+</code></pre>
+<p>打开 <code>detail.cpp</code> 文件，添加如下代码：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;detail.h&quot;</span></span>
+
+Detail::<span class="hljs-built_in">Detail</span>(QWidget *parent) : <span class="hljs-built_in">QWidget</span>(parent)
+{
+    NationalLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;National:&quot;</span>));
+    <span class="hljs-comment">//新建国家/地址选择控件QComboBox，向该控件中添加三个可选项。</span>
+    NationalComboBox = <span class="hljs-keyword">new</span> QComboBox;
+    NationalComboBox-&gt;<span class="hljs-built_in">insertItem</span>(<span class="hljs-number">0</span>, <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;PRC&quot;</span>));
+    NationalComboBox-&gt;<span class="hljs-built_in">insertItem</span>(<span class="hljs-number">1</span>, <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;UK&quot;</span>));
+    NationalComboBox-&gt;<span class="hljs-built_in">insertItem</span>(<span class="hljs-number">1</span>, <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;USA&quot;</span>));
+    ProvinceLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Province:&quot;</span>));
+    <span class="hljs-comment">//新建省份选择控件QComboBox，向该控件中添加三个可选项。</span>
+    ProvinceComboBox = <span class="hljs-keyword">new</span> QComboBox;
+    ProvinceComboBox-&gt;<span class="hljs-built_in">insertItem</span>(<span class="hljs-number">0</span>, <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;JiangSu&quot;</span>));
+    ProvinceComboBox-&gt;<span class="hljs-built_in">insertItem</span>(<span class="hljs-number">0</span>, <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;ShanDong&quot;</span>));
+    ProvinceComboBox-&gt;<span class="hljs-built_in">insertItem</span>(<span class="hljs-number">0</span>, <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;ZheJiang&quot;</span>));
+    CityLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;City:&quot;</span>));
+    CityLineEdit = <span class="hljs-keyword">new</span> QLineEdit;
+    IntroductLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Introduct:&quot;</span>));
+    IntroductTextEdit = <span class="hljs-keyword">new</span> QTextEdit;
+    mainLayout = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QGridLayout</span>(<span class="hljs-keyword">this</span>);
+    mainLayout-&gt;<span class="hljs-built_in">setMargin</span>(<span class="hljs-number">15</span>);
+    mainLayout-&gt;<span class="hljs-built_in">setSpacing</span>(<span class="hljs-number">10</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(NationalLabel, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(NationalComboBox, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(ProvinceLabel, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(ProvinceComboBox, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(CityLabel, <span class="hljs-number">2</span>, <span class="hljs-number">0</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(CityLineEdit, <span class="hljs-number">2</span>, <span class="hljs-number">1</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(IntroductLabel, <span class="hljs-number">3</span>, <span class="hljs-number">0</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(IntroductTextEdit, <span class="hljs-number">3</span>, <span class="hljs-number">1</span>);
+
+}
+</code></pre>
+<h3>编写程序主函数</h3>
+<p>在程序主函数中将各个子界面和导航页面组合到一起，利用 Qt5 的布局管理完成整个程序界面的布局设计。</p>
+<p>下面编写该工程的入口函数，打开 <code>main.cpp</code> 文件，添加如下代码：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;content.h&quot;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QApplication&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QTextCodec&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QSplitter&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QListWidget&gt;</span></span>
+
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span> *argv[])</span>
+</span>{
+    <span class="hljs-function">QApplication <span class="hljs-title">a</span><span class="hljs-params">(argc, argv)</span></span>;
+    <span class="hljs-function">QFont <span class="hljs-title">font</span><span class="hljs-params">(<span class="hljs-string">&quot;AR PL KaitiM GB&quot;</span>, <span class="hljs-number">12</span>)</span></span>;<span class="hljs-comment">//设置整个程序采用的字体和字号</span>
+    a.<span class="hljs-built_in">setFont</span>(font);
+    <span class="hljs-comment">//新建一个水平分割窗口对象，作为主布局框</span>
+    QSplitter *splitterMain = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QSplitter</span>(Qt::Horizontal, <span class="hljs-number">0</span>);
+    splitterMain-&gt;<span class="hljs-built_in">setOpaqueResize</span>(<span class="hljs-literal">true</span>);
+    <span class="hljs-comment">//新建列表界面，并添加对应三个界面的名称。</span>
+    QListWidget *list = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QListWidget</span>(splitterMain);
+    list-&gt;<span class="hljs-built_in">insertItem</span>(<span class="hljs-number">0</span>, QObject::<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;BaseInfo&quot;</span>));
+    list-&gt;<span class="hljs-built_in">insertItem</span>(<span class="hljs-number">0</span>, QObject::<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Contact&quot;</span>));
+    list-&gt;<span class="hljs-built_in">insertItem</span>(<span class="hljs-number">0</span>, QObject::<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Detail&quot;</span>));
+    Content *content = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Content</span>(splitterMain);
+
+    <span class="hljs-comment">//使用Qt的信号槽机制将列表界面中的选择改变事件和对应界面显示响应进行连接，这样在左侧界面进行选择</span>
+    <span class="hljs-comment">//后，右侧会显示选择对应的页面。</span>
+    QObject::<span class="hljs-built_in">connect</span>(list, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">currentRowChanged</span>(<span class="hljs-type">int</span>)), content-&gt;stack, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">setCurrentIndex</span>(<span class="hljs-type">int</span>)));
+    <span class="hljs-comment">//设置主布局框即水平分割窗口的标题</span>
+    splitterMain-&gt;<span class="hljs-built_in">setWindowTitle</span>(QObject::<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Modify User Message&quot;</span>));
+    <span class="hljs-comment">//设置主布局框即水平分割窗口的最小尺寸</span>
+    splitterMain-&gt;<span class="hljs-built_in">setMinimumSize</span>(splitterMain-&gt;<span class="hljs-built_in">minimumSize</span>());
+    <span class="hljs-comment">//设置主布局框即水平分割窗口的最大尺寸</span>
+    splitterMain-&gt;<span class="hljs-built_in">setMaximumSize</span>(splitterMain-&gt;<span class="hljs-built_in">maximumSize</span>());
+    splitterMain-&gt;<span class="hljs-built_in">show</span>();<span class="hljs-comment">//显示主布局框，其上面的控件一同显示</span>
+    <span class="hljs-keyword">return</span> a.<span class="hljs-built_in">exec</span>();
+}
+</code></pre>
+<p>其中：</p>
+<ul>
+<li><code>QListWidget *list = new QListWidget(splitterMain);</code> 在新建的水平分割窗的左侧窗口中插入以 <code>QListWidget</code> 作为条目选择框，并在此依次插入 <code>BaseInfo</code> 、<code>Contact</code> 以及 <code>Detail</code> 条目。</li>
+<li><code>Content *content = new Content(splitterMain);</code> 在新建的水平分割窗的右侧窗口中插入 Content 类对象。</li>
+<li><code>QObject::connect(list, SIGNAL(currentRowChanged(int), content-&gt;stack, SLOT(setCurrentIndex(int)));</code> 连接列表框的 <code>currentRowChanged()</code> 信号与堆栈窗口的 <code>setCurrentIndex()</code> 槽函数。</li>
+</ul>
+<p>选择 <code>构建</code> -&gt; <code>构建项目 Example</code> 菜单项。为了能在界面中显示图片，需要代码中使用到的图片放置到编译后执行程序存放的目录中去。</p>
+<h3>用户界面效果图</h3>
+<h4>英文版</h4>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210521011139.png" alt="image-20210521011131849"></p>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210521011324.png" alt="image-20210521011324396"></p>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210521011336.png" alt="image-20210521011336571"></p>
+<h4>中文版</h4>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210521011429.png" alt="image-20210521011429389"></p>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210521011439.png" alt="image-20210521011439947"></p>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210521011452.png" alt="image-20210521011452563"></p>
+</article>
+    <a class="back-link" href="./index.html">← 返回文章列表</a>
+  </main>
+  <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+</body>
+</html>

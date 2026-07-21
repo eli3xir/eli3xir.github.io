@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>python3基础 · eli3xir</title>
+  <meta name="description" content="python3基础">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' font-weight='bold' text-anchor='middle' fill='%237c5cff'%3Ee3%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/blog.css">
+  
+</head>
+<body>
+  <header class="blog-nav">
+    <a class="nav-logo" href="../index.html">eli3xir<span class="accent">.</span></a>
+    <nav>
+      <a href="../index.html">主页</a>
+      <a href="./index.html">文章</a>
+      <a href="https://github.com/eli3xir" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+  
+  <main class="post">
+    <div class="post-head">
+      <h1>python3基础</h1>
+      <div class="post-meta">
+        <time>2021-02-07</time>
+        <span class="chip cat">技术</span><span class="chip cat">基础</span>
+        <span class="chip">python</span>
+      </div>
+    </div>
+    <article class="post-content"><blockquote>
+<p>本文借鉴自：</p>
+<p><em>Python for you and me</em> : <a href="http://pymbook.readthedocs.io/en/latest/">http://pymbook.readthedocs.io/en/latest/</a></p>
+<p><em>Python tutorial</em> : <a href="http://www.pythondoc.com/pythontutorial3/index.html">http://www.pythondoc.com/pythontutorial3/index.html</a></p>
+</blockquote>
+<h2>开始Python</h2>
+<h3>解释器</h3>
+<p>在终端键入<code>python</code>或<code>python3</code>进入交互模式：</p>
+<pre class="hljs"><code><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Hello World&quot;</span>)
+Hello World
+</code></pre>
+<p>退出解释器：快捷键<code>Ctrl + D</code>或键入<code>exit()</code>。</p>
+<h3>脚本文件</h3>
+<p>可以使用任何编辑器来编辑.py文件，这里以Vim为例：</p>
+<pre class="hljs"><code>vim helloworld.py
+</code></pre>
+<p>即可用Vim创建并打开新的脚本文件。</p>
+<p><img src="https://gitee.com/sg2019/picgo/raw/master/document-uid731737labid7100timestamp1531381084391.png" alt="document-uid731737labid7100timestamp1531381084391"></p>
+<p><code>i</code>键进入插入模式，键入代码，<code>Esc + :wq</code>即可保存退出。</p>
+<pre class="hljs"><code><span class="hljs-comment">#!/usr/bin/env python3</span>
+<span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Hello World&quot;</span>)
+</code></pre>
+<p><strong>注意</strong>：为了让shell使用Python解释器执行，要在代码前加<code>#!</code>，称为_Shebang_。</p>
+<p>运行前用<code>chmod</code>命令来变更文件或目录的权限，否则会提示权限不足，可执行权限<code>+x</code>，即：</p>
+<pre class="hljs"><code><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">chmod</span> +x helloworld.py</span>
+</code></pre>
+<p>然后即可正常执行脚本文件：</p>
+<pre class="hljs"><code>./helloworld.py
+</code></pre>
+<p><strong>注意</strong>：如果程序中没有<code>#!/usr/bin/env python3</code>，则需要键入<code>python3 helloworld.py</code>执行，否则会执行bash脚本报错。</p>
+<h3>代码风格</h3>
+<p>不正确的空格缩进Python解释器会抛出错误：</p>
+<pre class="hljs"><code><span class="hljs-meta">&gt;&gt;&gt; </span>a = <span class="hljs-number">1</span>
+<span class="hljs-meta">&gt;&gt;&gt; </span>  a = <span class="hljs-number">1</span>
+  File <span class="hljs-string">&quot;&lt;stdin&gt;&quot;</span>, line <span class="hljs-number">1</span>
+    a = <span class="hljs-number">1</span>
+    ^
+IndentationError: unexpected indent
+</code></pre>
+<ul>
+<li>空格和制表符不要混用</li>
+<li>函数间空一行，类之间空两行</li>
+<li>赋值运算符、比较运算符周围要加空格，<code>,</code>、<code>:</code>（字典）后要加空格</li>
+</ul>
+<h3>注释</h3>
+<p>单行注释以<code>#</code>开头（并注意后加空格），多行注释位于<code>```</code>之间。</p>
+<pre class="hljs"><code><span class="hljs-comment"># FIXME -- fix these code later</span>
+<span class="hljs-comment"># TODO -- in future you have to do this</span>
+</code></pre>
+<h2>变量和数据类型</h2>
+<h3>关键字和标识符</h3>
+<p>在解释器中可查看：</p>
+<pre class="hljs"><code><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-built_in">help</span>()
+<span class="hljs-built_in">help</span>&gt; keywords
+</code></pre>
+<h3>从键盘读入</h3>
+<p>函数<code>input()</code>用于从键盘读取输入，<code>print()</code>用于输出。</p>
+<h3>字符串格式化</h3>
+<p><code>str.format()</code>函数用于格式化字符串，其中<code>str</code>是需要格式化的字符串，其中可以加<code>{}</code>，<code>{}</code>和其中的替换字段会被替换为参数。</p>
+<p>比如：</p>
+<ul>
+<li>
+<p><code>{:5d}</code>场宽为5的整数</p>
+</li>
+<li>
+<p><code>{:3.2f}</code>场宽为3，保留2位的浮点数</p>
+</li>
+</ul>
+<h3>单行定义多个变量赋值</h3>
+<p>Python中元组（<em>tuple</em>）这一数据类型，使得多个变量可以同时赋值。赋值语句的右值进行了封装，左值进行了拆封。既然左值和右值都可以为多个变量（使用<code>,</code>创建元组），那么经典的交换就直接写为：</p>
+<pre class="hljs"><code>a, b = b, a  <span class="hljs-comment"># 交换两个数值</span>
+</code></pre>
+<h2>运算符和表达式</h2>
+<h3>运算符</h3>
+<ul>
+<li>
+<p>只要有任意一个操作数是浮点数，结果就是浮点数</p>
+</li>
+<li>
+<p><code>/</code>除不尽时，结果为浮点数</p>
+</li>
+<li>
+<p>整除符号<code>//</code>，求余<code>%</code></p>
+</li>
+<li>
+<p><code>divmod(a, b)</code>返回元组<code>a//b, a%b</code>，可以用<code>*</code>运算符拆封元组</p>
+</li>
+</ul>
+<p>关系运算符不变，逻辑运算符使用关键字<code>and</code>、<code>or</code>、<code>not</code>，也是短路运算符。例如：</p>
+<pre class="hljs"><code><span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-number">0</span> <span class="hljs-keyword">or</span> <span class="hljs-number">3</span>
+<span class="hljs-number">3</span>
+<span class="hljs-meta">&gt;&gt;&gt; </span><span class="hljs-number">0</span> <span class="hljs-keyword">and</span> <span class="hljs-number">3</span>
+<span class="hljs-number">0</span>
+</code></pre>
+<h3>类型转换</h3>
+<p>Python是强类型语言，有如下类型转换函数：整数<code>int()</code>，浮点数<code>float()</code>，字符串<code>str()</code>。注意如果<code>int()</code>参数为浮点数的字符串会报错。</p>
+<h2>控制流 if - else</h2>
+<h3>if语句</h3>
+<pre class="hljs"><code><span class="hljs-keyword">if</span> exp1:
+	A
+<span class="hljs-keyword">elif</span> exp2:
+	B
+<span class="hljs-keyword">else</span>
+	C
+</code></pre>
+<p>注意<code>else if</code>简写为<code>elif</code>。</p>
+<h3>真值检测</h3>
+<p><code>if x:</code>比<code>if x == True</code>要更好，因为Python中许多值都具有布尔意义。</p>
+<h2>循环</h2>
+<h3>while循环</h3>
+<p>举例说明，打印100以内Fibonacci数列的值：</p>
+<pre class="hljs"><code><span class="hljs-comment">#!/usr/bin/env python3</span>
+a, b = <span class="hljs-number">0</span>, <span class="hljs-number">1</span>
+<span class="hljs-keyword">while</span> b &lt; <span class="hljs-number">100</span>:
+    <span class="hljs-built_in">print</span>(b)
+    a, b = b, a + b
+</code></pre>
+<p>如果不想每次循环时都换行，可以改变<code>print()</code>的另一个参数<code>end</code>：</p>
+<pre class="hljs"><code><span class="hljs-built_in">print</span>(b, end = <span class="hljs-string">&#x27; &#x27;</span>)
+</code></pre>
+<p>这样Fibonacci数项间将以空格隔开。如果要打印分割线，则：</p>
+<pre class="hljs"><code><span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27;-&#x27;</span> * <span class="hljs-number">40</span>)
+</code></pre>
+<p>字符串与整数相乘表示，字符串复制多次拼接，得到新的字符串。</p>
+<p>可以在循环中加入控制流，用<code>break</code>语句跳出循环，或者用<code>continue</code>语句进入下一次循环。有时可能会看到<code>pass</code>语句，它位于循环末尾，只起占位符的作用。</p>
+<h3>列表</h3>
+<p>列表很像数组，但列表的元素可以是不同类型。它可以写成中括号中间一列逗号分隔开的值的形式：</p>
+<pre class="hljs"><code>arr = [<span class="hljs-string">&quot;sg2019&quot;</span>, <span class="hljs-number">2021</span>, <span class="hljs-number">2.23</span>, <span class="hljs-literal">True</span>]
+</code></pre>
+<p>列表的索引从0开始编号，但索引可以为负数，表示从末尾向前数。</p>
+<h3>切片</h3>
+<p>切片用于取出列表的一个子列表，比如以上面的列表为例：</p>
+<pre class="hljs"><code><span class="hljs-meta">&gt;&gt;&gt; </span>arr[<span class="hljs-number">0</span>:-<span class="hljs-number">1</span>]
+[<span class="hljs-string">&quot;sg2019&quot;</span>, <span class="hljs-number">2021</span>, <span class="hljs-number">2.23</span>]
+<span class="hljs-meta">&gt;&gt;&gt; </span>arr[:]
+[<span class="hljs-string">&quot;sg2019&quot;</span>, <span class="hljs-number">2021</span>, <span class="hljs-number">2.23</span>, <span class="hljs-literal">True</span>]
+</code></pre>
+<p>切片表示一个左闭右开的区间，比如说<code>arr[0:-1]</code>，就等价于<code>arr[0:4]</code>，即左闭右开区间$[0,4)$。</p>
+</article>
+    <a class="back-link" href="./index.html">← 返回文章列表</a>
+  </main>
+  <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+</body>
+</html>

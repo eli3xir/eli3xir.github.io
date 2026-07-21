@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qt5网络通信——UDP网络聊天室 · eli3xir</title>
+  <meta name="description" content="Qt5网络通信——UDP网络聊天室">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' font-weight='bold' text-anchor='middle' fill='%237c5cff'%3Ee3%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/blog.css">
+  
+</head>
+<body>
+  <header class="blog-nav">
+    <a class="nav-logo" href="../index.html">eli3xir<span class="accent">.</span></a>
+    <nav>
+      <a href="../index.html">主页</a>
+      <a href="./index.html">文章</a>
+      <a href="https://github.com/eli3xir" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+  
+  <main class="post">
+    <div class="post-head">
+      <h1>Qt5网络通信——UDP网络聊天室</h1>
+      <div class="post-meta">
+        <time>2021-06-15</time>
+        <span class="chip cat">技术</span><span class="chip cat">C++</span>
+        <span class="chip">Qt</span><span class="chip">UDP</span><span class="chip">Socket</span>
+      </div>
+    </div>
+    <article class="post-content"><h3>服务端程序构建</h3>
+<p>下面是设计服务端的显示界面，实际上作为网络聊天室的服务端是不需要界面的，但为了方便我们实验调试和使用，这里设计如下界面：</p>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210616014917.png" alt="avatar"></p>
+<p>可以看出，服务端的界面实际上主要用来显示当前客户端链接状态以及对服务端启动、停止、更改 IP 端口等管理操作。</p>
+<p>首先，创建 Qt 工程 <code>UdpServerDemo</code> 。</p>
+<p>因为需要用到网络通信的模块功能，所以打开 <code>UdpServerDemo.pro</code> 工程文件，添加如下内容：</p>
+<pre class="hljs"><code>QT += network
+</code></pre>
+<p>为了方便进行网络通信，设计数据通信使用的数据结构体，需要添加新的头文件 <code>base.h</code> 。</p>
+<p>此时，项目中添加了一个新文件 <code>base.h</code> ，添加代码如下：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">ifndef</span> BASE_H</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> BASE_H</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">define</span>     N   128</span>
+
+<span class="hljs-keyword">enum</span> <span class="hljs-title class_">MsgKey</span>{
+    LOGIN,      <span class="hljs-comment">//登录消息</span>
+    CHAT,       <span class="hljs-comment">//正常发送信息</span>
+    QUIT        <span class="hljs-comment">//退出消息</span>
+};
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-keyword">struct</span>{
+    <span class="hljs-type">int</span> key;
+    <span class="hljs-type">char</span> name[N];
+    <span class="hljs-type">char</span> data[N];
+}MSG_t;
+
+
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">// BASE_H</span></span>
+</code></pre>
+<p>接下来，打开主界面头文件 <code>mainwidget.h</code> ，添加如下代码：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">ifndef</span> MAINWIDGET_H</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> MAINWIDGET_H</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QWidget&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QTextEdit&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QLabel&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QLineEdit&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QVBoxLayout&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QPushButton&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QUdpSocket&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QTimer&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QList&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QVector&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QHostAddress&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;base.h&quot;</span></span>
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">mainWidget</span> : <span class="hljs-keyword">public</span> QWidget
+{
+    Q_OBJECT
+
+<span class="hljs-keyword">public</span>:
+    <span class="hljs-built_in">mainWidget</span>(QWidget *parent = <span class="hljs-number">0</span>);
+    ~<span class="hljs-built_in">mainWidget</span>();
+    <span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">msgProcess</span><span class="hljs-params">(MSG_t &amp;msg, QHostAddress &amp;recvAddres, <span class="hljs-type">int</span> recvPort)</span></span>;       <span class="hljs-comment">//消息处理</span>
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">doLogin</span><span class="hljs-params">(MSG_t &amp;msg, QHostAddress &amp;recvAddres, <span class="hljs-type">int</span> recvPort)</span></span>; <span class="hljs-comment">//处理登录信息</span>
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">doChat</span><span class="hljs-params">(MSG_t &amp;msg, QHostAddress &amp;recvAddres, <span class="hljs-type">int</span> recvPort)</span></span>;  <span class="hljs-comment">//处理正常消息</span>
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">doQuit</span><span class="hljs-params">(MSG_t &amp;msg, QHostAddress &amp;recvAddres, <span class="hljs-type">int</span> recvPort)</span></span>;  <span class="hljs-comment">//处理退出信息</span>
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">sendMsg</span><span class="hljs-params">(QString &amp;sendmsg)</span></span>; <span class="hljs-comment">//向当前所有客户端发送消息 sendmsg</span>
+    <span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">isInList</span><span class="hljs-params">(QHostAddress &amp;recvAddres, <span class="hljs-type">int</span> recvPort)</span></span>; <span class="hljs-comment">//判断当前是否已有该客户端在聊天室列表中，存在返回 true, 不存在返回 false</span>
+
+<span class="hljs-keyword">public</span> slots:
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">closeBtnClicked</span><span class="hljs-params">()</span></span>;
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">msgRecv</span><span class="hljs-params">()</span></span>; <span class="hljs-comment">//UDP 接收到数据处理</span>
+
+<span class="hljs-keyword">private</span>:
+    QLabel      *MsgLabel;  <span class="hljs-comment">//消息框标签</span>
+    QTextEdit   *MsgEdit;   <span class="hljs-comment">//消息框</span>
+    QPushButton *closeBtn;
+    QVBoxLayout *mainLayout;
+
+    MSG_t     recvMsg;
+    <span class="hljs-keyword">struct</span> <span class="hljs-title class_">ClientAdressPort</span>{
+        QHostAddress adress;
+        <span class="hljs-type">int</span> port;
+    };
+
+    QList&lt;ClientAdressPort *&gt; *ClientList;  <span class="hljs-comment">//存放客户端信息容器</span>
+    QList&lt;ClientAdressPort *&gt;::iterator it; <span class="hljs-comment">//遍历操作迭代器对象</span>
+
+    <span class="hljs-type">int</span> port;
+    QUdpSocket *udpSocket;
+    QTimer      *timer;
+};
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">// MAINWIDGET_H</span></span>
+</code></pre>
+<p>然后在源文件 <code>mainwidget.cpp</code> 中实现界面初始化及关联事件的实现代码，注意这里对网络服务操作的相关代码部分，具体如下：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;mainwidget.h&quot;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QHostAddress&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QMessageBox&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QDebug&gt;</span></span>
+
+mainWidget::<span class="hljs-built_in">mainWidget</span>(QWidget *parent)
+    : <span class="hljs-built_in">QWidget</span>(parent)
+{
+    <span class="hljs-built_in">setWindowTitle</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;UDP Server&quot;</span>));
+
+    MsgLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Msg :&quot;</span>), <span class="hljs-keyword">this</span>);
+    MsgEdit = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QTextEdit</span>(<span class="hljs-keyword">this</span>);
+    closeBtn = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QPushButton</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Close&quot;</span>), <span class="hljs-keyword">this</span>);
+
+    mainLayout = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QVBoxLayout</span>(<span class="hljs-keyword">this</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(MsgLabel);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(MsgEdit);
+    mainLayout-&gt;<span class="hljs-built_in">addWidget</span>(closeBtn);
+
+    <span class="hljs-built_in">connect</span>(closeBtn, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">clicked</span>()), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">closeBtnClicked</span>()));
+
+    <span class="hljs-comment">//创建并初始化客户端地址信息链表容器。</span>
+    ClientList = <span class="hljs-keyword">new</span> QList&lt;ClientAdressPort *&gt;;
+    ClientList-&gt;<span class="hljs-built_in">clear</span>();
+
+    port = <span class="hljs-number">8888</span>;    <span class="hljs-comment">//初始化绑定端口数据</span>
+    udpSocket = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QUdpSocket</span>(<span class="hljs-keyword">this</span>);
+
+    <span class="hljs-built_in">connect</span>(udpSocket, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">readyRead</span>()), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">msgRecv</span>()));
+
+    <span class="hljs-type">bool</span> result = udpSocket-&gt;<span class="hljs-built_in">bind</span>(port);
+    <span class="hljs-keyword">if</span>(!result)
+    {
+        <span class="hljs-comment">//端口绑定失败，弹出消息框，通常失败原因是当前绑定的端口被占用。</span>
+        QMessageBox::<span class="hljs-built_in">information</span>(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;error&quot;</span>), <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;udp socket create error!&quot;</span>));
+        <span class="hljs-keyword">return</span> ;
+    }
+
+}
+
+mainWidget::~<span class="hljs-built_in">mainWidget</span>()
+{
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mainWidget::closeBtnClicked</span><span class="hljs-params">()</span>
+</span>{
+    <span class="hljs-built_in">close</span>();
+}
+
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mainWidget::sendMsg</span><span class="hljs-params">(QString &amp;sendmsg)</span>
+</span>{
+    <span class="hljs-keyword">if</span>(ClientList-&gt;<span class="hljs-built_in">isEmpty</span>())
+    {
+        <span class="hljs-built_in">qDebug</span>() &lt;&lt; <span class="hljs-string">&quot;current not client!&quot;</span>;
+        <span class="hljs-keyword">return</span>;
+    }
+    <span class="hljs-keyword">for</span>(it = ClientList-&gt;<span class="hljs-built_in">begin</span>(); it != ClientList-&gt;<span class="hljs-built_in">end</span>(); ++it)
+    {
+        udpSocket-&gt;<span class="hljs-built_in">writeDatagram</span>(sendmsg.<span class="hljs-built_in">toLatin1</span>(), sendmsg.<span class="hljs-built_in">length</span>(), (*it)-&gt;adress, (*it)-&gt;port);
+    }
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mainWidget::msgRecv</span><span class="hljs-params">()</span>
+</span>{
+    QHostAddress recvAddress;
+    <span class="hljs-type">int</span> recvPort = <span class="hljs-number">0</span>;
+    <span class="hljs-type">int</span> ret = <span class="hljs-number">0</span>;
+    <span class="hljs-keyword">while</span>(udpSocket-&gt;<span class="hljs-built_in">hasPendingDatagrams</span>())
+    {
+        ret = udpSocket-&gt;<span class="hljs-built_in">readDatagram</span>((<span class="hljs-type">char</span> *)&amp;recvMsg, (qint64)<span class="hljs-built_in">sizeof</span>(recvMsg), &amp;recvAddress, (quint16 *)&amp;recvPort);
+        <span class="hljs-keyword">if</span>(ret &lt; <span class="hljs-number">0</span>)
+        {
+            <span class="hljs-comment">//recv error</span>
+            <span class="hljs-built_in">memset</span>(&amp;recvMsg, <span class="hljs-number">0</span>, <span class="hljs-built_in">sizeof</span>(recvMsg));
+            <span class="hljs-keyword">return</span>;
+        }
+        <span class="hljs-built_in">msgProcess</span>(recvMsg, recvAddress, recvPort);
+    }
+}
+
+<span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">mainWidget::isInList</span><span class="hljs-params">(QHostAddress &amp;recvAddres, <span class="hljs-type">int</span> recvPort)</span>
+</span>{
+    <span class="hljs-keyword">if</span>(ClientList-&gt;<span class="hljs-built_in">isEmpty</span>())
+    {
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+    }
+    <span class="hljs-keyword">for</span>(it = ClientList-&gt;<span class="hljs-built_in">begin</span>(); it != ClientList-&gt;<span class="hljs-built_in">end</span>(); ++it)
+    {
+        <span class="hljs-keyword">if</span>((*it)-&gt;adress == recvAddres &amp;&amp; (*it)-&gt;port == recvPort)
+        {
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+        }
+    }
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+}
+
+<span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">mainWidget::msgProcess</span><span class="hljs-params">(MSG_t &amp;msg, QHostAddress &amp;recvAddres, <span class="hljs-type">int</span> recvPort)</span>
+</span>{
+    QString textString;
+    <span class="hljs-keyword">switch</span> (msg.key) {
+    <span class="hljs-keyword">case</span> LOGIN:
+        <span class="hljs-built_in">doLogin</span>(msg, recvAddres, recvPort);
+        textString = <span class="hljs-built_in">QString</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Login: %1 &quot;</span>)).<span class="hljs-built_in">arg</span>(msg.name);
+        <span class="hljs-keyword">break</span>;
+    <span class="hljs-keyword">case</span> CHAT:
+        <span class="hljs-built_in">doChat</span>(msg, recvAddres, recvPort);
+        textString = <span class="hljs-built_in">QString</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;chat: %1 : %2&quot;</span>)).<span class="hljs-built_in">arg</span>(msg.name).<span class="hljs-built_in">arg</span>(msg.data);
+        <span class="hljs-keyword">break</span>;
+    <span class="hljs-keyword">case</span> QUIT:
+        <span class="hljs-built_in">doQuit</span>(msg, recvAddres, recvPort);
+        textString = <span class="hljs-built_in">QString</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;quit: %1 &quot;</span>)).<span class="hljs-built_in">arg</span>(msg.name);
+        <span class="hljs-keyword">break</span>;
+    <span class="hljs-keyword">default</span>:
+        <span class="hljs-comment">//出错</span>
+        <span class="hljs-built_in">qDebug</span>() &lt;&lt; <span class="hljs-string">&quot;recv msg key error!&quot;</span>;
+        MsgEdit-&gt;<span class="hljs-built_in">append</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;recv msg key error!&quot;</span>));
+        <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;
+    }
+    MsgEdit-&gt;<span class="hljs-built_in">append</span>(textString);
+    <span class="hljs-keyword">return</span>  <span class="hljs-number">0</span>;
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mainWidget::doLogin</span><span class="hljs-params">(MSG_t &amp;msg, QHostAddress &amp;recvAddres, <span class="hljs-type">int</span> recvPort)</span>
+</span>{
+    ClientAdressPort *client = <span class="hljs-keyword">new</span> ClientAdressPort;
+    client-&gt;adress = recvAddres;
+    client-&gt;port = recvPort;
+    ClientList-&gt;<span class="hljs-built_in">append</span>(client);
+
+    QString WelcomMsg = <span class="hljs-built_in">QString</span>(<span class="hljs-string">&quot;Welcome %1 !&quot;</span>).<span class="hljs-built_in">arg</span>(msg.name);
+    <span class="hljs-comment">//向所有用户发送 欢迎消息</span>
+    <span class="hljs-built_in">sendMsg</span>(WelcomMsg);
+    MsgEdit-&gt;<span class="hljs-built_in">append</span>(WelcomMsg);
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mainWidget::doChat</span><span class="hljs-params">(MSG_t &amp;msg, QHostAddress &amp;recvAddres, <span class="hljs-type">int</span> recvPort)</span>
+</span>{
+    <span class="hljs-keyword">if</span>(!<span class="hljs-built_in">isInList</span>(recvAddres, recvPort))
+    {
+        <span class="hljs-built_in">qDebug</span>() &lt;&lt; <span class="hljs-string">&quot;client not login!&quot;</span>;
+        QString errMsg = <span class="hljs-built_in">QString</span>(<span class="hljs-string">&quot;Sorry, You are not login!&quot;</span>);
+        udpSocket-&gt;<span class="hljs-built_in">writeDatagram</span>(errMsg.<span class="hljs-built_in">toLatin1</span>(), errMsg.<span class="hljs-built_in">length</span>(), recvAddres, recvPort);
+        <span class="hljs-keyword">return</span> ;
+    }
+    QString sendmsg = <span class="hljs-built_in">QString</span>(<span class="hljs-string">&quot;%1 :&quot;</span>).<span class="hljs-built_in">arg</span>(msg.name) + <span class="hljs-built_in">QString</span>(msg.data);
+    <span class="hljs-built_in">sendMsg</span>(sendmsg);
+    MsgEdit-&gt;<span class="hljs-built_in">append</span>(sendmsg);
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mainWidget::doQuit</span><span class="hljs-params">(MSG_t &amp;msg, QHostAddress &amp;recvAddres, <span class="hljs-type">int</span> recvPort)</span>
+</span>{
+    <span class="hljs-keyword">if</span>(!<span class="hljs-built_in">isInList</span>(recvAddres, recvPort))
+    {
+        <span class="hljs-built_in">qDebug</span>() &lt;&lt; <span class="hljs-string">&quot;client not login!&quot;</span>;
+        QString errMsg = <span class="hljs-built_in">QString</span>(<span class="hljs-string">&quot;Sorry, You are not login!&quot;</span>);
+        udpSocket-&gt;<span class="hljs-built_in">writeDatagram</span>(errMsg.<span class="hljs-built_in">toLatin1</span>(), errMsg.<span class="hljs-built_in">length</span>(), recvAddres, recvPort);
+        <span class="hljs-keyword">return</span> ;
+    }
+    QString sendmsg = <span class="hljs-built_in">QString</span>(<span class="hljs-string">&quot;%1 quit chat!&quot;</span>).<span class="hljs-built_in">arg</span>(msg.name);
+    <span class="hljs-built_in">sendMsg</span>(sendmsg);
+    MsgEdit-&gt;<span class="hljs-built_in">append</span>(sendmsg);
+
+    <span class="hljs-comment">//遍历，去掉其中的退出客户端信息</span>
+    <span class="hljs-keyword">for</span>(it = ClientList-&gt;<span class="hljs-built_in">begin</span>(); it != ClientList-&gt;<span class="hljs-built_in">end</span>(); ++it)
+    {
+        <span class="hljs-keyword">if</span>( recvAddres == ((*it)-&gt;adress) &amp;&amp; recvPort == ((*it)-&gt;port))
+        {
+            ClientAdressPort *quitClient = ClientList-&gt;<span class="hljs-built_in">at</span>(it - ClientList-&gt;<span class="hljs-built_in">begin</span>());
+            ClientList-&gt;<span class="hljs-built_in">removeOne</span>(*it);
+            <span class="hljs-keyword">delete</span> quitClient;
+        }
+    }
+}
+</code></pre>
+<p>其中：</p>
+<ul>
+<li><code>udpSocket = new QUdpSocket(this);</code> 创建一个 udpsocket 连接对象，此时仅仅创建了 socket 网络套接字操作对象，并没有进行任何的 UDP 网络操作。</li>
+<li><code>bool result = udpSocket-&gt;bind(port);</code> 将创建好的 socket 与端口绑定。此时进行 UDP 消息发送和接收时都是通过该端口进行。</li>
+<li><code>connect(udpSocket, SIGNAL(readyRead()), this, SLOT(msgRecv()));</code> 将 <code>udpSocket</code> 对象中的接收消息信号 <code>readyRead()</code> 和处理消息槽函数 <code>msgRecv()</code>进行关联，这样在服务器接收到 <code>8888</code> 端口的 UDP 网络数据时就会触发信号进而 <code>msgRecv()</code> 进行具体处理。</li>
+<li><code>udpSocket-&gt;hasPendingDatagrams()</code> QUdpSocket 类成员函数 <code>hasPendingDatagrams()</code> 用来判断当前是否有缓存的接收数据。</li>
+<li><code>udpSocket-&gt;readDatagram((char *)&amp;recvMsg, (qint64)sizeof(recvMsg), &amp;recvAddress, (quint16 *)&amp;recvPort);</code> QUdpSocket 类成员函数 <code>readDatagram()</code> 用来读取当前接收到的缓存数据，第三个参数和第四个参数可以接收到发送数据方的 IP 地址及端口信息，这样就可以提取对方信息进行消息回复，因为 UDP 通信是不建立连接的，所以只有知道对方的通信地址信息才能正常发送数据。</li>
+<li><code>udpSocket-&gt;writeDatagram(sendmsg.toLatin1(), sendmsg.length(), (*it)-&gt;adress, (*it)-&gt;port);</code> QUdpSocket 类成员函数 <code>writeDatagram()</code> 用来发送数据，需要提供接收方的 IP 地址及端口号信息。</li>
+<li>在本实例中，采用 <code>QList</code> 链表容器存储客户端通信地址信息，方便处理操作。</li>
+</ul>
+<p>以上都编写完成后，构建运行程序，如果编程出现以下错误，是因为在项目文件 <code>UdpServerDemo.pro</code> 中没有在 QT 中添加 <code>network</code> 。修改成 <code>QT += core gui network</code> 后再次编译即可。</p>
+<h3>客户端程序构建</h3>
+<p>接下来就需要设计客户端界面，客户端的主要任务就是在与服务器进行链接后能够发送文字消息并且将从服务器返回的消息进行显示，所以客户端设计成如下界面：</p>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210616015108.png" alt="avatar"></p>
+<p>首先，创建 Qt 工程 <code>UdpClientDemo</code>。</p>
+<p>此时，完成项目工程的创建后，在 <code>UdpClientDemo.pro</code> 工程文件同样添加上 <code>QT += network</code> ，并且添加与服务端进行数据通信使用的数据结构体定义文件 <code>base.h</code> ，参考服务端添加步骤进行添加，内容一致如下：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">ifndef</span> BASE_H</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> BASE_H</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">define</span>     N   128</span>
+
+<span class="hljs-keyword">enum</span> <span class="hljs-title class_">MsgKey</span>{
+    LOGIN,      <span class="hljs-comment">//登录消息</span>
+    CHAT,       <span class="hljs-comment">//正常发送信息</span>
+    QUIT        <span class="hljs-comment">//退出消息</span>
+};
+
+<span class="hljs-keyword">typedef</span> <span class="hljs-keyword">struct</span>{
+    <span class="hljs-type">int</span> key;
+    <span class="hljs-type">char</span> name[N];
+    <span class="hljs-type">char</span> data[N];
+}MSG_t;
+
+
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">// BASE_H</span></span>
+</code></pre>
+<p>接下来打开主界面头文件 <code>mainwidget.h</code> ，添加如下代码：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">ifndef</span> MAINWIDGET_H</span>
+<span class="hljs-meta">#<span class="hljs-keyword">define</span> MAINWIDGET_H</span>
+
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QWidget&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QTextEdit&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QLabel&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QLineEdit&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QVBoxLayout&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QHBoxLayout&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QPushButton&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QUdpSocket&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QHostAddress&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QTimer&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;base.h&quot;</span></span>
+
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">mainWidget</span> : <span class="hljs-keyword">public</span> QWidget
+{
+    Q_OBJECT
+
+<span class="hljs-keyword">public</span>:
+    <span class="hljs-built_in">mainWidget</span>(QWidget *parent = <span class="hljs-number">0</span>);
+    ~<span class="hljs-built_in">mainWidget</span>();
+
+<span class="hljs-keyword">public</span> slots:
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">CloseBtnClicked</span><span class="hljs-params">()</span></span>;
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">dataRecv</span><span class="hljs-params">()</span></span>;
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">doLogin</span><span class="hljs-params">()</span></span>;
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">doChat</span><span class="hljs-params">()</span></span>;
+    <span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">doQuit</span><span class="hljs-params">()</span></span>;
+
+<span class="hljs-keyword">private</span>:
+    QTextEdit   *ReceiveTextEdit;
+    QLineEdit   *SendLineEdit;
+
+    QLabel      *nameLabel;
+    QLineEdit   *nameLineEdit;
+    QLabel      *portLabel;
+    QLineEdit   *portLineEdit;
+    QLabel      *ServerAddressLabel;
+    QLineEdit   *ServerAddressLineEdit;
+    QLabel      *ServerPortLabel;
+    QLineEdit   *ServerPortLineEdit;
+
+    QPushButton *LoginBtn;
+    QPushButton *ChatBtn;
+    QPushButton *QuitBtn;
+    QPushButton *CloseBtn;
+    QHBoxLayout *mainLayout;
+
+
+    QHostAddress    ServerAddress;
+    <span class="hljs-type">int</span>             Serverport;
+
+    <span class="hljs-type">int</span>             Clientport;
+    MSG_t sendmsg;
+
+    QUdpSocket *udpSocket;
+};
+<span class="hljs-meta">#<span class="hljs-keyword">endif</span> <span class="hljs-comment">// MAINWIDGET_H</span></span>
+</code></pre>
+<p>然后在源文件 <code>mainwidget.cpp</code> 中实现界面初始化及关联事件的实现代码，注意这里对网络服务操作的相关代码部分，具体如下：</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;mainwidget.h&quot;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QMessageBox&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QThread&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;QDebug&gt;</span></span>
+
+mainWidget::<span class="hljs-built_in">mainWidget</span>(QWidget *parent)
+    : <span class="hljs-built_in">QWidget</span>(parent)
+{
+    <span class="hljs-built_in">setWindowTitle</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;UDP Client&quot;</span>));
+
+    <span class="hljs-comment">//左侧布局</span>
+    ReceiveTextEdit = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QTextEdit</span>(<span class="hljs-keyword">this</span>);
+    ChatBtn = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QPushButton</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Chat&quot;</span>), <span class="hljs-keyword">this</span>);
+    SendLineEdit = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLineEdit</span>();
+    QGridLayout *left = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QGridLayout</span>();
+    left-&gt;<span class="hljs-built_in">addWidget</span>(ReceiveTextEdit, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">4</span>, <span class="hljs-number">4</span>);
+    left-&gt;<span class="hljs-built_in">addWidget</span>(SendLineEdit, <span class="hljs-number">4</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">3</span>);
+    left-&gt;<span class="hljs-built_in">addWidget</span>(ChatBtn, <span class="hljs-number">4</span>, <span class="hljs-number">3</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>);
+
+
+    <span class="hljs-comment">//右侧布局</span>
+    nameLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Name:&quot;</span>));
+    nameLineEdit = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLineEdit</span>();
+    portLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;MyPort:&quot;</span>));
+    portLineEdit = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLineEdit</span>();
+    portLineEdit-&gt;<span class="hljs-built_in">setInputMask</span>(<span class="hljs-string">&quot;9999&quot;</span>);
+    ServerAddressLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Server Address:&quot;</span>));
+    ServerAddressLineEdit = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLineEdit</span>();
+    ServerAddressLineEdit-&gt;<span class="hljs-built_in">setInputMask</span>(<span class="hljs-string">&quot;000.000.000.000;&quot;</span>);
+    ServerPortLabel = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLabel</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Server Port:&quot;</span>));
+    ServerPortLineEdit = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QLineEdit</span>();
+    ServerPortLineEdit-&gt;<span class="hljs-built_in">setInputMask</span>(<span class="hljs-string">&quot;9999&quot;</span>);
+    LoginBtn = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QPushButton</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Login&quot;</span>));
+    QuitBtn = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QPushButton</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Quit&quot;</span>));
+    CloseBtn = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QPushButton</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Close&quot;</span>));
+    QGridLayout *right = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QGridLayout</span>();
+    right-&gt;<span class="hljs-built_in">addWidget</span>(nameLabel, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+    right-&gt;<span class="hljs-built_in">addWidget</span>(nameLineEdit, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>);
+    right-&gt;<span class="hljs-built_in">addWidget</span>(portLabel, <span class="hljs-number">1</span>, <span class="hljs-number">0</span>);
+    right-&gt;<span class="hljs-built_in">addWidget</span>(portLineEdit, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>);
+    right-&gt;<span class="hljs-built_in">addWidget</span>(ServerAddressLabel, <span class="hljs-number">2</span>, <span class="hljs-number">0</span>);
+    right-&gt;<span class="hljs-built_in">addWidget</span>(ServerAddressLineEdit, <span class="hljs-number">2</span>, <span class="hljs-number">1</span>);
+    right-&gt;<span class="hljs-built_in">addWidget</span>(ServerPortLabel, <span class="hljs-number">3</span>, <span class="hljs-number">0</span>);
+    right-&gt;<span class="hljs-built_in">addWidget</span>(ServerPortLineEdit, <span class="hljs-number">3</span>, <span class="hljs-number">1</span>);
+    right-&gt;<span class="hljs-built_in">addWidget</span>(LoginBtn, <span class="hljs-number">4</span>, <span class="hljs-number">0</span>);
+    right-&gt;<span class="hljs-built_in">addWidget</span>(QuitBtn, <span class="hljs-number">4</span>, <span class="hljs-number">1</span>);
+    right-&gt;<span class="hljs-built_in">addWidget</span>(CloseBtn, <span class="hljs-number">5</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>);
+
+    <span class="hljs-comment">//总体布局</span>
+    mainLayout = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QHBoxLayout</span>(<span class="hljs-keyword">this</span>);
+    mainLayout-&gt;<span class="hljs-built_in">addLayout</span>(left);
+    mainLayout-&gt;<span class="hljs-built_in">addLayout</span>(right);
+
+    <span class="hljs-built_in">connect</span>(CloseBtn, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">clicked</span>()), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">CloseBtnClicked</span>()));
+    <span class="hljs-built_in">connect</span>(LoginBtn, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">clicked</span>()), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">doLogin</span>()));
+    <span class="hljs-built_in">connect</span>(QuitBtn, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">clicked</span>()), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">doQuit</span>()));
+    <span class="hljs-built_in">connect</span>(ChatBtn, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">clicked</span>()), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">doChat</span>()));
+
+    <span class="hljs-comment">//初始化各个按键</span>
+    LoginBtn-&gt;<span class="hljs-built_in">setEnabled</span>(<span class="hljs-literal">true</span>);
+    CloseBtn-&gt;<span class="hljs-built_in">setEnabled</span>(<span class="hljs-literal">true</span>);
+    ChatBtn-&gt;<span class="hljs-built_in">setEnabled</span>(<span class="hljs-literal">false</span>);
+    QuitBtn-&gt;<span class="hljs-built_in">setEnabled</span>(<span class="hljs-literal">false</span>);
+    portLineEdit-&gt;<span class="hljs-built_in">setText</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;5555&quot;</span>));
+    ServerAddressLineEdit-&gt;<span class="hljs-built_in">setText</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;127.0.0.1&quot;</span>));
+    ServerPortLineEdit-&gt;<span class="hljs-built_in">setText</span>(<span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;8888&quot;</span>));
+
+
+}
+
+mainWidget::~<span class="hljs-built_in">mainWidget</span>()
+{
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mainWidget::CloseBtnClicked</span><span class="hljs-params">()</span>
+</span>{
+    <span class="hljs-built_in">close</span>();
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mainWidget::dataRecv</span><span class="hljs-params">()</span>
+</span>{
+    <span class="hljs-keyword">while</span>(udpSocket-&gt;<span class="hljs-built_in">hasPendingDatagrams</span>())
+    {
+        QByteArray datagram;
+        datagram.<span class="hljs-built_in">resize</span>(udpSocket-&gt;<span class="hljs-built_in">pendingDatagramSize</span>());
+        udpSocket-&gt;<span class="hljs-built_in">readDatagram</span>(datagram.<span class="hljs-built_in">data</span>(), datagram.<span class="hljs-built_in">size</span>());
+
+        QString msg = datagram.<span class="hljs-built_in">data</span>();
+<span class="hljs-comment">//        ReceiveTextEdit-&gt;insertPlainText(msg);</span>
+        ReceiveTextEdit-&gt;<span class="hljs-built_in">append</span>(msg);
+    }
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mainWidget::doLogin</span><span class="hljs-params">()</span>
+</span>{
+    <span class="hljs-keyword">if</span>(ServerPortLineEdit-&gt;<span class="hljs-built_in">text</span>().<span class="hljs-built_in">isEmpty</span>() || ServerAddressLineEdit-&gt;<span class="hljs-built_in">text</span>().<span class="hljs-built_in">isEmpty</span>())
+    {
+        QMessageBox::<span class="hljs-built_in">information</span>(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;error&quot;</span>), <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Server infomation is NULL!&quot;</span>));
+        <span class="hljs-keyword">return</span> ;
+    }
+    ServerAddress = <span class="hljs-built_in">QHostAddress</span>(ServerAddressLineEdit-&gt;<span class="hljs-built_in">text</span>());
+    Serverport = ServerPortLineEdit-&gt;<span class="hljs-built_in">text</span>().<span class="hljs-built_in">toInt</span>();
+    <span class="hljs-keyword">if</span>(portLineEdit-&gt;<span class="hljs-built_in">text</span>().<span class="hljs-built_in">isEmpty</span>())
+    {
+        QMessageBox::<span class="hljs-built_in">information</span>(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;error&quot;</span>), <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;My Port infomation is NULL!&quot;</span>));
+        <span class="hljs-keyword">return</span> ;
+    }
+    Clientport = portLineEdit-&gt;<span class="hljs-built_in">text</span>().<span class="hljs-built_in">toInt</span>();
+
+    <span class="hljs-keyword">if</span>(nameLineEdit-&gt;<span class="hljs-built_in">text</span>().<span class="hljs-built_in">isEmpty</span>())
+    {
+        QMessageBox::<span class="hljs-built_in">information</span>(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;error&quot;</span>), <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;My Name infomation is NULL!&quot;</span>));
+        <span class="hljs-keyword">return</span> ;
+    }
+
+    <span class="hljs-comment">//发送注册登录信息</span>
+    udpSocket = <span class="hljs-keyword">new</span> <span class="hljs-built_in">QUdpSocket</span>(<span class="hljs-keyword">this</span>);
+    <span class="hljs-built_in">connect</span>(udpSocket, <span class="hljs-built_in">SIGNAL</span>(<span class="hljs-built_in">readyRead</span>()), <span class="hljs-keyword">this</span>, <span class="hljs-built_in">SLOT</span>(<span class="hljs-built_in">dataRecv</span>()));
+    <span class="hljs-type">bool</span> result = udpSocket-&gt;<span class="hljs-built_in">bind</span>(Clientport);
+    <span class="hljs-keyword">if</span>(!result)
+    {
+        QMessageBox::<span class="hljs-built_in">information</span>(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;error&quot;</span>), <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;udp socket create error!&quot;</span>));
+        <span class="hljs-keyword">return</span> ;
+    }
+    LoginBtn-&gt;<span class="hljs-built_in">setEnabled</span>(<span class="hljs-literal">false</span>);
+    QuitBtn-&gt;<span class="hljs-built_in">setEnabled</span>(<span class="hljs-literal">true</span>);
+    ChatBtn-&gt;<span class="hljs-built_in">setEnabled</span>(<span class="hljs-literal">true</span>);
+    <span class="hljs-built_in">memcpy</span>(sendmsg.name, nameLineEdit-&gt;<span class="hljs-built_in">text</span>().<span class="hljs-built_in">toLatin1</span>(), nameLineEdit-&gt;<span class="hljs-built_in">text</span>().<span class="hljs-built_in">length</span>());
+    sendmsg.key = LOGIN;
+
+    <span class="hljs-comment">//发送给服务器</span>
+    <span class="hljs-built_in">qDebug</span>() &lt;&lt; <span class="hljs-string">&quot;send Login data!&quot;</span>;
+    udpSocket-&gt;<span class="hljs-built_in">writeDatagram</span>((<span class="hljs-type">char</span> *)&amp;sendmsg, <span class="hljs-built_in">sizeof</span>(sendmsg), ServerAddress, Serverport);
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mainWidget::doChat</span><span class="hljs-params">()</span>
+</span>{
+    <span class="hljs-keyword">if</span>(SendLineEdit-&gt;<span class="hljs-built_in">text</span>().<span class="hljs-built_in">isEmpty</span>())
+    {
+        QMessageBox::<span class="hljs-built_in">information</span>(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;error&quot;</span>), <span class="hljs-built_in">tr</span>(<span class="hljs-string">&quot;Send Msg is NULL!&quot;</span>));
+        <span class="hljs-keyword">return</span> ;
+    }
+    sendmsg.key = CHAT;
+    <span class="hljs-built_in">memset</span>(sendmsg.data, <span class="hljs-number">0</span>, <span class="hljs-built_in">sizeof</span>(sendmsg.data));
+    <span class="hljs-built_in">memcpy</span>(sendmsg.data, SendLineEdit-&gt;<span class="hljs-built_in">text</span>().<span class="hljs-built_in">toLatin1</span>(), SendLineEdit-&gt;<span class="hljs-built_in">text</span>().<span class="hljs-built_in">length</span>());
+
+    <span class="hljs-comment">//发送给服务器</span>
+    <span class="hljs-built_in">qDebug</span>() &lt;&lt; <span class="hljs-string">&quot;send Login data!&quot;</span>;
+    udpSocket-&gt;<span class="hljs-built_in">writeDatagram</span>((<span class="hljs-type">char</span> *)&amp;sendmsg, <span class="hljs-built_in">sizeof</span>(sendmsg), ServerAddress, Serverport);
+}
+
+<span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">mainWidget::doQuit</span><span class="hljs-params">()</span>
+</span>{
+    sendmsg.key = QUIT;
+    <span class="hljs-built_in">memset</span>(sendmsg.data, <span class="hljs-number">0</span>, <span class="hljs-built_in">sizeof</span>(sendmsg.data));
+
+    <span class="hljs-comment">//发送给服务器</span>
+    <span class="hljs-built_in">qDebug</span>() &lt;&lt; <span class="hljs-string">&quot;send Login data!&quot;</span>;
+    udpSocket-&gt;<span class="hljs-built_in">writeDatagram</span>((<span class="hljs-type">char</span> *)&amp;sendmsg, <span class="hljs-built_in">sizeof</span>(sendmsg), ServerAddress, Serverport);
+
+    <span class="hljs-comment">//等待服务端做出反馈后再显示到画面上</span>
+    QThread::<span class="hljs-built_in">msleep</span>(<span class="hljs-number">500</span>);
+    QuitBtn-&gt;<span class="hljs-built_in">setEnabled</span>(<span class="hljs-literal">false</span>);
+    ChatBtn-&gt;<span class="hljs-built_in">setEnabled</span>(<span class="hljs-literal">false</span>);
+    LoginBtn-&gt;<span class="hljs-built_in">setEnabled</span>(<span class="hljs-literal">true</span>);
+    udpSocket-&gt;<span class="hljs-built_in">close</span>();
+}
+</code></pre>
+<p>其中：</p>
+<ul>
+<li><code>QUdpSocket</code> 操作流程与服务器类似，因为在 UDP 通信中不建立连接，所以客户端和服务端进行消息发送和接收操作类似。</li>
+<li>需要注意在 <code>doQuit()</code> 退出聊天室函数中，完成消息发送和界面响应后需要调用 <code>udpSocket-&gt;close();</code> 关闭当前已经绑定端口的 udpSocket 对象。如果不关闭的话，当前端口依然会被占用，当再次调用 <code>udpSocket-&gt;bind(Clientport);</code> 就会因为端口不可用而失败。</li>
+</ul>
+<h3>服务端与客户端同时执行</h3>
+<p>在 UDP 服务端和 UDP 客户端程序都构建完成后，进入构建完成后的可执行文件目录下。</p>
+<p>首先运行 UDP 服务端程序，在终端界面中进入可执行目录，并执行。</p>
+<p>此时，UDP 服务器已经在运行了，以同样的方式启动 UDP 客户端程序。需要注意，网络聊天室就是多人的聊天应用，所以需要启动多个客户端程序来进行试验，需要在执行命令后使用 <code>&amp;</code> 将程序放入后台运行。</p>
+<p>接下来，将三个客户端分别填写需要的信息，因为是本机，所以通信地址统一使用本地环回地址 <code>127.0.0.1</code> ，服务端监听端口为 <code>8888</code> ，客户端端口可以随意设置，但是不要使用当前已经被使用的端口。</p>
+<p>可以看到，已经能够正式使用聊天室的功能了，多个客户端之间都可以同时发送消息并且接收对方的消息了。</p>
+</article>
+    <a class="back-link" href="./index.html">← 返回文章列表</a>
+  </main>
+  <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+</body>
+</html>

@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>推荐系统项目：音乐个性化推荐 · eli3xir</title>
+  <meta name="description" content="推荐系统项目：音乐个性化推荐">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' font-weight='bold' text-anchor='middle' fill='%237c5cff'%3Ee3%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/blog.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.querySelector('.post-content'), { delimiters: [
+      { left: '$$', right: '$$', display: true },
+      { left: '$', right: '$', display: false },
+      { left: '\\(', right: '\\)', display: false },
+      { left: '\\[', right: '\\]', display: true }
+    ] });"></script>
+</head>
+<body>
+  <header class="blog-nav">
+    <a class="nav-logo" href="../index.html">eli3xir<span class="accent">.</span></a>
+    <nav>
+      <a href="../index.html">主页</a>
+      <a href="./index.html">文章</a>
+      <a href="https://github.com/eli3xir" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+  
+  <main class="post">
+    <div class="post-head">
+      <h1>推荐系统项目：音乐个性化推荐</h1>
+      <div class="post-meta">
+        <time>2021-05-05</time>
+        <span class="chip cat">数学</span><span class="chip cat">机器学习</span>
+        <span class="chip">算法</span><span class="chip">机器学习</span><span class="chip">推荐系统</span><span class="chip">奇异值分解</span><span class="chip">相似度</span>
+      </div>
+    </div>
+    <article class="post-content"><p>首先对音乐数据集进行数据清洗和特征提取，基于矩阵分解方式来进行音乐推荐。</p>
+<ul>
+<li>音乐数据处理</li>
+</ul>
+<p>读取音乐数据集，并统计其各项指标，选择有价值的信息当做我们的特征</p>
+<ul>
+<li>基于商品相似性的推荐</li>
+</ul>
+<p>选择相似度计算方法，通过相似度来计算推荐结果</p>
+<ul>
+<li>基于SVD矩阵分解的推荐</li>
+</ul>
+<p>使用矩阵分解方法，快速高效得到推荐结果</p>
+<p>数据集下载：<a href="http://millionsongdataset.com/sites/default/files/challenge/train_triplets.txt.zip">http://millionsongdataset.com/sites/default/files/challenge/train_triplets.txt.zip</a></p>
+<pre class="hljs"><code><span class="hljs-keyword">import</span> pandas <span class="hljs-keyword">as</span> pd
+<span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+<span class="hljs-keyword">import</span> time
+<span class="hljs-keyword">import</span> sqlite3
+
+data_home = <span class="hljs-string">&#x27;./&#x27;</span>
+</code></pre>
+<p>我们的数据中有一部分是数据库文件，使用sqlite3工具包来帮助我们进行数据的读取，关于数据的路径这个大家可以根据自己情况来设置。
+先来看一下我们的数据长什么样子吧，对于不同格式的数据read_csv有很多参数可以来选择，例如分隔符与列名等。</p>
+<h2>数据读取</h2>
+<p>在数据中只需要用户，歌曲，播放量：</p>
+<pre class="hljs"><code>triplet_dataset = pd.read_csv(filepath_or_buffer=data_home+<span class="hljs-string">&#x27;train_triplets.txt&#x27;</span>, 
+                              sep=<span class="hljs-string">&#x27;\t&#x27;</span>, header=<span class="hljs-literal">None</span>, 
+                              names=[<span class="hljs-string">&#x27;user&#x27;</span>,<span class="hljs-string">&#x27;song&#x27;</span>,<span class="hljs-string">&#x27;play_count&#x27;</span>])
+</code></pre>
+<p>数据规模还是蛮大的：</p>
+<pre class="hljs"><code>triplet_dataset.shape
+</code></pre>
+<pre><code>(48373586, 3)
+</code></pre>
+<p>数据占用内存与各指标格式：</p>
+<pre class="hljs"><code>triplet_dataset.info()
+</code></pre>
+<pre><code>&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 48373586 entries, 0 to 48373585
+Data columns (total 3 columns):
+user          object
+song          object
+play_count    int64
+dtypes: int64(1), object(2)
+memory usage: 1.1+ GB
+</code></pre>
+<p>如果想更详细的了解数据的情况，可以打印其info信息，来观察不同列的类型以及整体占用内存，这里教大家一个比较实用的技巧，如果拿到的数据非常大，对数据进行处理的时候可能会出现内存溢出的错误，这里最简单的方法就是设置下数据个格式，比如将float64用float32来替代，这样可以大大节省内存开销。</p>
+<p>原始数据</p>
+<pre class="hljs"><code>triplet_dataset.head(n=<span class="hljs-number">10</span>)
+</code></pre>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>user</th>
+      <th>song</th>
+      <th>play_count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>b80344d063b5ccb3212f76538f3d9e43d87dca9e</td>
+      <td>SOAKIMP12A8C130995</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>b80344d063b5ccb3212f76538f3d9e43d87dca9e</td>
+      <td>SOAPDEY12A81C210A9</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>b80344d063b5ccb3212f76538f3d9e43d87dca9e</td>
+      <td>SOBBMDR12A8C13253B</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>b80344d063b5ccb3212f76538f3d9e43d87dca9e</td>
+      <td>SOBFNSP12AF72A0E22</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>b80344d063b5ccb3212f76538f3d9e43d87dca9e</td>
+      <td>SOBFOVM12A58A7D494</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>b80344d063b5ccb3212f76538f3d9e43d87dca9e</td>
+      <td>SOBNZDC12A6D4FC103</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>b80344d063b5ccb3212f76538f3d9e43d87dca9e</td>
+      <td>SOBSUJE12A6D4F8CF5</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>b80344d063b5ccb3212f76538f3d9e43d87dca9e</td>
+      <td>SOBVFZR12A6D4F8AE3</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>b80344d063b5ccb3212f76538f3d9e43d87dca9e</td>
+      <td>SOBXALG12A8C13C108</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>b80344d063b5ccb3212f76538f3d9e43d87dca9e</td>
+      <td>SOBXHDL12A81C204C0</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+<h3>对每一个用户分别统计播放总量</h3>
+<p>数据中有用户的编号，歌曲编号，已经用户对该歌曲播放的次数。
+有了基础数据之后，我们还可以统计出关于用户与歌曲的各项指标，例如对每一个用户，分别统计他的播放总量，代码如下：</p>
+<pre class="hljs"><code>output_dict = {}
+<span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(data_home+<span class="hljs-string">&#x27;train_triplets.txt&#x27;</span>) <span class="hljs-keyword">as</span> f:
+    <span class="hljs-keyword">for</span> line_number, line <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(f):
+        <span class="hljs-comment"># 找到当前的用户</span>
+        user = line.split(<span class="hljs-string">&#x27;\t&#x27;</span>)[<span class="hljs-number">0</span>]
+        <span class="hljs-comment"># 得到其播放量数据</span>
+        play_count = <span class="hljs-built_in">int</span>(line.split(<span class="hljs-string">&#x27;\t&#x27;</span>)[<span class="hljs-number">2</span>])
+        <span class="hljs-comment"># 如果字典中已经有该用户信息，在其基础上增加当前的播放量</span>
+        <span class="hljs-keyword">if</span> user <span class="hljs-keyword">in</span> output_dict:
+            play_count +=output_dict[user]
+            output_dict.update({user:play_count})
+        output_dict.update({user:play_count})
+<span class="hljs-comment"># 统计用户-总播放量</span>
+output_list = [{<span class="hljs-string">&#x27;user&#x27;</span>:k,<span class="hljs-string">&#x27;play_count&#x27;</span>:v} <span class="hljs-keyword">for</span> k,v <span class="hljs-keyword">in</span> output_dict.items()]
+<span class="hljs-comment"># 转换成df格式</span>
+play_count_df = pd.DataFrame(output_list)
+<span class="hljs-comment"># 排序</span>
+play_count_df = play_count_df.sort_values(by = <span class="hljs-string">&#x27;play_count&#x27;</span>, ascending = <span class="hljs-literal">False</span>)
+</code></pre>
+<p>构建一个字典结构来统计不同用户分别播放的总数，这需要我们把数据集遍历一遍。当我们的数据集比较庞大的时候，每一步操作都可能花费较长时间，后续操作中如果稍有不慎可能还得重头再来一遍，这就得不偿失了，最好还是把中间结果保存下来，既然我们已经把结果转换成df格式，直接使用<code>to_csv()</code>函数就可以完成保存的操作。</p>
+<pre class="hljs"><code>play_count_df.to_csv(path_or_buf=<span class="hljs-string">&#x27;user_playcount_df.csv&#x27;</span>, index = <span class="hljs-literal">False</span>)
+</code></pre>
+<h3>对每一首歌分别统计播放总量</h3>
+<pre class="hljs"><code><span class="hljs-comment"># 统计方法跟上述类似</span>
+output_dict = {}
+<span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(data_home+<span class="hljs-string">&#x27;train_triplets.txt&#x27;</span>) <span class="hljs-keyword">as</span> f:
+    <span class="hljs-keyword">for</span> line_number, line <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(f):
+        <span class="hljs-comment"># 找到当前歌曲</span>
+        song = line.split(<span class="hljs-string">&#x27;\t&#x27;</span>)[<span class="hljs-number">1</span>]
+        <span class="hljs-comment"># 找到当前播放次数</span>
+        play_count = <span class="hljs-built_in">int</span>(line.split(<span class="hljs-string">&#x27;\t&#x27;</span>)[<span class="hljs-number">2</span>])
+        <span class="hljs-comment"># 统计每首歌曲被播放的总次数</span>
+        <span class="hljs-keyword">if</span> song <span class="hljs-keyword">in</span> output_dict:
+            play_count +=output_dict[song]
+            output_dict.update({song:play_count})
+        output_dict.update({song:play_count})
+output_list = [{<span class="hljs-string">&#x27;song&#x27;</span>:k,<span class="hljs-string">&#x27;play_count&#x27;</span>:v} <span class="hljs-keyword">for</span> k,v <span class="hljs-keyword">in</span> output_dict.items()]
+<span class="hljs-comment"># 转换成df格式</span>
+song_count_df = pd.DataFrame(output_list)
+song_count_df = song_count_df.sort_values(by = <span class="hljs-string">&#x27;play_count&#x27;</span>, ascending = <span class="hljs-literal">False</span>)
+</code></pre>
+<pre class="hljs"><code>song_count_df.to_csv(path_or_buf=<span class="hljs-string">&#x27;song_playcount_df.csv&#x27;</span>, index = <span class="hljs-literal">False</span>)
+</code></pre>
+<h2>数据预处理</h2>
+<h3>查看目前的排行情况</h3>
+<pre class="hljs"><code>play_count_df = pd.read_csv(filepath_or_buffer=<span class="hljs-string">&#x27;user_playcount_df.csv&#x27;</span>)
+play_count_df.head(n =<span class="hljs-number">10</span>)
+</code></pre>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>play_count</th>
+      <th>user</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>13132</td>
+      <td>093cb74eb3c517c5179ae24caf0ebec51b24d2a2</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>9884</td>
+      <td>119b7c88d58d0c6eb051365c103da5caf817bea6</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>8210</td>
+      <td>3fa44653315697f42410a30cb766a4eb102080bb</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>7015</td>
+      <td>a2679496cd0af9779a92a13ff7c6af5c81ea8c7b</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>6494</td>
+      <td>d7d2d888ae04d16e994d6964214a1de81392ee04</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>6472</td>
+      <td>4ae01afa8f2430ea0704d502bc7b57fb52164882</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>6150</td>
+      <td>b7c24f770be6b802805ac0e2106624a517643c17</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>5656</td>
+      <td>113255a012b2affeab62607563d03fbdf31b08e7</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>5620</td>
+      <td>6d625c6557df84b60d90426c0116138b617b9449</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>5602</td>
+      <td>99ac3d883681e21ea68071019dba828ce76fe94d</td>
+    </tr>
+  </tbody>
+</table>
+<pre class="hljs"><code>song_count_df = pd.read_csv(filepath_or_buffer=<span class="hljs-string">&#x27;song_playcount_df.csv&#x27;</span>)
+song_count_df.head(<span class="hljs-number">10</span>)
+</code></pre>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>play_count</th>
+      <th>song</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>726885</td>
+      <td>SOBONKR12A58A7A7E0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>648239</td>
+      <td>SOAUWYT12A81C206F1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>527893</td>
+      <td>SOSXLTC12AF72A7F54</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>425463</td>
+      <td>SOFRQTD12A81C233C0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>389880</td>
+      <td>SOEGIYH12A6D4FC0E3</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>356533</td>
+      <td>SOAXGDH12A8C13F8A1</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>292642</td>
+      <td>SONYKOW12AB01849C9</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>274627</td>
+      <td>SOPUCYA12A8C13A694</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>268353</td>
+      <td>SOUFTBI12AB0183F65</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>244730</td>
+      <td>SOVDSJC12A58A7A271</td>
+    </tr>
+  </tbody>
+</table>
+可以看出，最受欢迎的一首歌曲有726885次播放。
+这个音乐数据量集十分庞大，考虑到执行过程的时间消耗以及矩阵稀疏性问题，我们依据播放量指标对数据集进行了截取。因为有些注册用户可能只是关注了一下之后就不再登录平台，这些用户对我们建模不会起促进作用，反而增大了矩阵的稀疏性。对于歌曲也是同理，可能有些歌曲根本无人问津。由于之前已经对用户与歌曲播放情况进行了排序，所以我们分别选择了其中的10W名用户和3W首歌曲，关于截取的合适比例大家也可以通过观察选择数据的播放量占总体的比例来设置。
+<p>取其中一部分数（按大小排好序的了，这些应该是比较重要的数据），作为我们的实验数据。</p>
+<pre class="hljs"><code><span class="hljs-comment"># 10W名用户的播放量占总体的比例</span>
+total_play_count = <span class="hljs-built_in">sum</span>(song_count_df.play_count)
+<span class="hljs-built_in">print</span> ((<span class="hljs-built_in">float</span>(play_count_df.head(n=<span class="hljs-number">100000</span>).play_count.<span class="hljs-built_in">sum</span>())/total_play_count)*<span class="hljs-number">100</span>)
+play_count_subset = play_count_df.head(n=<span class="hljs-number">100000</span>)
+</code></pre>
+<pre><code>40.8807280500655
+</code></pre>
+<pre class="hljs"><code>(<span class="hljs-built_in">float</span>(song_count_df.head(n=<span class="hljs-number">30000</span>).play_count.<span class="hljs-built_in">sum</span>())/total_play_count)*<span class="hljs-number">100</span>
+</code></pre>
+<pre><code>78.39315366645269
+</code></pre>
+<pre class="hljs"><code>song_count_subset = song_count_df.head(n=<span class="hljs-number">30000</span>)
+</code></pre>
+<p>可以看出，前3W首歌的播放量占到了总体的78.39%。</p>
+<p>现在已经有了这10W名忠实用户和3W首经典歌曲，接下来我们就要对原始数据集进行过滤清洗，说白了就是在原始数据集中剔除掉不包含这些用户以及歌曲的数据。</p>
+<p>取10W个用户，3W首歌：</p>
+<pre class="hljs"><code>user_subset = <span class="hljs-built_in">list</span>(play_count_subset.user)
+song_subset = <span class="hljs-built_in">list</span>(song_count_subset.song)
+</code></pre>
+<p>过滤掉其他用户数据：</p>
+<pre class="hljs"><code><span class="hljs-comment"># 读取原始数据集</span>
+triplet_dataset = pd.read_csv(filepath_or_buffer=data_home+<span class="hljs-string">&#x27;train_triplets.txt&#x27;</span>,sep=<span class="hljs-string">&#x27;\t&#x27;</span>, 
+                              header=<span class="hljs-literal">None</span>, names=[<span class="hljs-string">&#x27;user&#x27;</span>,<span class="hljs-string">&#x27;song&#x27;</span>,<span class="hljs-string">&#x27;play_count&#x27;</span>])
+<span class="hljs-comment"># 只保留有这10W名用户的数据，其余过滤掉</span>
+triplet_dataset_sub = triplet_dataset[triplet_dataset.user.isin(user_subset) ]
+<span class="hljs-keyword">del</span>(triplet_dataset)
+<span class="hljs-comment"># 只保留有这3W首歌曲的数据，其余也过滤掉</span>
+triplet_dataset_sub_song = triplet_dataset_sub[triplet_dataset_sub.song.isin(song_subset)]
+<span class="hljs-keyword">del</span>(triplet_dataset_sub)
+</code></pre>
+<pre class="hljs"><code>triplet_dataset_sub_song.to_csv(path_or_buf=data_home+<span class="hljs-string">&#x27;triplet_dataset_sub_song.csv&#x27;</span>, index=<span class="hljs-literal">False</span>)
+</code></pre>
+<p>当前我们的数据量：</p>
+<pre class="hljs"><code>triplet_dataset_sub_song.shape
+</code></pre>
+<pre><code>(10774558, 3)
+</code></pre>
+<p>数据样本个数此时只有原来的1/4不到，但是我们过滤掉的样本都是稀疏数据不利于建模，所以当拿到了数据之后对数据进行清洗和预处理工作还是非常有必要的，不单单提升计算的速度，还会影响最终的结果。</p>
+<pre class="hljs"><code>triplet_dataset_sub_song.head(n=<span class="hljs-number">10</span>)
+</code></pre>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>user</th>
+      <th>song</th>
+      <th>play_count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>498</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOADQPP12A67020C82</td>
+      <td>12</td>
+    </tr>
+    <tr>
+      <th>499</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOAFTRR12AF72A8D4D</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>500</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOANQFY12AB0183239</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>501</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOAYATB12A6701FD50</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>502</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOBOAFP12A8C131F36</td>
+      <td>7</td>
+    </tr>
+    <tr>
+      <th>503</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOBONKR12A58A7A7E0</td>
+      <td>26</td>
+    </tr>
+    <tr>
+      <th>504</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOBZZDU12A6310D8A3</td>
+      <td>7</td>
+    </tr>
+    <tr>
+      <th>505</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOCAHRT12A8C13A1A4</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>506</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SODASIJ12A6D4F5D89</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>507</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SODEAWL12AB0187032</td>
+      <td>8</td>
+    </tr>
+  </tbody>
+</table>
+<h3>加入音乐详细信息</h3>
+<p>我们目前拿到的数据只有播放次数，可利用的信息实在太少了，对每首歌来说正常情况都应该有一份详细信息，例如歌手，发布时间，主题等，这些信息都存在一份数据库格式文件中，接下来我们就通过sqlite工具包来读取这些数据：</p>
+<pre class="hljs"><code>conn = sqlite3.connect(data_home+<span class="hljs-string">&#x27;track_metadata.db&#x27;</span>)
+cur = conn.cursor()
+cur.execute(<span class="hljs-string">&quot;SELECT name FROM sqlite_master WHERE type=&#x27;table&#x27;&quot;</span>)
+cur.fetchall()
+</code></pre>
+<pre><code>[('songs',)]
+</code></pre>
+<pre class="hljs"><code>track_metadata_df = pd.read_sql(con=conn, sql=<span class="hljs-string">&#x27;select * from songs&#x27;</span>)
+track_metadata_df_sub = track_metadata_df[track_metadata_df.song_id.isin(song_subset)]
+</code></pre>
+<pre class="hljs"><code>track_metadata_df_sub.to_csv(path_or_buf=data_home+<span class="hljs-string">&#x27;track_metadata_df_sub.csv&#x27;</span>, index=<span class="hljs-literal">False</span>)
+</code></pre>
+<pre class="hljs"><code>track_metadata_df_sub.shape
+</code></pre>
+<pre><code>(30447, 14)
+</code></pre>
+<h3>我们现有的数据</h3>
+<pre class="hljs"><code>triplet_dataset_sub_song = pd.read_csv(filepath_or_buffer=data_home+<span class="hljs-string">&#x27;triplet_dataset_sub_song.csv&#x27;</span>,encoding = <span class="hljs-string">&quot;ISO-8859-1&quot;</span>)
+track_metadata_df_sub = pd.read_csv(filepath_or_buffer=data_home+<span class="hljs-string">&#x27;track_metadata_df_sub.csv&#x27;</span>,encoding = <span class="hljs-string">&quot;ISO-8859-1&quot;</span>)
+</code></pre>
+<pre class="hljs"><code>triplet_dataset_sub_song.head()
+</code></pre>
+<pre class="hljs"><code>track_metadata_df_sub.head()
+</code></pre>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>track_id</th>
+      <th>title</th>
+      <th>song_id</th>
+      <th>release</th>
+      <th>artist_id</th>
+      <th>artist_mbid</th>
+      <th>artist_name</th>
+      <th>duration</th>
+      <th>artist_familiarity</th>
+      <th>artist_hotttnesss</th>
+      <th>year</th>
+      <th>track_7digitalid</th>
+      <th>shs_perf</th>
+      <th>shs_work</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>TRMMGCB128E079651D</td>
+      <td>Get Along (Feat: Pace Won) (Instrumental)</td>
+      <td>SOHNWIM12A67ADF7D9</td>
+      <td>Charango</td>
+      <td>ARU3C671187FB3F71B</td>
+      <td>067102ea-9519-4622-9077-57ca4164cfbb</td>
+      <td>Morcheeba</td>
+      <td>227.47383</td>
+      <td>0.819087</td>
+      <td>0.533117</td>
+      <td>2002</td>
+      <td>185967</td>
+      <td>-1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>TRMMGTX128F92FB4D9</td>
+      <td>Viejo</td>
+      <td>SOECFIW12A8C144546</td>
+      <td>Caraluna</td>
+      <td>ARPAAPH1187FB3601B</td>
+      <td>f69d655c-ffd6-4bee-8c2a-3086b2be2fc6</td>
+      <td>Bacilos</td>
+      <td>307.51302</td>
+      <td>0.595554</td>
+      <td>0.400705</td>
+      <td>0</td>
+      <td>6825058</td>
+      <td>-1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>TRMMGDP128F933E59A</td>
+      <td>I Say A Little Prayer</td>
+      <td>SOGWEOB12AB018A4D0</td>
+      <td>The Legendary Hi Records Albums_ Volume 3: Ful...</td>
+      <td>ARNNRN31187B9AE7B7</td>
+      <td>fb7272ba-f130-4f0a-934d-6eeea4c18c9a</td>
+      <td>Al Green</td>
+      <td>133.58975</td>
+      <td>0.779490</td>
+      <td>0.599210</td>
+      <td>1978</td>
+      <td>5211723</td>
+      <td>-1</td>
+      <td>11898</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>TRMMHBF12903CF6E59</td>
+      <td>At the Ball_ That's All</td>
+      <td>SOJGCRL12A8C144187</td>
+      <td>Best of Laurel &amp; Hardy - The Lonesome Pine</td>
+      <td>AR1FEUF1187B9AF3E3</td>
+      <td>4a8ae4fd-ad6f-4912-851f-093f12ee3572</td>
+      <td>Laurel &amp; Hardy</td>
+      <td>123.71546</td>
+      <td>0.438709</td>
+      <td>0.307120</td>
+      <td>0</td>
+      <td>8645877</td>
+      <td>-1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>TRMMHKG12903CDB1B5</td>
+      <td>Black Gold</td>
+      <td>SOHNFBA12AB018CD1D</td>
+      <td>Total Life Forever</td>
+      <td>ARVXV1J1187FB5BF88</td>
+      <td>6a65d878-fcd0-42cf-aff9-ca1d636a8bcc</td>
+      <td>Foals</td>
+      <td>386.32444</td>
+      <td>0.842578</td>
+      <td>0.514523</td>
+      <td>2010</td>
+      <td>9007438</td>
+      <td>-1</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<h2>清洗数据集</h2>
+<p>去除掉无用的和重复的，数据清洗是很重要的一步。</p>
+<pre class="hljs"><code><span class="hljs-comment"># 去掉无用的信息</span>
+<span class="hljs-keyword">del</span>(track_metadata_df_sub[<span class="hljs-string">&#x27;track_id&#x27;</span>])
+<span class="hljs-keyword">del</span>(track_metadata_df_sub[<span class="hljs-string">&#x27;artist_mbid&#x27;</span>])
+<span class="hljs-comment"># 去掉重复的</span>
+track_metadata_df_sub = track_metadata_df_sub.drop_duplicates([<span class="hljs-string">&#x27;song_id&#x27;</span>])
+<span class="hljs-comment"># 将这份音乐信息数据和我们之前的播放数据整合到一起</span>
+triplet_dataset_sub_song_merged = pd.merge(triplet_dataset_sub_song, track_metadata_df_sub, how=<span class="hljs-string">&#x27;left&#x27;</span>, left_on=<span class="hljs-string">&#x27;song&#x27;</span>, right_on=<span class="hljs-string">&#x27;song_id&#x27;</span>)
+<span class="hljs-comment"># 可以自己改变列名</span>
+triplet_dataset_sub_song_merged.rename(columns={<span class="hljs-string">&#x27;play_count&#x27;</span>:<span class="hljs-string">&#x27;listen_count&#x27;</span>},inplace=<span class="hljs-literal">True</span>)
+</code></pre>
+<pre class="hljs"><code><span class="hljs-comment"># 去掉不需要的指标</span>
+<span class="hljs-keyword">del</span>(triplet_dataset_sub_song_merged[<span class="hljs-string">&#x27;song_id&#x27;</span>])
+<span class="hljs-keyword">del</span>(triplet_dataset_sub_song_merged[<span class="hljs-string">&#x27;artist_id&#x27;</span>])
+<span class="hljs-keyword">del</span>(triplet_dataset_sub_song_merged[<span class="hljs-string">&#x27;duration&#x27;</span>])
+<span class="hljs-keyword">del</span>(triplet_dataset_sub_song_merged[<span class="hljs-string">&#x27;artist_familiarity&#x27;</span>])
+<span class="hljs-keyword">del</span>(triplet_dataset_sub_song_merged[<span class="hljs-string">&#x27;artist_hotttnesss&#x27;</span>])
+<span class="hljs-keyword">del</span>(triplet_dataset_sub_song_merged[<span class="hljs-string">&#x27;track_7digitalid&#x27;</span>])
+<span class="hljs-keyword">del</span>(triplet_dataset_sub_song_merged[<span class="hljs-string">&#x27;shs_perf&#x27;</span>])
+<span class="hljs-keyword">del</span>(triplet_dataset_sub_song_merged[<span class="hljs-string">&#x27;shs_work&#x27;</span>])
+</code></pre>
+<p>搞定数据，我们来看看它会是什么样：</p>
+<pre class="hljs"><code>triplet_dataset_sub_song_merged.head(n=<span class="hljs-number">10</span>)
+</code></pre>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>user</th>
+      <th>song</th>
+      <th>listen_count</th>
+      <th>title</th>
+      <th>release</th>
+      <th>artist_name</th>
+      <th>year</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOADQPP12A67020C82</td>
+      <td>12</td>
+      <td>You And Me Jesus</td>
+      <td>Tribute To Jake Hess</td>
+      <td>Jake Hess</td>
+      <td>2004</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOAFTRR12AF72A8D4D</td>
+      <td>1</td>
+      <td>Harder Better Faster Stronger</td>
+      <td>Discovery</td>
+      <td>Daft Punk</td>
+      <td>2007</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOANQFY12AB0183239</td>
+      <td>1</td>
+      <td>Uprising</td>
+      <td>Uprising</td>
+      <td>Muse</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOAYATB12A6701FD50</td>
+      <td>1</td>
+      <td>Breakfast At Tiffany's</td>
+      <td>Home</td>
+      <td>Deep Blue Something</td>
+      <td>1993</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOBOAFP12A8C131F36</td>
+      <td>7</td>
+      <td>Lucky (Album Version)</td>
+      <td>We Sing.  We Dance.  We Steal Things.</td>
+      <td>Jason Mraz &amp; Colbie Caillat</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOBONKR12A58A7A7E0</td>
+      <td>26</td>
+      <td>You're The One</td>
+      <td>If There Was A Way</td>
+      <td>Dwight Yoakam</td>
+      <td>1990</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOBZZDU12A6310D8A3</td>
+      <td>7</td>
+      <td>Don't Dream It's Over</td>
+      <td>Recurring Dream_ Best Of Crowded House (Domest...</td>
+      <td>Crowded House</td>
+      <td>1986</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOCAHRT12A8C13A1A4</td>
+      <td>5</td>
+      <td>S.O.S.</td>
+      <td>SOS</td>
+      <td>Jonas Brothers</td>
+      <td>2007</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SODASIJ12A6D4F5D89</td>
+      <td>1</td>
+      <td>The Invisible Man</td>
+      <td>The Invisible Man</td>
+      <td>Michael Cretu</td>
+      <td>1985</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SODEAWL12AB0187032</td>
+      <td>8</td>
+      <td>American Idiot [feat. Green Day &amp; The Cast Of ...</td>
+      <td>The Original Broadway Cast Recording 'American...</td>
+      <td>Green Day</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+现在的数据看起来工整多了，不光有用户对某个音乐作品的播放量，还有该音乐作品的名字和发布专辑，以及作者名字和发布时间。
+现在我们只是大体了解了数据中各个指标的含义，对其具体内容还没有加以分析。我们在之前介绍推荐系统的时候提到过冷启动问题，就是一个新用户来了不知道给他推荐什么好，这时候就可以利用排行榜单了，可以统计最受欢迎的歌曲和歌手是哪些。
+<h3>展示最流行的歌曲</h3>
+<pre class="hljs"><code><span class="hljs-keyword">import</span> matplotlib.pyplot <span class="hljs-keyword">as</span> plt; plt.rcdefaults()
+<span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+<span class="hljs-keyword">import</span> matplotlib.pyplot <span class="hljs-keyword">as</span> plt
+<span class="hljs-comment"># 按歌曲名字来统计其播放量的总数</span>
+popular_songs = triplet_dataset_sub_song_merged[[<span class="hljs-string">&#x27;title&#x27;</span>,<span class="hljs-string">&#x27;listen_count&#x27;</span>]].groupby(<span class="hljs-string">&#x27;title&#x27;</span>).<span class="hljs-built_in">sum</span>().reset_index()
+<span class="hljs-comment"># 对结果进行排序</span>
+popular_songs_top_20 = popular_songs.sort_values(<span class="hljs-string">&#x27;listen_count&#x27;</span>, ascending=<span class="hljs-literal">False</span>).head(n=<span class="hljs-number">20</span>)
+
+<span class="hljs-comment"># 转换成list格式方便画图</span>
+objects = (<span class="hljs-built_in">list</span>(popular_songs_top_20[<span class="hljs-string">&#x27;title&#x27;</span>]))
+<span class="hljs-comment"># 设置位置</span>
+y_pos = np.arange(<span class="hljs-built_in">len</span>(objects))
+<span class="hljs-comment"># 对应结果值</span>
+performance = <span class="hljs-built_in">list</span>(popular_songs_top_20[<span class="hljs-string">&#x27;listen_count&#x27;</span>])
+<span class="hljs-comment"># 绘图</span>
+plt.bar(y_pos, performance, align=<span class="hljs-string">&#x27;center&#x27;</span>, alpha=<span class="hljs-number">0.5</span>)
+plt.xticks(y_pos, objects, rotation=<span class="hljs-string">&#x27;vertical&#x27;</span>)
+plt.ylabel(<span class="hljs-string">&#x27;Item count&#x27;</span>)
+plt.title(<span class="hljs-string">&#x27;Most popular songs&#x27;</span>)
+ 
+plt.show()
+</code></pre>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/output_56_0.png" alt="png"></p>
+<p>这里展示了最受欢迎的歌曲，使用<code>groupby</code>函数可以很方便的对每首歌曲统计其播放情况，我们求的是总和也就是总播放量。这份排行数据就可以当做最受欢迎歌曲来推荐给用户了。
+同样的方法我们还可以对专辑和歌手的播放情况分别进行统计：</p>
+<h3>最受欢迎的releases</h3>
+<pre class="hljs"><code><span class="hljs-comment"># 按专辑名字来统计播放总量</span>
+popular_release = triplet_dataset_sub_song_merged[[<span class="hljs-string">&#x27;release&#x27;</span>,<span class="hljs-string">&#x27;listen_count&#x27;</span>]].groupby(<span class="hljs-string">&#x27;release&#x27;</span>).<span class="hljs-built_in">sum</span>().reset_index()
+<span class="hljs-comment"># 排序</span>
+popular_release_top_20 = popular_release.sort_values(<span class="hljs-string">&#x27;listen_count&#x27;</span>, ascending=<span class="hljs-literal">False</span>).head(n=<span class="hljs-number">20</span>)
+
+objects = (<span class="hljs-built_in">list</span>(popular_release_top_20[<span class="hljs-string">&#x27;release&#x27;</span>]))
+y_pos = np.arange(<span class="hljs-built_in">len</span>(objects))
+performance = <span class="hljs-built_in">list</span>(popular_release_top_20[<span class="hljs-string">&#x27;listen_count&#x27;</span>])
+<span class="hljs-comment"># 绘图 </span>
+plt.bar(y_pos, performance, align=<span class="hljs-string">&#x27;center&#x27;</span>, alpha=<span class="hljs-number">0.5</span>)
+plt.xticks(y_pos, objects, rotation=<span class="hljs-string">&#x27;vertical&#x27;</span>)
+plt.ylabel(<span class="hljs-string">&#x27;Item count&#x27;</span>)
+plt.title(<span class="hljs-string">&#x27;Most popular Release&#x27;</span>)
+ 
+plt.show()
+</code></pre>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/output_59_0.png" alt="png"></p>
+<h3>最受欢迎的歌手</h3>
+<pre class="hljs"><code><span class="hljs-comment"># 按歌手来统计其播放总量</span>
+popular_artist = triplet_dataset_sub_song_merged[[<span class="hljs-string">&#x27;artist_name&#x27;</span>,<span class="hljs-string">&#x27;listen_count&#x27;</span>]].groupby(<span class="hljs-string">&#x27;artist_name&#x27;</span>).<span class="hljs-built_in">sum</span>().reset_index()
+<span class="hljs-comment"># 排序</span>
+popular_artist_top_20 = popular_artist.sort_values(<span class="hljs-string">&#x27;listen_count&#x27;</span>, ascending=<span class="hljs-literal">False</span>).head(n=<span class="hljs-number">20</span>)
+
+objects = (<span class="hljs-built_in">list</span>(popular_artist_top_20[<span class="hljs-string">&#x27;artist_name&#x27;</span>]))
+y_pos = np.arange(<span class="hljs-built_in">len</span>(objects))
+performance = <span class="hljs-built_in">list</span>(popular_artist_top_20[<span class="hljs-string">&#x27;listen_count&#x27;</span>])
+<span class="hljs-comment"># 绘图 </span>
+plt.bar(y_pos, performance, align=<span class="hljs-string">&#x27;center&#x27;</span>, alpha=<span class="hljs-number">0.5</span>)
+plt.xticks(y_pos, objects, rotation=<span class="hljs-string">&#x27;vertical&#x27;</span>)
+plt.ylabel(<span class="hljs-string">&#x27;Item count&#x27;</span>)
+plt.title(<span class="hljs-string">&#x27;Most popular Artists&#x27;</span>)
+ 
+plt.show()
+</code></pre>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/output_61_0.png" alt="png"></p>
+<h3>用户播放过歌曲量的分布</h3>
+<pre class="hljs"><code>user_song_count_distribution = triplet_dataset_sub_song_merged[[<span class="hljs-string">&#x27;user&#x27;</span>,<span class="hljs-string">&#x27;title&#x27;</span>]].groupby(<span class="hljs-string">&#x27;user&#x27;</span>).count().reset_index().sort_values(
+by=<span class="hljs-string">&#x27;title&#x27;</span>,ascending = <span class="hljs-literal">False</span>)
+user_song_count_distribution.title.describe()
+</code></pre>
+<pre><code>count    99996.000000
+mean       107.749890
+std         79.742561
+min          1.000000
+25%         53.000000
+50%         89.000000
+75%        141.000000
+max       1189.000000
+Name: title, dtype: float64
+</code></pre>
+<pre class="hljs"><code>x = user_song_count_distribution.title
+n, bins, patches = plt.hist(x, <span class="hljs-number">50</span>, facecolor=<span class="hljs-string">&#x27;green&#x27;</span>, alpha=<span class="hljs-number">0.75</span>)
+plt.xlabel(<span class="hljs-string">&#x27;Play Counts&#x27;</span>)
+plt.ylabel(<span class="hljs-string">&#x27;Num of Users&#x27;</span>)
+plt.title(<span class="hljs-string">r&#x27;$\mathrm{Histogram\ of\ User\ Play\ Count\ Distribution}\ $&#x27;</span>)
+plt.grid(<span class="hljs-literal">True</span>)
+plt.show()
+</code></pre>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/output_64_0.png" alt="png"></p>
+<p>绝大多数用户播放歌曲的数量在100左右，关于数据的处理和介绍已经给大家都分析过了，接下来我们要做的就是构建一个能实际进行推荐的程序了。</p>
+<h2>开始构建推荐系统</h2>
+<pre class="hljs"><code><span class="hljs-keyword">import</span> Recommenders <span class="hljs-keyword">as</span> Recommenders
+<span class="hljs-keyword">from</span> sklearn.model_selection <span class="hljs-keyword">import</span> train_test_split
+</code></pre>
+<p>简单暴力，排行榜单推荐，对新用户来说解决冷启动问题。</p>
+<p>最简单的推荐方式就是排行榜单了，这里我们创建了一个函数，需要我们传入的是原始数据，用户列名，待统计的指标（例如按歌曲名字，歌手名字，专辑名字。选择统计哪项指标得到的排行榜单）：</p>
+<pre class="hljs"><code>triplet_dataset_sub_song_merged_set = triplet_dataset_sub_song_merged
+train_data, test_data = train_test_split(triplet_dataset_sub_song_merged_set, test_size = <span class="hljs-number">0.40</span>, random_state=<span class="hljs-number">0</span>)
+</code></pre>
+<pre class="hljs"><code>train_data.head()
+</code></pre>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>user</th>
+      <th>song</th>
+      <th>listen_count</th>
+      <th>title</th>
+      <th>release</th>
+      <th>artist_name</th>
+      <th>year</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1901799</th>
+      <td>28866ea8a809d5d46273cd0989c5515c660ef8c7</td>
+      <td>SOEYVHS12AB0181D31</td>
+      <td>1</td>
+      <td>Monster</td>
+      <td>The Fame Monster</td>
+      <td>Lady GaGa</td>
+      <td>2009</td>
+    </tr>
+    <tr>
+      <th>4815185</th>
+      <td>c9608a24a2a40e0ec38993a70532e7bb56eff22b</td>
+      <td>SOKIYKQ12A8AE464FC</td>
+      <td>2</td>
+      <td>Fight For Your Life</td>
+      <td>Made In NYC</td>
+      <td>The Casualties</td>
+      <td>2000</td>
+    </tr>
+    <tr>
+      <th>10513026</th>
+      <td>24f0b09c133a6a0fe42f097734215dceb468d449</td>
+      <td>SOETFVO12AB018DFF3</td>
+      <td>1</td>
+      <td>Free Style (feat. Kevo_ Mussilini &amp; Lyrical 187)</td>
+      <td>A Bad Azz Mix Tape</td>
+      <td>Z-RO</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2659073</th>
+      <td>4da3c59a0af73245cea000fd5efa30384182bfcb</td>
+      <td>SOAXJOU12A6D4F6685</td>
+      <td>1</td>
+      <td>Littlest Things</td>
+      <td>Alright_ Still</td>
+      <td>Lily Allen</td>
+      <td>2006</td>
+    </tr>
+    <tr>
+      <th>5506263</th>
+      <td>b46c5ed385cad7ecea8af6214f440d19de6eb6c2</td>
+      <td>SOXBCAY12AB0189EE0</td>
+      <td>1</td>
+      <td>La trama y el desenlace</td>
+      <td>Amar la trama</td>
+      <td>Jorge Drexler</td>
+      <td>2010</td>
+    </tr>
+  </tbody>
+</table>
+```python
+def create_popularity_recommendation(train_data, user_id, item_id):
+    #根据指定的特征来统计其播放情况，可以选择歌曲名，专辑名，歌手名
+    train_data_grouped = train_data.groupby([item_id]).agg({user_id: 'count'}).reset_index()
+    #为了直观展示，我们用得分来表示其结果
+    train_data_grouped.rename(columns = {user_id: 'score'},inplace=True)
+<pre><code>#排行榜单需要排序
+train_data_sort = train_data_grouped.sort_values(['score', item_id], ascending = [0,1])
+
+#加入一项排行等级，表示其推荐的优先级
+train_data_sort['Rank'] = train_data_sort['score'].rank(ascending=0, method='first')
+    
+#返回指定个数的推荐结果
+popularity_recommendations = train_data_sort.head(20)
+return popularity_recommendations
+</code></pre>
+<pre class="hljs"><code>
+
+```python
+recommendations = create_popularity_recommendation(triplet_dataset_sub_song_merged,'user','title')
+</code></pre>
+<p>得到推荐结果</p>
+<pre class="hljs"><code>recommendations
+</code></pre>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>title</th>
+      <th>score</th>
+      <th>Rank</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>19580</th>
+      <td>Sehr kosmisch</td>
+      <td>18626</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>5780</th>
+      <td>Dog Days Are Over (Radio Edit)</td>
+      <td>17635</td>
+      <td>2.0</td>
+    </tr>
+    <tr>
+      <th>27314</th>
+      <td>You're The One</td>
+      <td>16085</td>
+      <td>3.0</td>
+    </tr>
+    <tr>
+      <th>19542</th>
+      <td>Secrets</td>
+      <td>15138</td>
+      <td>4.0</td>
+    </tr>
+    <tr>
+      <th>18636</th>
+      <td>Revelry</td>
+      <td>14945</td>
+      <td>5.0</td>
+    </tr>
+    <tr>
+      <th>25070</th>
+      <td>Undo</td>
+      <td>14687</td>
+      <td>6.0</td>
+    </tr>
+    <tr>
+      <th>7530</th>
+      <td>Fireflies</td>
+      <td>13085</td>
+      <td>7.0</td>
+    </tr>
+    <tr>
+      <th>9640</th>
+      <td>Hey_ Soul Sister</td>
+      <td>12993</td>
+      <td>8.0</td>
+    </tr>
+    <tr>
+      <th>25216</th>
+      <td>Use Somebody</td>
+      <td>12793</td>
+      <td>9.0</td>
+    </tr>
+    <tr>
+      <th>9921</th>
+      <td>Horn Concerto No. 4 in E flat K495: II. Romanc...</td>
+      <td>12346</td>
+      <td>10.0</td>
+    </tr>
+    <tr>
+      <th>24291</th>
+      <td>Tive Sim</td>
+      <td>11831</td>
+      <td>11.0</td>
+    </tr>
+    <tr>
+      <th>3629</th>
+      <td>Canada</td>
+      <td>11598</td>
+      <td>12.0</td>
+    </tr>
+    <tr>
+      <th>23468</th>
+      <td>The Scientist</td>
+      <td>11529</td>
+      <td>13.0</td>
+    </tr>
+    <tr>
+      <th>4194</th>
+      <td>Clocks</td>
+      <td>11357</td>
+      <td>14.0</td>
+    </tr>
+    <tr>
+      <th>12135</th>
+      <td>Just Dance</td>
+      <td>11058</td>
+      <td>15.0</td>
+    </tr>
+    <tr>
+      <th>26974</th>
+      <td>Yellow</td>
+      <td>10919</td>
+      <td>16.0</td>
+    </tr>
+    <tr>
+      <th>16438</th>
+      <td>OMG</td>
+      <td>10818</td>
+      <td>17.0</td>
+    </tr>
+    <tr>
+      <th>9844</th>
+      <td>Home</td>
+      <td>10512</td>
+      <td>18.0</td>
+    </tr>
+    <tr>
+      <th>3295</th>
+      <td>Bulletproof</td>
+      <td>10383</td>
+      <td>19.0</td>
+    </tr>
+    <tr>
+      <th>4760</th>
+      <td>Creep (Explicit)</td>
+      <td>10246</td>
+      <td>20.0</td>
+    </tr>
+  </tbody>
+</table>
+返回了一份前20的歌曲排行榜单，其中的得分这里只是进行了简单的播放计算，在设计的时候也可以综合考虑更多的指标，比如综合计算歌曲发布年份，歌手的流行程度等。
+<h2>基于歌曲相似度的推荐</h2>
+<p>接下来就要进行相似度的计算来推荐歌曲了，为了加快代码的运行速度，选择了其中一部分数据来进行实验。</p>
+<pre class="hljs"><code>song_count_subset = song_count_df.head(n=<span class="hljs-number">5000</span>)
+user_subset = <span class="hljs-built_in">list</span>(play_count_subset.user)
+song_subset = <span class="hljs-built_in">list</span>(song_count_subset.song)
+triplet_dataset_sub_song_merged_sub = triplet_dataset_sub_song_merged[triplet_dataset_sub_song_merged.song.isin(song_subset)]
+</code></pre>
+<pre class="hljs"><code>triplet_dataset_sub_song_merged_sub.head()
+</code></pre>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>user</th>
+      <th>song</th>
+      <th>listen_count</th>
+      <th>title</th>
+      <th>release</th>
+      <th>artist_name</th>
+      <th>year</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOADQPP12A67020C82</td>
+      <td>12</td>
+      <td>You And Me Jesus</td>
+      <td>Tribute To Jake Hess</td>
+      <td>Jake Hess</td>
+      <td>2004</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOAFTRR12AF72A8D4D</td>
+      <td>1</td>
+      <td>Harder Better Faster Stronger</td>
+      <td>Discovery</td>
+      <td>Daft Punk</td>
+      <td>2007</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOANQFY12AB0183239</td>
+      <td>1</td>
+      <td>Uprising</td>
+      <td>Uprising</td>
+      <td>Muse</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOAYATB12A6701FD50</td>
+      <td>1</td>
+      <td>Breakfast At Tiffany's</td>
+      <td>Home</td>
+      <td>Deep Blue Something</td>
+      <td>1993</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOBOAFP12A8C131F36</td>
+      <td>7</td>
+      <td>Lucky (Album Version)</td>
+      <td>We Sing.  We Dance.  We Steal Things.</td>
+      <td>Jason Mraz &amp; Colbie Caillat</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+### 计算相似度得到推荐结果
+<pre class="hljs"><code><span class="hljs-keyword">import</span> Recommenders <span class="hljs-keyword">as</span> Recommenders
+train_data, test_data = train_test_split(triplet_dataset_sub_song_merged_sub, test_size = <span class="hljs-number">0.30</span>, random_state=<span class="hljs-number">0</span>)
+is_model = Recommenders.item_similarity_recommender_py()
+is_model.create(train_data, <span class="hljs-string">&#x27;user&#x27;</span>, <span class="hljs-string">&#x27;title&#x27;</span>)
+user_id = <span class="hljs-built_in">list</span>(train_data.user)[<span class="hljs-number">7</span>]
+user_items = is_model.get_user_items(user_id)
+</code></pre>
+<p>我们首先导入了Recommenders，像是一个自定义的工具包，这里就包括了我们接下来要使用的所有函数，由于接下来进行计算的代码量较大，直接在notebook中进行展示比较麻烦，所有我们自己写了一个.py文件，所有的实际计算操作都在这里完成了。</p>
+<p>大家在实践这份代码的时候，可以选择一个合适的IDE，因为notebook并不支持debug操作。拿到了一份陌生的代码而且量又比较大的时候，最好先通过debug的方式一行代码一行代码来执行，这样可以更清晰的熟悉整个函数做了一件什么事，如果直接看整体对于初学者来说可能会有点难度，建议大家选择一个趁手的IDE例如pycharm、eclipse等都是不错的。</p>
+<p>整体代码量较多，先从整体上介绍这段代码什么，自己debug一遍，效果会更好。首先我们要针对某一个用户进行推荐，那必然得先得到他都听过哪些歌曲，通过这些已被听过的歌曲跟整个数据集中的歌曲进行对比，看哪些歌曲跟用户已听过的比较类似，推荐的就是这些类似的。如何计算呢？例如当前用户听过了66首歌曲，整个数据集中有4879个歌曲，我们要做的就是构建一个[66,4879]的矩阵，其中每一个值表示用户听过的每一个歌曲和数据集中每一个歌曲的相似度。这里使用Jaccard相似系数，矩阵中[i,j]的含义就是用户听过的第i首歌曲这些歌曲被哪些人听过，比如有3000人听过，数据集中的j歌曲被哪些人听过，比如有5000人听过。Jaccard相似系数就要求：
+$$
+\text{Jaccard}=\frac{交集(听过i歌曲的3000人和听过j歌曲的5000人)}{并集(听过i歌曲的3000人和听过j歌曲的5000人)}
+$$
+如果两个歌曲很相似，其受众应当是一致的，交集/并集的比例应该比较大，如果两个歌曲没什么相关性，其值应当比较小。</p>
+<p>上述代码中计算了矩阵[66,4879]中每一个位置的值应当是多少，在最后推荐的时候我们还应当注意一件事对于数据集中每一个待推荐的歌曲都需要跟该用户所有听过的歌曲计算其Jaccard值，例如歌曲j需要跟用户听过的66个歌曲计算其值，最终是否推荐的得分值还得进行处理，即把这66个值加在一起，最终求一个平均值，来代表该歌曲的推荐得分。</p>
+<pre class="hljs"><code><span class="hljs-comment"># 执行推荐</span>
+is_model.recommend(user_id)
+</code></pre>
+<pre><code>No. of unique songs for the user: 66
+no. of unique songs in the training set: 4879
+Non zero values in cooccurence_matrix :290327
+</code></pre>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>user_id</th>
+      <th>song</th>
+      <th>score</th>
+      <th>rank</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>a974fc428825ed071281302d6976f59bfa95fe7e</td>
+      <td>Put Your Head On My Shoulder (Album Version)</td>
+      <td>0.026334</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>a974fc428825ed071281302d6976f59bfa95fe7e</td>
+      <td>The Strength To Go On</td>
+      <td>0.025176</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>a974fc428825ed071281302d6976f59bfa95fe7e</td>
+      <td>Come Fly With Me (Album Version)</td>
+      <td>0.024447</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>a974fc428825ed071281302d6976f59bfa95fe7e</td>
+      <td>Moondance (Album Version)</td>
+      <td>0.024118</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>a974fc428825ed071281302d6976f59bfa95fe7e</td>
+      <td>Kotov Syndrome</td>
+      <td>0.023311</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>a974fc428825ed071281302d6976f59bfa95fe7e</td>
+      <td>Use Somebody</td>
+      <td>0.023104</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>a974fc428825ed071281302d6976f59bfa95fe7e</td>
+      <td>Lucky (Album Version)</td>
+      <td>0.022930</td>
+      <td>7</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>a974fc428825ed071281302d6976f59bfa95fe7e</td>
+      <td>Secrets</td>
+      <td>0.022889</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>a974fc428825ed071281302d6976f59bfa95fe7e</td>
+      <td>Clocks</td>
+      <td>0.022562</td>
+      <td>9</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>a974fc428825ed071281302d6976f59bfa95fe7e</td>
+      <td>Sway (Album Version)</td>
+      <td>0.022359</td>
+      <td>10</td>
+    </tr>
+  </tbody>
+</table>
+## 基于矩阵分解（SVD）的推荐
+<p>相似度计算的方法看起来比较简单就是实现出来，但是当数据较大的时候计算的时间消耗实在太大了，对每一个用户都需要多次遍历整个数据集来进行计算，矩阵分解的方法是当下更常使用的方法。</p>
+<p>奇异值分解(Singular Value Decomposition，SVD)是矩阵分解中一个经典方法，接下来我们的推荐就可以SVD来进行计算，奇异值分解的基本出发点跟我们之前讲的隐语义模型有些类似都是将大矩阵转换成小矩阵的组合。</p>
+<p>在SVD中我们所需的数据是用户对商品的打分，但是我们现在的数据集中只有用户播放歌曲的情况并没有实际的打分值，所以我们还得自己来定义一下用户对每个歌曲的评分值。如果一个用户喜欢某个歌曲，那应该经常播放这个歌曲，相反如果不喜欢某个歌曲，那播放次数肯定就比较少了。
+用户对歌曲的打分值，定义为：用户播放该歌曲数量/该用户播放总量。代码如下：</p>
+<pre class="hljs"><code>triplet_dataset_sub_song_merged_sum_df = triplet_dataset_sub_song_merged[[<span class="hljs-string">&#x27;user&#x27;</span>,<span class="hljs-string">&#x27;listen_count&#x27;</span>]].groupby(<span class="hljs-string">&#x27;user&#x27;</span>).<span class="hljs-built_in">sum</span>().reset_index()
+triplet_dataset_sub_song_merged_sum_df.rename(columns={<span class="hljs-string">&#x27;listen_count&#x27;</span>:<span class="hljs-string">&#x27;total_listen_count&#x27;</span>},inplace=<span class="hljs-literal">True</span>)
+triplet_dataset_sub_song_merged = pd.merge(triplet_dataset_sub_song_merged,triplet_dataset_sub_song_merged_sum_df)
+triplet_dataset_sub_song_merged.head()
+</code></pre>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>user</th>
+      <th>song</th>
+      <th>listen_count</th>
+      <th>title</th>
+      <th>release</th>
+      <th>artist_name</th>
+      <th>year</th>
+      <th>total_listen_count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOADQPP12A67020C82</td>
+      <td>12</td>
+      <td>You And Me Jesus</td>
+      <td>Tribute To Jake Hess</td>
+      <td>Jake Hess</td>
+      <td>2004</td>
+      <td>329</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOAFTRR12AF72A8D4D</td>
+      <td>1</td>
+      <td>Harder Better Faster Stronger</td>
+      <td>Discovery</td>
+      <td>Daft Punk</td>
+      <td>2007</td>
+      <td>329</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOANQFY12AB0183239</td>
+      <td>1</td>
+      <td>Uprising</td>
+      <td>Uprising</td>
+      <td>Muse</td>
+      <td>0</td>
+      <td>329</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOAYATB12A6701FD50</td>
+      <td>1</td>
+      <td>Breakfast At Tiffany's</td>
+      <td>Home</td>
+      <td>Deep Blue Something</td>
+      <td>1993</td>
+      <td>329</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOBOAFP12A8C131F36</td>
+      <td>7</td>
+      <td>Lucky (Album Version)</td>
+      <td>We Sing.  We Dance.  We Steal Things.</td>
+      <td>Jason Mraz &amp; Colbie Caillat</td>
+      <td>0</td>
+      <td>329</td>
+    </tr>
+  </tbody>
+</table>
+<pre class="hljs"><code>triplet_dataset_sub_song_merged[<span class="hljs-string">&#x27;fractional_play_count&#x27;</span>] = triplet_dataset_sub_song_merged[<span class="hljs-string">&#x27;listen_count&#x27;</span>]/triplet_dataset_sub_song_merged[<span class="hljs-string">&#x27;total_listen_count&#x27;</span>]
+</code></pre>
+<p>大概是这样：</p>
+<pre class="hljs"><code>triplet_dataset_sub_song_merged[triplet_dataset_sub_song_merged.user ==<span class="hljs-string">&#x27;d6589314c0a9bcbca4fee0c93b14bc402363afea&#x27;</span>][[<span class="hljs-string">&#x27;user&#x27;</span>,<span class="hljs-string">&#x27;song&#x27;</span>,<span class="hljs-string">&#x27;listen_count&#x27;</span>,<span class="hljs-string">&#x27;fractional_play_count&#x27;</span>]].head()
+</code></pre>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>user</th>
+      <th>song</th>
+      <th>listen_count</th>
+      <th>fractional_play_count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOADQPP12A67020C82</td>
+      <td>12</td>
+      <td>0.036474</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOAFTRR12AF72A8D4D</td>
+      <td>1</td>
+      <td>0.003040</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOANQFY12AB0183239</td>
+      <td>1</td>
+      <td>0.003040</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOAYATB12A6701FD50</td>
+      <td>1</td>
+      <td>0.003040</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>d6589314c0a9bcbca4fee0c93b14bc402363afea</td>
+      <td>SOBOAFP12A8C131F36</td>
+      <td>7</td>
+      <td>0.021277</td>
+    </tr>
+  </tbody>
+</table>
+<pre class="hljs"><code><span class="hljs-keyword">from</span> scipy.sparse <span class="hljs-keyword">import</span> coo_matrix
+
+small_set = triplet_dataset_sub_song_merged
+user_codes = small_set.user.drop_duplicates().reset_index()
+song_codes = small_set.song.drop_duplicates().reset_index()
+user_codes.rename(columns={<span class="hljs-string">&#x27;index&#x27;</span>:<span class="hljs-string">&#x27;user_index&#x27;</span>}, inplace=<span class="hljs-literal">True</span>)
+song_codes.rename(columns={<span class="hljs-string">&#x27;index&#x27;</span>:<span class="hljs-string">&#x27;song_index&#x27;</span>}, inplace=<span class="hljs-literal">True</span>)
+song_codes[<span class="hljs-string">&#x27;so_index_value&#x27;</span>] = <span class="hljs-built_in">list</span>(song_codes.index)
+user_codes[<span class="hljs-string">&#x27;us_index_value&#x27;</span>] = <span class="hljs-built_in">list</span>(user_codes.index)
+small_set = pd.merge(small_set,song_codes,how=<span class="hljs-string">&#x27;left&#x27;</span>)
+small_set = pd.merge(small_set,user_codes,how=<span class="hljs-string">&#x27;left&#x27;</span>)
+mat_candidate = small_set[[<span class="hljs-string">&#x27;us_index_value&#x27;</span>,<span class="hljs-string">&#x27;so_index_value&#x27;</span>,<span class="hljs-string">&#x27;fractional_play_count&#x27;</span>]]
+data_array = mat_candidate.fractional_play_count.values
+row_array = mat_candidate.us_index_value.values
+col_array = mat_candidate.so_index_value.values
+
+data_sparse = coo_matrix((data_array, (row_array, col_array)),dtype=<span class="hljs-built_in">float</span>)
+</code></pre>
+<pre class="hljs"><code>data_sparse
+</code></pre>
+<pre><code>&lt;99996x30000 sparse matrix of type '&lt;class 'numpy.float64'&gt;'
+	with 10774558 stored elements in COOrdinate format&gt;
+</code></pre>
+<p>上面代码先根据用户进行分组，计算每个用户的总的播放总量，然后用每首歌的播放总量相处，得到每首歌的分值，最后一列特征fractional_play_count就是用户对每首歌曲的评分值。
+有了评分值之后就可以来构建矩阵了，这里有一些小问题需要处理一下，原始数据中无论是用户ID还是歌曲ID都是很长一串，这表达起来不太方便，需要重新对其制作索引。</p>
+<pre class="hljs"><code>user_codes[user_codes.user ==<span class="hljs-string">&#x27;2a2f776cbac6df64d6cb505e7e834e01684673b6&#x27;</span>]
+</code></pre>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>user_index</th>
+      <th>user</th>
+      <th>us_index_value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>27516</th>
+      <td>2981434</td>
+      <td>2a2f776cbac6df64d6cb505e7e834e01684673b6</td>
+      <td>27516</td>
+    </tr>
+  </tbody>
+</table>
+### 使用SVD方法来进行矩阵分解
+<p>矩阵构造好了之后我们就要执行SVD矩阵分解了，这里还需要一些额外的工具包来帮助我们完成计算，scipy就是其中一个好帮手了，里面已经封装好了SVD计算方法。</p>
+<pre class="hljs"><code><span class="hljs-keyword">import</span> math <span class="hljs-keyword">as</span> mt
+<span class="hljs-keyword">from</span> scipy.sparse.linalg <span class="hljs-keyword">import</span> * <span class="hljs-comment"># used for matrix multiplication</span>
+<span class="hljs-keyword">from</span> scipy.sparse.linalg <span class="hljs-keyword">import</span> svds
+<span class="hljs-keyword">from</span> scipy.sparse <span class="hljs-keyword">import</span> csc_matrix
+</code></pre>
+<pre class="hljs"><code><span class="hljs-keyword">def</span> <span class="hljs-title function_">compute_svd</span>(<span class="hljs-params">urm, K</span>):
+    U, s, Vt = svds(urm, K)
+
+    dim = (<span class="hljs-built_in">len</span>(s), <span class="hljs-built_in">len</span>(s))
+    S = np.zeros(dim, dtype=np.float32)
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">0</span>, <span class="hljs-built_in">len</span>(s)):
+        S[i,i] = mt.sqrt(s[i])
+
+    U = csc_matrix(U, dtype=np.float32)
+    S = csc_matrix(S, dtype=np.float32)
+    Vt = csc_matrix(Vt, dtype=np.float32)
+    
+    <span class="hljs-keyword">return</span> U, S, Vt
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">compute_estimated_matrix</span>(<span class="hljs-params">urm, U, S, Vt, uTest, K, test</span>):
+    rightTerm = S*Vt 
+    max_recommendation = <span class="hljs-number">250</span>
+    estimatedRatings = np.zeros(shape=(MAX_UID, MAX_PID), dtype=np.float16)
+    recomendRatings = np.zeros(shape=(MAX_UID,max_recommendation ), dtype=np.float16)
+    <span class="hljs-keyword">for</span> userTest <span class="hljs-keyword">in</span> uTest:
+        prod = U[userTest, :]*rightTerm
+        estimatedRatings[userTest, :] = prod.todense()
+        recomendRatings[userTest, :] = (-estimatedRatings[userTest, :]).argsort()[:max_recommendation]
+    <span class="hljs-keyword">return</span> recomendRatings
+</code></pre>
+<p>在执行SVD的时候需要我们额外指定一个指标K值，其含义就是我们选择前多少个特征值来做近似代表，也就是S矩阵中的数量。如果K值较大整体的计算效率会慢一些但是会更接近真实结果，这个值还需要我们自己来衡量一下。</p>
+<pre class="hljs"><code>K=<span class="hljs-number">50</span>
+urm = data_sparse
+MAX_PID = urm.shape[<span class="hljs-number">1</span>]
+MAX_UID = urm.shape[<span class="hljs-number">0</span>]
+
+U, S, Vt = compute_svd(urm, K)
+</code></pre>
+<p>这里我们选择K值等于50，其中PID表示我们最开始选择的部分歌曲，UID表示我们选择的部分用户。</p>
+<p>执行过程中，可以打印出各个矩阵的大小，这里强烈建议大家将代码复制到IDE中，打上断点一行一行的走下面，观察其中每一个变量的值，这对理解整个流程是非常有帮助的。</p>
+<p>接下来我们需要选择待测试用户了：</p>
+<pre class="hljs"><code>uTest = [<span class="hljs-number">4</span>,<span class="hljs-number">5</span>,<span class="hljs-number">6</span>,<span class="hljs-number">7</span>,<span class="hljs-number">8</span>,<span class="hljs-number">873</span>,<span class="hljs-number">23</span>]
+</code></pre>
+<p>随便选择一些用户就好，这里表示用户的索引编号，接下来需要对每一个用户计算其对我们候选集中3W首歌曲的喜好程度，说白了就是估计他对这3W首歌的评分值应该等于多少，前面我们通过SVD矩阵分解已经计算所需各个小矩阵了，接下来把其还原回去就可以啦：</p>
+<pre class="hljs"><code>uTest = [<span class="hljs-number">4</span>,<span class="hljs-number">5</span>,<span class="hljs-number">6</span>,<span class="hljs-number">7</span>,<span class="hljs-number">8</span>,<span class="hljs-number">873</span>,<span class="hljs-number">23</span>]
+
+uTest_recommended_items = compute_estimated_matrix(urm, U, S, Vt, uTest, K, <span class="hljs-literal">True</span>)
+</code></pre>
+<pre class="hljs"><code><span class="hljs-keyword">for</span> user <span class="hljs-keyword">in</span> uTest:
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;当前待推荐用户编号 {}&quot;</span>. <span class="hljs-built_in">format</span>(user))
+    rank_value = <span class="hljs-number">1</span>
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> uTest_recommended_items[user,<span class="hljs-number">0</span>:<span class="hljs-number">10</span>]:
+        song_details = small_set[small_set.so_index_value == i].drop_duplicates(<span class="hljs-string">&#x27;so_index_value&#x27;</span>)[[<span class="hljs-string">&#x27;title&#x27;</span>,<span class="hljs-string">&#x27;artist_name&#x27;</span>]]
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;推荐编号： {} 推荐歌曲： {} 作者： {}&quot;</span>.<span class="hljs-built_in">format</span>(rank_value, <span class="hljs-built_in">list</span>(song_details[<span class="hljs-string">&#x27;title&#x27;</span>])[<span class="hljs-number">0</span>],<span class="hljs-built_in">list</span>(song_details[<span class="hljs-string">&#x27;artist_name&#x27;</span>])[<span class="hljs-number">0</span>]))
+        rank_value+=<span class="hljs-number">1</span>
+</code></pre>
+<pre><code>当前待推荐用户编号 4
+推荐编号： 1 推荐歌曲： Fireflies 作者： Charttraxx Karaoke
+推荐编号： 2 推荐歌曲： Hey_ Soul Sister 作者： Train
+推荐编号： 3 推荐歌曲： OMG 作者： Usher featuring will.i.am
+推荐编号： 4 推荐歌曲： Lucky (Album Version) 作者： Jason Mraz &amp; Colbie Caillat
+推荐编号： 5 推荐歌曲： Vanilla Twilight 作者： Owl City
+推荐编号： 6 推荐歌曲： Crumpshit 作者： Philippe Rochard
+推荐编号： 7 推荐歌曲： Billionaire [feat. Bruno Mars]  (Explicit Album Version) 作者： Travie McCoy
+推荐编号： 8 推荐歌曲： Love Story 作者： Taylor Swift
+推荐编号： 9 推荐歌曲： TULENLIEKKI 作者： M.A. Numminen
+推荐编号： 10 推荐歌曲： Use Somebody 作者： Kings Of Leon
+当前待推荐用户编号 5
+推荐编号： 1 推荐歌曲： Sehr kosmisch 作者： Harmonia
+推荐编号： 2 推荐歌曲： Ain't Misbehavin 作者： Sam Cooke
+推荐编号： 3 推荐歌曲： Dog Days Are Over (Radio Edit) 作者： Florence + The Machine
+推荐编号： 4 推荐歌曲： Revelry 作者： Kings Of Leon
+推荐编号： 5 推荐歌曲： Undo 作者： BjÃ¶rk
+推荐编号： 6 推荐歌曲： Cosmic Love 作者： Florence + The Machine
+推荐编号： 7 推荐歌曲： Home 作者： Edward Sharpe &amp; The Magnetic Zeros
+推荐编号： 8 推荐歌曲： You've Got The Love 作者： Florence + The Machine
+推荐编号： 9 推荐歌曲： Bring Me To Life 作者： Evanescence
+推荐编号： 10 推荐歌曲： Tighten Up 作者： The Black Keys
+当前待推荐用户编号 6
+推荐编号： 1 推荐歌曲： Crumpshit 作者： Philippe Rochard
+推荐编号： 2 推荐歌曲： Marry Me 作者： Train
+推荐编号： 3 推荐歌曲： Hey_ Soul Sister 作者： Train
+推荐编号： 4 推荐歌曲： Lucky (Album Version) 作者： Jason Mraz &amp; Colbie Caillat
+推荐编号： 5 推荐歌曲： One On One 作者： the bird and the bee
+推荐编号： 6 推荐歌曲： I Never Told You 作者： Colbie Caillat
+推荐编号： 7 推荐歌曲： Canada 作者： Five Iron Frenzy
+推荐编号： 8 推荐歌曲： Fireflies 作者： Charttraxx Karaoke
+推荐编号： 9 推荐歌曲： TULENLIEKKI 作者： M.A. Numminen
+推荐编号： 10 推荐歌曲： Bring Me To Life 作者： Evanescence
+当前待推荐用户编号 7
+推荐编号： 1 推荐歌曲： Behind The Sea [Live In Chicago] 作者： Panic At The Disco
+推荐编号： 2 推荐歌曲： The City Is At War (Album Version) 作者： Cobra Starship
+推荐编号： 3 推荐歌曲： Dead Souls 作者： Nine Inch Nails
+推荐编号： 4 推荐歌曲： Una Confusion 作者： LU
+推荐编号： 5 推荐歌曲： Home 作者： Edward Sharpe &amp; The Magnetic Zeros
+推荐编号： 6 推荐歌曲： Climbing Up The Walls 作者： Radiohead
+推荐编号： 7 推荐歌曲： Tighten Up 作者： The Black Keys
+推荐编号： 8 推荐歌曲： Tive Sim 作者： Cartola
+推荐编号： 9 推荐歌曲： West One (Shine On Me) 作者： The Ruts
+推荐编号： 10 推荐歌曲： Cosmic Love 作者： Florence + The Machine
+当前待推荐用户编号 8
+推荐编号： 1 推荐歌曲： Undo 作者： BjÃ¶rk
+推荐编号： 2 推荐歌曲： Canada 作者： Five Iron Frenzy
+推荐编号： 3 推荐歌曲： Better To Reign In Hell 作者： Cradle Of Filth
+推荐编号： 4 推荐歌曲： Unite (2009 Digital Remaster) 作者： Beastie Boys
+推荐编号： 5 推荐歌曲： Behind The Sea [Live In Chicago] 作者： Panic At The Disco
+推荐编号： 6 推荐歌曲： Rockin' Around The Christmas Tree 作者： Brenda Lee
+推荐编号： 7 推荐歌曲： Devil's Slide 作者： Joe Satriani
+推荐编号： 8 推荐歌曲： Revelry 作者： Kings Of Leon
+推荐编号： 9 推荐歌曲： 16 Candles 作者： The Crests
+推荐编号： 10 推荐歌曲： Catch You Baby (Steve Pitron &amp; Max Sanna Radio Edit) 作者： Lonnie Gordon
+当前待推荐用户编号 873
+推荐编号： 1 推荐歌曲： The Scientist 作者： Coldplay
+推荐编号： 2 推荐歌曲： Yellow 作者： Coldplay
+推荐编号： 3 推荐歌曲： Clocks 作者： Coldplay
+推荐编号： 4 推荐歌曲： Fix You 作者： Coldplay
+推荐编号： 5 推荐歌曲： In My Place 作者： Coldplay
+推荐编号： 6 推荐歌曲： Shiver 作者： Coldplay
+推荐编号： 7 推荐歌曲： Speed Of Sound 作者： Coldplay
+推荐编号： 8 推荐歌曲： Creep (Explicit) 作者： Radiohead
+推荐编号： 9 推荐歌曲： Sparks 作者： Coldplay
+推荐编号： 10 推荐歌曲： Use Somebody 作者： Kings Of Leon
+当前待推荐用户编号 23
+推荐编号： 1 推荐歌曲： Garden Of Eden 作者： Guns N' Roses
+推荐编号： 2 推荐歌曲： Don't Speak 作者： John DahlbÃ¤ck
+推荐编号： 3 推荐歌曲： Master Of Puppets 作者： Metallica
+推荐编号： 4 推荐歌曲： TULENLIEKKI 作者： M.A. Numminen
+推荐编号： 5 推荐歌曲： Bring Me To Life 作者： Evanescence
+推荐编号： 6 推荐歌曲： Kryptonite 作者： 3 Doors Down
+推荐编号： 7 推荐歌曲： Make Her Say 作者： Kid Cudi / Kanye West / Common
+推荐编号： 8 推荐歌曲： Night Village 作者： Deep Forest
+推荐编号： 9 推荐歌曲： Better To Reign In Hell 作者： Cradle Of Filth
+推荐编号： 10 推荐歌曲： Xanadu 作者： Olivia Newton-John;Electric Light Orchestra
+</code></pre>
+<p>这里对每一个用户都得到了其对应的推荐结果，并且将结果按照得分值进行排序。</p>
+<p>本章我们选择了音乐数据集来进行个性化推荐任务，首先对数据进行预处理和整合，选择两种方法分别完成推荐任务。在相似度计算中根据用户所听过的歌曲在候选集中选择与其最相似的歌曲，存在的问题就是计算时间消耗太多，每一个用户都需要重新计算一遍才能得出推荐结果。在SVD矩阵分解的方法中，我们首先构建评分矩阵，对其进行SVD分解，然后选择待推荐用户，还原得到其对所有歌曲的估测评分值，最后排序返回结果即可。</p>
+<pre class="hljs"><code>uTest = [<span class="hljs-number">27513</span>]
+<span class="hljs-comment">#Get estimated rating for test user</span>
+<span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Predictied ratings:&quot;</span>)
+uTest_recommended_items = compute_estimated_matrix(urm, U, S, Vt, uTest, K, <span class="hljs-literal">True</span>)
+</code></pre>
+<pre><code>Predictied ratings:
+</code></pre>
+<pre class="hljs"><code><span class="hljs-keyword">for</span> user <span class="hljs-keyword">in</span> uTest:
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;当前待推荐用户编号 {}&quot;</span>. <span class="hljs-built_in">format</span>(user))
+    rank_value = <span class="hljs-number">1</span>
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> uTest_recommended_items[user,<span class="hljs-number">0</span>:<span class="hljs-number">10</span>]:
+        song_details = small_set[small_set.so_index_value == i].drop_duplicates(<span class="hljs-string">&#x27;so_index_value&#x27;</span>)[[<span class="hljs-string">&#x27;title&#x27;</span>,<span class="hljs-string">&#x27;artist_name&#x27;</span>]]
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;推荐编号： {} 推荐歌曲： {} 作者： {}&quot;</span>.<span class="hljs-built_in">format</span>(rank_value, <span class="hljs-built_in">list</span>(song_details[<span class="hljs-string">&#x27;title&#x27;</span>])[<span class="hljs-number">0</span>],<span class="hljs-built_in">list</span>(song_details[<span class="hljs-string">&#x27;artist_name&#x27;</span>])[<span class="hljs-number">0</span>]))
+        rank_value+=<span class="hljs-number">1</span>
+</code></pre>
+<pre><code>Recommendation for user with user id 27513
+The number 1 recommended song is Master Of Puppets BY Metallica
+The number 2 recommended song is Garden Of Eden BY Guns N' Roses
+The number 3 recommended song is Bring Me To Life BY Evanescence
+The number 4 recommended song is Kryptonite BY 3 Doors Down
+The number 5 recommended song is Make Her Say BY Kid Cudi / Kanye West / Common
+The number 6 recommended song is Night Village BY Deep Forest
+The number 7 recommended song is Savior BY Rise Against
+The number 8 recommended song is Good Things BY Rich Boy / Polow Da Don / Keri Hilson
+The number 9 recommended song is Bleed It Out [Live At Milton Keynes] BY Linkin Park
+The number 10 recommended song is Uprising BY Muse
+</code></pre>
+<h2>项目总结</h2>
+<p>本项目选择音乐数据集进行个性化推荐任务，首先对数据进行预处理和整合，并选择两种方法分别完成推荐任务。</p>
+<ul>
+<li>在相似度计算中，根据用户所听过的歌曲，在候选集中选择与其最相似的歌曲，但存在消耗计算资源过多的问题。每一个用户都要重新计算一遍，才能得出推荐结果。</li>
+<li>在SVD矩阵分解的方法中，首先构建评分矩阵，对其进行SVD分解，然后选择待推荐用户，还原得到其对所有歌曲的估测评分值。最后进行排序，返回个性化推荐结果。</li>
+</ul>
+</article>
+    <a class="back-link" href="./index.html">← 返回文章列表</a>
+  </main>
+  <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+</body>
+</html>

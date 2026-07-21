@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Linux指令温故知新 · eli3xir</title>
+  <meta name="description" content="Linux指令温故知新">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' font-weight='bold' text-anchor='middle' fill='%237c5cff'%3Ee3%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/blog.css">
+  
+</head>
+<body>
+  <header class="blog-nav">
+    <a class="nav-logo" href="../index.html">eli3xir<span class="accent">.</span></a>
+    <nav>
+      <a href="../index.html">主页</a>
+      <a href="./index.html">文章</a>
+      <a href="https://github.com/eli3xir" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+  
+  <main class="post">
+    <div class="post-head">
+      <h1>Linux指令温故知新</h1>
+      <div class="post-meta">
+        <time>2021-11-15</time>
+        <span class="chip cat">专业课</span><span class="chip cat">操作系统</span>
+        <span class="chip">Linux</span><span class="chip">操作系统</span>
+      </div>
+    </div>
+    <article class="post-content"><p><img src="https://gitee.com/buptsg2019/picgo/raw/master/e0422302e42945cab1505792a443b812.jpeg" alt="Linux基础"></p>
+<p>Linux中的命令格式为：<code>command [options] [arguments]</code> 中括号表示可选的，即有些命令不需要选项也不需要参数，但有的命令在运行时需要多个选项或参数。</p>
+<ul>
+<li><code>options</code>（选项）：选项是调整命令执行行为的开关，选项的不同决定了命令的显示结果不同。</li>
+<li><code>arguments</code>（参数）：参数是指命令的作用对象。</li>
+</ul>
+<h2>vi</h2>
+<p>文本编辑器，若文件存在则是编辑，若不存在则是创建并编辑文本。</p>
+<p>命令语法：</p>
+<pre class="hljs"><code>vi [参数]
+</code></pre>
+<p>参数说明：可编辑的文件名。</p>
+<p>命令示例：</p>
+<ul>
+<li>编辑名为clusterconfig的xml文本：</li>
+</ul>
+<pre class="hljs"><code>vi clusterconfig.xml
+</code></pre>
+<p>注：</p>
+<p>vi编辑器有以下三种模式：</p>
+<ul>
+<li>
+<p>正常模式：其它模式下按<code>Esc</code>或<code>Ctrl</code>+<code>[</code>进入，左下角显示文件名或为空。</p>
+</li>
+<li>
+<p>插入模式：正常模式下按<code>i</code>键进入，左下角显示--INSERT--。</p>
+</li>
+<li>
+<p>可视模式：正常模式下按<code>v</code>键进入，左下角显示--VISUAL--。</p>
+</li>
+</ul>
+<p>退出命令（正常模式下）：</p>
+<ul>
+<li>
+<p><code>:wq</code> 保存并退出。</p>
+</li>
+<li>
+<p><code>:q!</code> 强制退出并忽略所有更改。</p>
+</li>
+<li>
+<p><code>:e!</code> 放弃所有修改，并打开原有文件。</p>
+</li>
+</ul>
+<p>在正常模式下，输入<code>/</code>查找内容，便能定位到你所查找内容的位置</p>
+<pre class="hljs"><code>/LIB_VERSION
+</code></pre>
+<p>就能查找到该文本中LIB_VERSION字段所在的位置</p>
+<h2>cd</h2>
+<p>显示当前目录的名称，或切换当前的目录（打开指定目录）。</p>
+<p>命令语法：</p>
+<pre class="hljs"><code>cd [参数]
+</code></pre>
+<p>参数说明：</p>
+<ul>
+<li>
+<p>无参数：切换用户当前目录。</p>
+</li>
+<li>
+<p><code>.</code> ：表示当前目录；</p>
+</li>
+<li>
+<p><code>.. </code>：表示上一级目录；</p>
+</li>
+<li>
+<p><code>~</code> ：表示home目录；</p>
+</li>
+<li>
+<p><code>/</code> ：表示根目录。</p>
+</li>
+</ul>
+<p>命令示例：</p>
+<ul>
+<li>切换到usr目录下的bin目录中：</li>
+</ul>
+<pre class="hljs"><code>cd /usr/bin
+</code></pre>
+<ul>
+<li>切换到用户home目录：</li>
+</ul>
+<pre class="hljs"><code>cd
+</code></pre>
+<ul>
+<li>切换到当前目录(cd后面接一个.)：</li>
+</ul>
+<pre class="hljs"><code>cd .
+</code></pre>
+<ul>
+<li>切换到当前目录上一级目录(cd后面接两个.)：</li>
+</ul>
+<pre class="hljs"><code>cd .. 
+</code></pre>
+<ul>
+<li>切换到用户home目录：</li>
+</ul>
+<pre class="hljs"><code>cd ~
+</code></pre>
+<ul>
+<li>切换到根目录下：</li>
+</ul>
+<pre class="hljs"><code>cd /
+</code></pre>
+<p>注：切换目录需要理解绝对路径和相对路径这两个概念。</p>
+<ul>
+<li>
+<p>绝对路径：在Linux中，绝对路径是从<code>/</code>（即根目录）开始的，例如 <code>/opt/software</code>、<code>/etc/profile</code>, 如果目录以 <code>/</code> 就是绝对目录。</p>
+</li>
+<li>
+<p>相对路径：是以 <code>.</code> 或 <code>..</code> 开始的目录。 <code>.</code> 表示用户当前操作所在的位置，而 <code>..</code> 表示上级目录。例如 <code>./gs_om</code> 表示当前目录下的文件或者目录。</p>
+</li>
+</ul>
+<h2>mv</h2>
+<p>文件或目录改名(move (rename) files)或将文件或目录移入其它位置,经常用来备份文件或者目录。</p>
+<p>命令语法：</p>
+<pre class="hljs"><code>mv [选项] 参数1 参数2
+</code></pre>
+<p>常用选项：</p>
+<ul>
+<li><code>-b</code>：若需覆盖文件，则覆盖前先行备份。</li>
+</ul>
+<p>参数说明：</p>
+<ul>
+<li>
+<p>参数1：源文件或目录。</p>
+</li>
+<li>
+<p>参数2：目标文件或目录。</p>
+</li>
+</ul>
+<p>命令示例：</p>
+<ul>
+<li>将文件python重命名为python.bak：</li>
+</ul>
+<pre class="hljs"><code>mv python python.bak
+</code></pre>
+<ul>
+<li>将<code>/physical/backup</code>目录下的所有文件和目录移到<code>/data/dbn1</code>目录下：</li>
+</ul>
+<pre class="hljs"><code>mv /physical/backup/* /data/dbn1
+</code></pre>
+<h2>curl</h2>
+<p>在Linux中curl是一个利用URL规则在命令行下工作的文件传输工具。支持文件的上传和下载，是综合传输工具。</p>
+<p>命令语法：</p>
+<pre class="hljs"><code>curl [选项] [URL]
+</code></pre>
+<p>常用选项：</p>
+<ul>
+<li>
+<p><code>-A/--user-agent &lt;string&gt;</code>：设置用户代理发送给服务器；</p>
+</li>
+<li>
+<p><code>-C/--continue-at &lt;offset&gt;</code>：断点续转；</p>
+</li>
+<li>
+<p><code>-D/--dump-header &lt;file&gt;</code>：把header信息写入到该文件中；</p>
+</li>
+<li>
+<p><code>-e/--referer</code>：来源网址；</p>
+</li>
+<li>
+<p><code>-o/--output</code>：把输出写到该文件中；</p>
+</li>
+<li>
+<p><code>-O/--remote-name</code>：把输出写到该文件中，保留远程文件的文件名；</p>
+</li>
+<li>
+<p><code>-s/--silent</code>：静默模式。不输出任何东西；</p>
+</li>
+<li>
+<p><code>-T/--upload-file &lt;file&gt;</code>：上传文件；</p>
+</li>
+<li>
+<p><code>-u/--user &lt;user[:password]&gt;</code>：设置服务器的用户和密码；</p>
+</li>
+<li>
+<p><code>-x/--proxy &lt;host[:port]&gt;</code>：在给定的端口上使用HTTP代理；</p>
+</li>
+<li>
+<p><code>-#/--progress-bar</code>：进度条显示当前的传送状态。</p>
+</li>
+</ul>
+<p>参数说明：</p>
+<ul>
+<li><code>URL</code>：指定的文件传输URL地址。</li>
+</ul>
+<p>命令示例：</p>
+<ul>
+<li>将url(<a href="https://mirrors.huaweicloud.com/repository/conf/openeuler_x86_64.repo">https://mirrors.huaweicloud.com/repository/conf/openeuler_x86_64.repo</a>)的内容保存到/etc/yum.repos.d/openEuler_x86_64.repo 文件中。</li>
+</ul>
+<pre class="hljs"><code>curl -o /etc/yum.repos.d/openEuler_x86_64.repo https://mirrors.huaweicloud.com/repository/conf/openeuler_x86_64.repo
+</code></pre>
+<ul>
+<li>如果在传输过程中掉线，可以使用-C的方式进行续传。</li>
+</ul>
+<pre class="hljs"><code>curl -C -O [https://mirrors.huaweicloud.com/repository/conf/](https://mirrors.huaweicloud.com/repository/conf/CentOS-7-anon.repo)openeuler_x86_64.repo 
+</code></pre>
+<h2>yum</h2>
+<p>Shell 前端软件包管理器。基于 RPM 包管理，能够从指定的服务器自动下载 RPM 包并且安装，可以自动处理依赖性关系，并且一次安装所有依赖的软体包，无须繁琐地一次次下载和安装。</p>
+<p>命令语法：</p>
+<pre class="hljs"><code>yum [options] [command] [package ...]
+</code></pre>
+<p>常用选项：</p>
+<ul>
+<li>
+<p><code>-h</code>：查看帮助；</p>
+</li>
+<li>
+<p><code>-y</code>：当安装过程提示选择全部为 &quot;yes&quot;；</p>
+</li>
+<li>
+<p><code>-q</code>：不显示安装的过程。</p>
+</li>
+</ul>
+<p>参数说明：</p>
+<ul>
+<li>
+<p>command：要进行的操作。</p>
+</li>
+<li>
+<p>package：安装的包名。</p>
+</li>
+</ul>
+<p>命令示例：</p>
+<ul>
+<li>列出所有可更新的软件清单命令：</li>
+</ul>
+<pre class="hljs"><code>yum check-update
+</code></pre>
+<ul>
+<li>更新所有软件命令：</li>
+</ul>
+<pre class="hljs"><code>yum update
+</code></pre>
+<ul>
+<li>列出所有可安裝的软件清单命令：</li>
+</ul>
+<pre class="hljs"><code>yum list
+</code></pre>
+<ul>
+<li>安装指定的软件：</li>
+</ul>
+<pre class="hljs"><code>yum install -y libaio-devel flex bison ncurses-devel glibc.devel patch lsb_release wget python3
+</code></pre>
+<h2>wget</h2>
+<p>wget是Linux下下载文件的最常用命令。wget支持HTTP,HTTPS和FTP协议,支持自动下载,即可以在用户退出系统后在后台执行,直到下载结束。</p>
+<p>命令语法：</p>
+<pre class="hljs"><code>wget [选项] [URL]
+</code></pre>
+<p>常用选项：</p>
+<ul>
+<li>
+<p><code>-c</code>：接着下载没下载完的文件；</p>
+</li>
+<li>
+<p><code>-b</code>：启动后转入后台执行；</p>
+</li>
+<li>
+<p><code>-P</code>：指定下载目录；</p>
+</li>
+<li>
+<p><code>-O</code>：变更下载文件名；</p>
+</li>
+<li>
+<p><code>--ftp-user --ftp-password</code>：使用FTP用户认证下载。</p>
+</li>
+</ul>
+<p>参数说明：</p>
+<ul>
+<li>指定的文件下载URL地址。</li>
+</ul>
+<p>命令示例：</p>
+<ul>
+<li>下载openGauss数据库安装文件到当前文件夹：</li>
+</ul>
+<pre class="hljs"><code>wget https://opengauss.obs.cn-south-1.myhuaweicloud.com/1.1.0/x86_openEuler/openGauss-1.1.0-openEuler-64bit-all.tar.gz
+</code></pre>
+<ul>
+<li>使用wget断点续传：</li>
+</ul>
+<pre class="hljs"><code>wget –c https://opengauss.obs.cn-south-1.myhuaweicloud.com/1.1.0/x86_openEuler/openGauss-1.1.0-openEuler-64bit-all.tar.gz
+</code></pre>
+<h2>ln</h2>
+<p>为某一个文件在另外一个位置建立一个同步的链接（软硬链接，不带选项为硬链接）。</p>
+<p>当需要在不同的目录，用到相同的文件时，就不需要在每一个需要要的目录下都放一个必须相同的文件，我们只要在某个固定的目录，放上该文件，然后在 其它的目录下用ln命令链接（link）它就可以，不必重复的占用磁盘空间。</p>
+<p>命令语法：</p>
+<pre class="hljs"><code>ln [选项] 参数1 参数2
+</code></pre>
+<p>常用选项：</p>
+<ul>
+<li>
+<p><code>-b</code>：删除，覆盖以前建立的链接；</p>
+</li>
+<li>
+<p><code>-d</code>：允许超级用户制作目录的硬链接；</p>
+</li>
+<li>
+<p><code>-s</code>：软链接(符号链接)。</p>
+</li>
+</ul>
+<p>参数说明：</p>
+<ul>
+<li>
+<p>参数1：源文件或目录。</p>
+</li>
+<li>
+<p>参数2：被链接的文件或目录。</p>
+</li>
+</ul>
+<p>命令示例：</p>
+<ul>
+<li>为python3文件创建软链接<code>/usr/bin/python</code>，如果python3丢失，<code>/usr/bin/python</code>将失效：</li>
+</ul>
+<pre class="hljs"><code>ln -s python3 /usr/bin/python
+</code></pre>
+<ul>
+<li>为python3创建硬链接<code>/usr/bin/python</code>，python3与<code>/usr/bin/python</code>的各项属性相同：</li>
+</ul>
+<pre class="hljs"><code>ln python3 /usr/bin/python
+</code></pre>
+<h2>mkdir</h2>
+<p>创建指定的名称的目录，要求创建目录的用户在当前目录中具有写权限，并且指定的目录名不能是当前目录中已有的目录。</p>
+<p>命令语法：</p>
+<pre class="hljs"><code>mkdir [选项] [参数]
+</code></pre>
+<p>常用选项：</p>
+<ul>
+<li><code>-p</code>：可以是一个路径名称。此时若路径中的某些目录尚不存在,加上此选项后,系统将自动建立好那些尚不存在的目录,即一次可以建立多个目录（递归）；</li>
+<li><code>-v</code>：每次创建新目录都显示信息；</li>
+<li><code>-m</code>：设定权限&lt;模式&gt; (类似<code>chmod</code>)，而不是 rwxrwxrwx 减 umask。</li>
+</ul>
+<blockquote>
+<p><strong>rwx</strong>：代表不同用户组读写执行的权限，三项权限可以用数字表示，使用命令 <code>ll</code> 或 <code>ls -la</code> 可以查看这些权限，其中 <code>r</code> 为读权限，<code>w</code> 为写权限，<code>x</code> 为执行权限，分别用数字4、2、1来表示，即二进制表示。</p>
+<p>比如：<code>-rwxrwx---</code> 770 权限表示此文件的拥有者和同组用户有读写和执行的权限，而其他用户组没有任何权限。</p>
+<p>即权限共用 10 个 <code>-</code> 表示，第一个表示文件类型，前三个 rwx 表示所有者权限，中间三个 rwx 表示同组用户权限，后面三个 rwx 表示其他用户权限。</p>
+<p><strong>Linux 文件类型</strong>：</p>
+<ul>
+<li><code>-</code>：文件</li>
+<li><code>d</code>：目录</li>
+<li><code>l</code>：链接文件</li>
+<li><code>b</code>：块设备</li>
+<li><code>c</code>：字符设备</li>
+</ul>
+<blockquote>
+<p><strong>字符设备</strong>：提供连续的数据流，应用程序可以顺序读取，通常不支持随机存取。相反，此类设备支持按字节/字符来读写数据。键盘、串口、调制解调器都是典型的字符设备。
+<strong>块设备</strong>：应用程序可以随机访问设备数据，程序可自行确定读取数据的位置。硬盘、软盘、CD-ROM驱动器和闪存都是典型的块设备，应用程序可以寻址磁盘上的任何位置，并由此读取数据。此外，数据的读写只能以块(通常是512B)的倍数进行。与字符设备不同，块设备并不支持基于字符的寻址。
+总结一下，这两种类型的设备的根本区别在于它们是否可以被随机访问。</p>
+</blockquote>
+<p><strong>umask</strong>：umask 显示的值为从默认的最大权限中减去的值，最大权限为 777。比如 umask 为 0022，即为在同组用户权限和其他用户权限中去掉写权限，通过 <code>umask -S</code> 指令可以查看权限。</p>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/image-20211118103337350.png" alt="image-20211118103337350"></p>
+<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/image-20211118110524555.png" alt="image-20211118110524555"></p>
+</blockquote>
+<p>参数说明：</p>
+<ul>
+<li>需要创建的目录。</li>
+</ul>
+<p>命令示例：</p>
+<ul>
+<li>创建一个空目录：</li>
+</ul>
+<pre class="hljs"><code>mkdir test
+</code></pre>
+<ul>
+<li>递归创建多个目录：</li>
+</ul>
+<pre class="hljs"><code>mkdir -p /opt/software/openGauss
+</code></pre>
+<ul>
+<li>创建权限为777的目录(目录的权限为rwxrwxrwx)：</li>
+</ul>
+<pre class="hljs"><code>mkdir –m 777 test
+</code></pre>
+<h2>chmod</h2>
+<p>更改文件权限。</p>
+<p>命令语法：</p>
+<pre class="hljs"><code>chmod [选项] &lt;mode&gt; &lt;file...&gt;
+</code></pre>
+<p>常用选项：</p>
+<ul>
+<li><code>-R</code>：以递归的方式对目前目录下的所有文件与子目录进行相同的权限变更。</li>
+</ul>
+<p>参数说明：</p>
+<ul>
+<li><code>mode</code>：权限设定字串，详细格式如下 ：</li>
+</ul>
+<pre class="hljs"><code>[ugoa...][[+-=][rwxX]...][,...]，
+</code></pre>
+<p>其中，[ugoa...]：u 表示该档案的拥有者，g 表示与该档案的拥有者属于同一个群体(group)者，o 表示其他以外的人，a 表示所有（包含上面三者）；[+-=]：+ 表示增加权限，- 表示取消权限，= 表示唯一设定权限；[rwxX]：r 表示可读取，w 表示可写入，x 表示可执行，X表示只有当该档案是个子目录或者该档案已经被设定过为可执行。</p>
+<ul>
+<li>file：文件列表（单个或者多个文件、文件夹）。</li>
+</ul>
+<p>命令示例：</p>
+<ul>
+<li>设置所有用户可读取文件 cluterconfig.xml：</li>
+</ul>
+<pre class="hljs"><code>chmod ugo+r cluterconfig.xml 
+</code></pre>
+<p>或</p>
+<pre class="hljs"><code>chmod a+r cluterconfig.xml
+</code></pre>
+<ul>
+<li>设置当前目录下的所有档案与子目录皆设为任何人可读写：</li>
+</ul>
+<pre class="hljs"><code>chmod -R a+rw *
+</code></pre>
+<p>每个文件都可以针对三个粒度，设置不同的rwx(读写执行)权限。即我们可以用用三个8进制数字分别表示 拥有者 、群组 、其它组( u、 g 、o)的权限详情，并用chmod直接加三个8进制数字的方式直接改变文件权限。语法格式为 ：</p>
+<pre class="hljs"><code>chmod &lt;abc&gt; file...
+</code></pre>
+<p>其中，a,b,c各为一个数字，分别代表User、Group、及Other的权限，相当于简化版的<code>chmod u=权限,g=权限,o=权限 file...</code>，而此处的权限将用8进制的数字来表示User、Group、及Other的读、写、执行权限。</p>
+<p>命令示例：</p>
+<ul>
+<li>赋予cluterconfig.xml文件可读可写可执行权限（所有权限）：</li>
+</ul>
+<pre class="hljs"><code>chmod 777 cluterconfig.xml
+</code></pre>
+<ul>
+<li>赋予<code>/opt/software/openGauss</code>目录下所有文件及其子目录 用户所有权限组可读可执行权限，其他用户可读可执行权限：</li>
+</ul>
+<pre class="hljs"><code>chmod R 755 /opt/software/openGauss
+</code></pre>
+<h2>chown</h2>
+<p>利用 chown 将指定文件的拥有者改为指定的用户或组，用户可以是用户名或者用户ID；组可以是组名或者组ID；文件是以空格分开的要改变权限的文件列表，支持通配符。只有系统管理者(root)才有这样的权限。使用权限 : <strong>root</strong>。</p>
+<p>命令语法：</p>
+<pre class="hljs"><code>chown [选项] user[:group] file...
+</code></pre>
+<p>常用选项:</p>
+<ul>
+<li>
+<p><code>-c</code>：显示更改的部分的信息；</p>
+</li>
+<li>
+<p><code>-f</code>：忽略错误信息；</p>
+</li>
+<li>
+<p><code>-R</code>：处理指定目录以及其子目录下的所有文件。</p>
+</li>
+</ul>
+<p>参数说明：</p>
+<ul>
+<li>
+<p><code>user</code>：新的文件拥有者的使用者 ID。</p>
+</li>
+<li>
+<p><code>group</code>：新的文件拥有者的使用者组(group)。</p>
+</li>
+<li>
+<p><code>file</code>：文件。</p>
+</li>
+</ul>
+<p>命令示例：</p>
+<ul>
+<li>将文件 <code>file1.txt</code> 的拥有者设为<code>omm</code>，群体的使用者<code>dbgrp</code>：</li>
+</ul>
+<pre class="hljs"><code>chown omm:dbgrp /opt/software/openGauss/clusterconfig.xml
+</code></pre>
+<ul>
+<li>将目前目录下的所有文件与子目录的拥有者皆设为<code>omm</code>，群体的使用者<code>dbgrp</code>：</li>
+</ul>
+<pre class="hljs"><code>chown -R omm:dbgrp *
+</code></pre>
+<h2>ls</h2>
+<p>列出文件和目录的内容。</p>
+<p>命令语法：</p>
+<pre class="hljs"><code>ls [选项] [参数]
+</code></pre>
+<p>常用选项：</p>
+<ul>
+<li>
+<p><code>-l</code>：以长格式显示，列出文件的详细信息，如创建者，创建时间，文件的读写权限列表等等；</p>
+</li>
+<li>
+<p><code>-a</code>：列出文件下所有的文件，包括以 <code>.</code> 和 <code>..</code> 开头的隐藏文件 （Linux下文件隐藏文件是以 <code>.</code>开头的，如果存在 <code>..</code> 代表存在着父目录）；</p>
+</li>
+<li>
+<p><code>-d</code>：列出目录本身而非目录内的文件，通常要与<code>-l</code>一起使用；</p>
+</li>
+<li>
+<p><code>-R</code>：同时列出所有子目录层，与<code>-l</code>相似，只是不显示出文件的所有者，相当于编程中的“递归”实现；</p>
+</li>
+<li>
+<p><code>-t</code>：按照时间进行文件的排序，Time（时间）；</p>
+</li>
+<li>
+<p><code>-s</code>：在每个文件的后面打印出文件的大小，size（大小）；</p>
+</li>
+<li>
+<p><code>-S</code>：以文件的大小进行排序。</p>
+</li>
+</ul>
+<p>参数说明：</p>
+<ul>
+<li>目录或文件。</li>
+</ul>
+<p>命令示例：</p>
+<ul>
+<li>以长格式列出当前目录中的文件及目录：</li>
+</ul>
+<pre class="hljs"><code>ls -l
+</code></pre>
+<h2>cp</h2>
+<p>复制文件或者目录。</p>
+<p>命令语法：</p>
+<pre class="hljs"><code>cp [选项] 参数1 参数2
+</code></pre>
+<p>常用选项：</p>
+<ul>
+<li>
+<p><code>-f</code>：如果目标文件无法打开则将其移除并重试(当 <code>-n</code> 选项存在时则不需再选此项)；</p>
+</li>
+<li>
+<p><code>-n</code>：不要覆盖已存在的文件(使前面的 <code>-i</code> 选项失效)；</p>
+</li>
+<li>
+<p><code>-I</code>：覆盖前询问(使前面的 <code>-n</code> 选项失效)；</p>
+</li>
+<li>
+<p><code>-p</code>：保持指定的属性(默认：模式,所有权,时间戳)，如果可能保持附加属性：环境、链接、xattr 等；</p>
+</li>
+<li>
+<p><code>-R,-r</code>：复制目录及目录内的所有项目。</p>
+</li>
+</ul>
+<p>参数说明：</p>
+<ul>
+<li>
+<p>参数1：源文件。</p>
+</li>
+<li>
+<p>参数2：目标文件。</p>
+</li>
+</ul>
+<p>命令示例：</p>
+<ul>
+<li>将home目录中的abc文件复制到opt目录下：</li>
+</ul>
+<pre class="hljs"><code>cp /home/abc /opt
+</code></pre>
+<p>注：目标文件存在时，会询问是否覆盖。这是因为<code>cp</code>是<code>cp -i</code>的别名。目标文件存在时，即使加了<code>-f</code>标志，也还会询问是否覆盖。</p>
+<h2>rm</h2>
+<p>删除一个目录中的一个或多个文件或目录，它也可以将某个目录及其下的所有文件及子目录均删除。对于链接文件，只是删除了链接，原有文件均保持不变。</p>
+<p>rm是一个危险的命令，使用的时候要特别当心，否则整个系统就会毁在这个命令（比如在<code>/</code>（根目录）下执行<code>rm * rf</code>）。所以，我们在执行rm之前最好先确认一下在哪个目录，到底要删除什么东西，操作时保持高度清醒的头脑。</p>
+<p>命令语法：</p>
+<pre class="hljs"><code>rm [选项] 文件
+</code></pre>
+<p>常用选项：</p>
+<ul>
+<li>
+<p><code>-f</code>：忽略不存在的文件，从不给出提示；</p>
+</li>
+<li>
+<p><code>-r</code>：指示rm将参数中列出的全部目录和子目录均递归地删除。</p>
+</li>
+</ul>
+<p>参数说明：</p>
+<ul>
+<li>需要删除的文件或目录。</li>
+</ul>
+<p>命令示例：</p>
+<ul>
+<li>删除文件：</li>
+</ul>
+<pre class="hljs"><code>rm qwe
+</code></pre>
+<p>注：输入<code>rm qwe</code>命令后，系统会询问是否删除，输入<code>y</code>后就会删除文件，不想删除文件则输入<code>n</code>。</p>
+<ul>
+<li>强制删除某个文件：</li>
+</ul>
+<pre class="hljs"><code>rm -rf clusterconfig.log
+</code></pre>
+<h2>cat</h2>
+<p>连接文件并在标准输出上输出。这个命令常用来显示文件内容，或者将几个文件连接起来显示，或者从标准输入读取内容并显示，它常与重定向符号配合使用。</p>
+<p>命令语法：</p>
+<pre class="hljs"><code>cat [选项] [参数]
+</code></pre>
+<p>常用选项：</p>
+<ul>
+<li>
+<p><code>-E</code>：在每行结束显示$；</p>
+</li>
+<li>
+<p><code>-n</code> 或 <code>--number</code>：由1开始对给所有输出行编号；</p>
+</li>
+<li>
+<p><code>-b</code> 或 <code>--number-nonblank</code>：和 -n 相似，只不过对于空白行不编号；</p>
+</li>
+<li>
+<p><code>-v</code>：使用 ^ 和 M- 符号，除了 LFD 和 TAB 之外。</p>
+</li>
+</ul>
+<p>参数说明：</p>
+<ul>
+<li>可操作的文件名。</li>
+</ul>
+<p>命令示例:</p>
+<ul>
+<li>显示testfile文件的内容：</li>
+</ul>
+<pre class="hljs"><code>cat textfile
+</code></pre>
+<ul>
+<li>把 textfile1 和 textfile2 的文档内容加上行号（空白行不加）之后将内容追加到 textfile3 文档里：</li>
+</ul>
+<pre class="hljs"><code>cat -b textfile1 textfile2 &gt;&gt; textfile3
+</code></pre>
+<ul>
+<li>向/etc/profile中追加内容（输入EOF表示结束追加）：</li>
+</ul>
+<pre class="hljs"><code>cat &gt;&gt;/etc/profile&lt;&lt;EOF
+
+&gt;export LD_LIBRARY_PATH=$packagePath/script/gspylib/clib:$LD_LIBRARY_PATH
+
+&gt;EOF
+</code></pre>
+<p>注：</p>
+<ul>
+<li>EOF是end of file的缩写，表示&quot;文字流&quot;（stream）的结尾。&quot;文字流&quot;可以是文件（file），也可以是标准输入（stdin）。在Linux系统之中，EOF是当系统读取到文件结尾，所返回的一个信号值（也就是-1）。</li>
+</ul>
+</article>
+    <a class="back-link" href="./index.html">← 返回文章列表</a>
+  </main>
+  <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+</body>
+</html>

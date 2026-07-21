@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>传输层的最大-最小公平、AIMD加法递增乘法递减 · eli3xir</title>
+  <meta name="description" content="传输层的最大-最小公平、AIMD加法递增乘法递减">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' font-weight='bold' text-anchor='middle' fill='%237c5cff'%3Ee3%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/blog.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.querySelector('.post-content'), { delimiters: [
+      { left: '$$', right: '$$', display: true },
+      { left: '$', right: '$', display: false },
+      { left: '\\(', right: '\\)', display: false },
+      { left: '\\[', right: '\\]', display: true }
+    ] });"></script>
+</head>
+<body>
+  <header class="blog-nav">
+    <a class="nav-logo" href="../index.html">eli3xir<span class="accent">.</span></a>
+    <nav>
+      <a href="../index.html">主页</a>
+      <a href="./index.html">文章</a>
+      <a href="https://github.com/eli3xir" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+  
+  <main class="post">
+    <div class="post-head">
+      <h1>传输层的最大-最小公平、AIMD加法递增乘法递减</h1>
+      <div class="post-meta">
+        <time>2021-06-19</time>
+        <span class="chip cat">专业课</span><span class="chip cat">计算机网络</span>
+        <span class="chip">计算机网络</span>
+      </div>
+    </div>
+    <article class="post-content"><h2>6.1 传输层概述</h2>
+<p>这一篇文章会介绍一下传输层的功能、提供给上层的服务，以及传输层是如何完成差错控制、流量控制、拥塞控制等任务的。</p>
+<p><img src="https://articlecdn.lmonkey.com/upload/img/088cd95f86ddbe97bdc3f43cfd7af1a2.png" alt="image-20201130223407352"></p>
+<h3>6.1.1 传输层概述</h3>
+<p>在网络层，我们使用VC和Datagram实现了链路上的通信；而传输层把传输服务扩展到了<strong>存在于两台计算机的进程上</strong>（provides end-to-end delivering），并强调提供一种可靠的跨网络传输方法。</p>
+<p>传输层的任务主要是：</p>
+<ol>
+<li>接收应用层的数据（并有可能需要切分成小段）</li>
+<li>发送<strong>数据段segment</strong></li>
+<li>区分属于不同进程的segment</li>
+</ol>
+<p><img src="https://articlecdn.lmonkey.com/upload/img/0ee0072d217154df02fb1a04ff4c70a3.png" alt="image-20201130223416156"></p>
+<p>同时，传输层还决定了究竟提供哪种类型的服务。</p>
+<p>如果应用层不需要一种可靠的数据流（比如视频直播），那么传输层向网络层发送的数据就不会设计过多的差错控制及确认机制以节省资源；而反过来，如果应用层需要一种可靠的无错信道，那么传输层发送给网络层的段就会包含序列号以保证顺序、ACK机制以应对丢包发生。</p>
+<p>此外，传输层还需要继续考虑拥塞控制的问题，因为仅仅凭借网络层是无法彻底解决网络拥塞的。</p>
+<h3>6.1.2 传输层提供给上层的服务</h3>
+<p>提供了<strong>面向连接的服务（如TCP）与无连接（如UDP）的服务</strong>。</p>
+<h3>6.1.3 传输服务原语</h3>
+<p><img src="https://articlecdn.lmonkey.com/upload/img/93968d70b798ed528dd4bcbc5ba9f58d.png" alt="image-20201201202034298"></p>
+<h2>6.2 传输协议的要素</h2>
+<p>这部分将描述一些传输协议的要素（比如传输层如何寻址或者进行流量控制），为后面介绍TCP、UDP做好铺垫。但是这些要素并不是全部出现在传输层的所有协议之中。比如UDP协议就没有连接建立的过程。</p>
+<h3>6.2.1 寻址</h3>
+<p><strong>传输服务的访问点：端口（port）</strong></p>
+<p>相对应的，网络层服务的访问点可以理解成：<strong>IP地址</strong></p>
+<h3>6.2.2 传输建立（连接建立）</h3>
+<p>连接建立的过程是一个很经典的<strong>三次握手</strong>的过程如下：</p>
+<p><img src="https://articlecdn.lmonkey.com/upload/img/e1c4de94952a9a97bbf108b6c0e2e34a.png" alt="image-20201201210722137"></p>
+<p>简单的三次握手其实包含了很多考量，如在连接建立时发送的序列号（是为了防止早先发送的数据包超时到达导致重复接受），以及设置的计时器，等等。主机发送一个连接建立请求（CR），接收方收到后返回一个ACK表示已经收到，并返回一个自己的起始需要y（Host2的后续数据包将从y开始发送），最后主机一把对于这一消息的确认夹带在需要发送的数据中。下面我们考虑几种特殊的情况（其实在实际的操作过程中是很容易发生的）</p>
+<p><img src="https://articlecdn.lmonkey.com/upload/img/f3288630ae8adc1ac05f4f3247ed7875.png" alt="image-20201201212125705"></p>
+<p>首先考虑上图的情况。主机1在很久之前向主机2发送了一个连接请求，而当这个请求真正到达的时候H1已经不再需要这个连接了。在这种情况下，尽管主机2并不知道到达的这个请求是否是真心实意的需要建立，H2仍旧可以通过确认机制实现对于数据包的判断（如，H1已经不需要这个连接，就会向H2发送拒绝的数据）</p>
+<p>在下图这种情况中，H1所发送的超时CR和超时DATA同时存在于网络中。当H2收到一个请求后，照常发出一个ACK等待H1开始发送数据（此时H2并不知道这是一个已经过期的请求）。而下一刻，当超时的DATA数据包也到达H2，H2经过判断发现这个数据包的ACK和自己发送的确认序列号不符（y和z），所以判断出这是一个超时的数据包，继续等待H1的回复。</p>
+<p>总而言之，在传输层，三次握手的存在使得<strong>老的段的任何组合都不会让协议失败，主机间也不会出人意料的建立一个连接</strong>。</p>
+<h3>6.2.3 连接释放（2）</h3>
+<p>连接释放的问题相对复杂。一个典型的例子是<strong>两军对垒问题</strong>（感兴趣的同学可以搜索一下，这里不再花费大量篇幅展开）。总之，不存在一种两方都完全确认并做好准备的释放连接。现在的释放连接方法分成两种，<strong>对称释放与非对称释放</strong></p>
+<p><img src="https://articlecdn.lmonkey.com/upload/img/2953c50c4bb91e45da1220ca9b48db4b.png" alt="image-20201201215820238"></p>
+<h6><strong>非对称释放</strong></h6>
+<p>例如电话，在一方挂机之后连接直接断开</p>
+<h6><strong>对称释放</strong></h6>
+<p>将一个连接看成是两个单向的连接，需要分别单独释放。</p>
+<h3>6.2.3 差错控制&amp;流量控制</h3>
+<p>在之前的内容里，我们已经讨论过链路层和网络层的流量控制。</p>
+<blockquote>
+<p>差错控制：确保数据传输具备可靠性（所有的数据被无差错的传输至目的地）
+流量控制：防止快速发送端淹没慢速接收端</p>
+</blockquote>
+<p>这两个问题已经在链路层考察过，而在传输层，我们采用了和链路层基本一致的解决方案，即：</p>
+<ul>
+<li>
+<ol>
+<li>帧中携带一个<strong>验错码</strong>（如CRC或者checksum），在接收端检测信息是否正确。</li>
+</ol>
+</li>
+<li>
+<ol>
+<li>使用<strong>自动重复请求（ARQ）</strong></li>
+</ol>
+</li>
+<li>
+<ol>
+<li>使用<strong>停-等式协议</strong></li>
+</ol>
+</li>
+<li>
+<ol>
+<li>使用<strong>滑动窗口</strong></li>
+</ol>
+</li>
+</ul>
+<h3>6.2.4 多路复用（<em><strong>可以解决地址匮乏问题！！！！</strong></em>）</h3>
+<p>除了在网络层讲到了的三种解决方案之外，在传输层还有一个方法可以用于缓解地址匮乏问题，那就是多路复用（multiplexing）。</p>
+<p><img src="https://articlecdn.lmonkey.com/upload/img/c118c43fe35d30c7757b9fb266745c20.png" alt="image-20201201223636997"></p>
+<p>上图中左图使用的方法就是多路复用。同一个地址上到达的端，分给不同的进程（前面已经讲过传输层和网络层接入点的问题）。相对应的，另一种方法称为逆向多路复用，即把一个连接的流量分给多条路径。通过逆向多路复用，传输层可以合并多条低速链路，把他们当作一条高速链路来使用。</p>
+<h2>6.3 传输层拥塞控制</h2>
+<p>如果读者还能想起来，在网络层中，我们说到拥塞控制需要网络层与传输层的共同努力。下面的内容将解释传输层如何进行拥塞控制</p>
+<p>拥塞控制的唯一途径就是<strong>减少传输层向下发送数据包的速度</strong>。</p>
+<h3>6.3.1 最大-最小公平</h3>
+<p><img src="https://articlecdn.lmonkey.com/upload/img/c1a670cf09caa218d3cb5b61308bdb9c.png" alt="image-20201201225303356"></p>
+<p>上图很形象的阐述了最大最小公平的原则：如果分配给一个流的带宽，在不减少分配给另一个流带宽的前提下，无法得到进一步增长，那么就不分配给这个流更多带宽。</p>
+<p>这个定义绕来绕去不好理解，我们还是用图片来阐释。上图中存在6个路由器、一个工字形的链路以及ABCD四条数据流。我们假设每一段链路的最大上限都是1。任意拿一条流距离，分配给B流的带宽，在不减少其它流的前提下已经无法再进一步增长（比如再R4和R5之间已经达到了瓶颈，不能再增加了）。同理用A流举例来说，尽管在R1R2之间没有到达流量上限，但是A流在R2R3之间已经达到了上限（如果不减少流B就无法进一步增长），全部判断之后，我们可以说这种分配是符合最大-最小公平的。读者可以自行判断一下流C和流D。</p>
+<h3>6.3.2 调整发送速率</h3>
+<p>然而，单独依靠最大-最小公平仍旧不足以使每个流都公平的分配到最大带宽。下面介绍的内容将是传输层一个重点算法的基础。</p>
+<p>在传输层，**发送速率会受到两个因素的影响。分别是流量控制和拥塞控制。**当接收端没有足够的缓冲区，据必须进行流量控制；而拥塞控制针对的是网络层容量不足的情况，如下图。</p>
+<p><img src="https://articlecdn.lmonkey.com/upload/img/ac07ca0255fcf4330a7a177564ac9f2d.png" alt="image-20201202161631678"></p>
+<h6><strong>加法递增与乘法递减：AIMD-additive increase and multiplicative decrease</strong></h6>
+<p><img src="https://articlecdn.lmonkey.com/upload/img/4cb0c1a442246cb383993b801ca6c3e4.png" alt="image-20201202162808486"></p>
+<p>我们还是通过图片来理解。假设在某一条网络上存在两个用户（或着说，两个数据流）同时需要占用带宽。我们构建一个坐标系，横轴是用户1的实际带宽，纵轴是用户2的带宽，网络的总容量为C。由于两个用户处于一个网络下，易知对于任意的x，y，一定存在：</p>
+<p>$$
+x+y\le C
+$$
+当x+y=c，这条网络的带宽被全部占满，我们称这条曲线位<strong>效率线</strong>。同时，对于x和y两个用户来说，为了维持收发速度的公平，两个用户应该能够获取相同大小的带宽，即：</p>
+<p>$$
+x-y=0
+$$
+这条线被称作<strong>公平线</strong>我们把这两条曲线表示在刚刚的坐标系中，他们的交点被称作<strong>最优点</strong>。这是每一个网络希望达到的理想状态。因此现在的问题是，网络应该采取何种策略，到达之前所说的公平点呢？我们给出的答案称作<strong>加法递增与乘法递减控制法</strong>。</p>
+<p>所谓加法，指的是同时增加或减少用户1和用户2 的带宽；而所谓乘法，指的是按照比例改变用户1和用户2的带宽。可想而知，如果在图像上表示这两种更改方式，加法一定是一条斜率为1的直线，乘法一定是一条过原点的直线。</p>
+<p>而之所以加法只用在增加，乘法只用在减少，是由于TCP拥塞控制中的**稳定性观点：**驱使网络拥堵非常容易，而想要使其恢复，则相对困难。因此，<strong>递增策略应相对温柔，递减策略应相对积极</strong>。</p>
+<p><img src="https://articlecdn.lmonkey.com/upload/img/eb051b8efc37a94a45d6a33bc2271e9e.png" alt="image-20201202165453828"></p>
+<p>对于刚才的网络，我们假设当前网络的效率处在A点。（即用户1 的带宽位x1，用户2的带宽为x2）</p>
+<p><img src="https://articlecdn.lmonkey.com/upload/img/2cc1a9f15a24faa94457e64879f108f0.png" alt="image-20201202205405024"></p>
+<p>从A点开始，首先进行加法递增（蓝紫色实线）。当X+Y到达1号点，超出了网络的容量之后，网络层会向用户发送一个拥塞信号，这是各个用户开始使用乘法递减原则，共同减少自己占用的带宽，到达2号点（路径为途中红色实线）。反复执行这一流程多次后，系统会慢慢趋近最优点。</p>
+<p><strong>AIMD是TCP采用的拥塞控制法则。但这个法则不是完全的公平。因为TCP每次都要根据往返时间测量值来调整窗口的大小，所以接近主机的连接往往比距离远的连接要获得更多带宽（距离近则往返时间短）。</strong></p>
+</article>
+    <a class="back-link" href="./index.html">← 返回文章列表</a>
+  </main>
+  <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+</body>
+</html>
