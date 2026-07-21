@@ -135,7 +135,7 @@ description:
 
 ![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210620035835.png)
 ![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210620035839.png)
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20200627151343650.png?shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NTA2NzYwMw==,size_16,color_FFFFFF,t_70)
+![在这里插入图片描述](/blog/assets/img/6e815c9dd226.png)
 停止等待协议的特点
 
 1. 简单

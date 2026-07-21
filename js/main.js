@@ -25,6 +25,9 @@ function initGL() {
     uRes: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
     uMouse: { value: new THREE.Vector2(0.5, 0.5) },
     uScroll: { value: 0 },
+    uColA: { value: new THREE.Color(0x7c5cff) },   // 主色
+    uColB: { value: new THREE.Color(0x00e5c0) },   // 辅色
+    uVariant: { value: 0 },                        // 纹理变体
   };
 
   const material = new THREE.ShaderMaterial({
@@ -38,6 +41,9 @@ function initGL() {
       uniform vec2 uRes;
       uniform vec2 uMouse;
       uniform float uScroll;
+      uniform vec3 uColA;
+      uniform vec3 uColB;
+      uniform float uVariant;
 
       // hash & noise
       vec2 hash(vec2 p) {
@@ -73,31 +79,32 @@ function initGL() {
         p.x *= uRes.x / uRes.y;
 
         float t = uTime * 0.08;
+        // 纹理变体：改变噪声频率与流向
+        float freq = 1.6 + uVariant * 0.5;
+        vec2 flowDir = vec2(t, -t * (0.7 + uVariant * 0.2));
         // 鼠标牵引的域扭曲
         vec2 m = uMouse;
         m.x *= uRes.x / uRes.y;
         float md = length(p - m);
         vec2 warp = vec2(
-          fbm(p * 1.6 + t),
-          fbm(p * 1.6 - t * 0.7 + 4.2)
+          fbm(p * freq + flowDir.x),
+          fbm(p * freq + flowDir.y + 4.2)
         );
         warp += 0.35 * exp(-md * 2.5) * normalize(p - m + 0.0001);
 
-        float n = fbm(p * 2.2 + warp * 1.4 + uScroll * 1.5);
+        float n = fbm(p * (2.2 + uVariant * 0.4) + warp * 1.4 + uScroll * 1.5);
 
-        // 调色板：深空底 + 紫 / 青霓虹脉络
-        vec3 base   = vec3(0.039, 0.039, 0.059);
-        vec3 purple = vec3(0.486, 0.361, 1.000);
-        vec3 teal   = vec3(0.000, 0.898, 0.753);
+        // 调色板：深空底 + 双色霓虹脉络
+        vec3 base = vec3(0.039, 0.039, 0.059);
 
         float vein = smoothstep(0.25, 0.75, n);
         float vein2 = smoothstep(0.55, 0.95, fbm(p * 3.0 - warp + t));
 
         vec3 col = base;
-        col += purple * vein * 0.35;
-        col += teal * vein2 * 0.18;
+        col += uColA * vein * 0.35;
+        col += uColB * vein2 * 0.18;
         // 鼠标附近提亮
-        col += purple * exp(-md * 3.0) * 0.12;
+        col += uColA * exp(-md * 3.0) * 0.12;
         // 暗角
         float vig = smoothstep(1.25, 0.35, length(uv - 0.5));
         col *= mix(0.55, 1.0, vig);
@@ -149,6 +156,54 @@ function initGL() {
 }
 
 const glUniforms = initGL();
+
+/* ============================================================
+ * 背景风格切换（多套调色板 + 纹理变体，平滑过渡）
+ * ============================================================ */
+const PALETTES = [
+  { name: '星云', a: 0x7c5cff, b: 0x00e5c0, v: 0 },
+  { name: '极光', a: 0x2dd4a7, b: 0x3b82f6, v: 1 },
+  { name: '熔岩', a: 0xff6b35, b: 0xff2d78, v: 2 },
+  { name: '深海', a: 0x2f6bff, b: 0x00c2d1, v: 3 },
+];
+(function initPalette() {
+  const btn = document.getElementById('palette-btn');
+  if (!btn || !glUniforms) return;
+  let idx = Number(localStorage.getItem('palette') || 0) % PALETTES.length;
+  const target = { a: new THREE.Color(), b: new THREE.Color(), v: 0 };
+
+  function hex(c) { return '#' + c.getHexString(); }
+  function apply(immediate) {
+    const p = PALETTES[idx];
+    target.a.setHex(p.a);
+    target.b.setHex(p.b);
+    target.v = p.v;
+    btn.querySelector('.palette-dot').style.background =
+      `linear-gradient(135deg, ${hex(target.a)}, ${hex(target.b)})`;
+    btn.title = `背景：${p.name}（点击切换）`;
+    document.documentElement.style.setProperty('--accent', hex(target.a));
+    document.documentElement.style.setProperty('--accent2', hex(target.b));
+    if (immediate) {
+      glUniforms.uColA.value.copy(target.a);
+      glUniforms.uColB.value.copy(target.b);
+      glUniforms.uVariant.value = target.v;
+    }
+  }
+  apply(true);
+
+  btn.addEventListener('click', () => {
+    idx = (idx + 1) % PALETTES.length;
+    localStorage.setItem('palette', idx);
+    apply(false);
+  });
+
+  // 每帧向目标色平滑过渡（挂在 gsap ticker 上即可）
+  gsap.ticker.add(() => {
+    glUniforms.uColA.value.lerp(target.a, 0.04);
+    glUniforms.uColB.value.lerp(target.b, 0.04);
+    glUniforms.uVariant.value += (target.v - glUniforms.uVariant.value) * 0.04;
+  });
+})();
 
 /* ============================================================
  * Lenis 平滑滚动 + GSAP ScrollTrigger
@@ -337,6 +392,8 @@ if (finePointer && !reduced) {
 if (finePointer && !reduced) {
   const dot = document.querySelector('.cursor-dot');
   const ring = document.querySelector('.cursor-ring');
+  // 用 xPercent 居中，避免覆盖 CSS transform 造成错位
+  gsap.set([dot, ring], { xPercent: -50, yPercent: -50 });
   const dx = gsap.quickTo(dot, 'x', { duration: 0.08 });
   const dy = gsap.quickTo(dot, 'y', { duration: 0.08 });
   const rx2 = gsap.quickTo(ring, 'x', { duration: 0.35, ease: 'power3' });

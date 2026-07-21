@@ -168,7 +168,7 @@ g++ -o client client.cpp
 
 > 在 TCP/IP 四层参考模型中，从上往下有四种层次：应用层、传输层、网络层、网络接口层，应用层包括 HTTP、FTP、DNS 等协议，而传输层包括 TCP、UDP 两种协议，网络层则包含 IP、ARP 等协议，网络接口层较为底层，一般不是我们研究的对象。其中，传输层是我们在编程开发中较为重要的一层，需要对其中的两种协议尤其是 TCP 理解透彻。
 >
-> ![图片描述](https://gitee.com/buptsg2019/picgo/raw/master/20210625064944.jpeg)
+> ![图片描述](/blog/assets/img/dd8de37937e5.jpg)
 >
 > #### 传输层的作用
 >
@@ -221,11 +221,11 @@ g++ -o client client.cpp
 >
 > TCP 的报头如下图所示。
 >
-> ![图片描述](https://gitee.com/buptsg2019/picgo/raw/master/20210625065050.jpeg)
+> ![图片描述](/blog/assets/img/0b2749e48e0a.jpg)
 >
 > 重点关注几个标志位的意义，如下：
 >
-> ![图片描述](https://gitee.com/buptsg2019/picgo/raw/master/20210625065054.jpeg)
+> ![图片描述](/blog/assets/img/be8b8b35d04d.jpg)
 >
 > TCP 连接包括连接建立、报文传输、连接释放三个阶段，其中连接建立的三次握手过程较为重要。
 >
@@ -237,7 +237,7 @@ g++ -o client client.cpp
 >
 > （3）接收到 SYN+ACK 报文后，客户端发送第三个 ACK 报文，表示对 SYN+ACK 报文的确认。
 >
-> ![图片描述](https://gitee.com/buptsg2019/picgo/raw/master/20210625065103.jpeg)
+> ![图片描述](/blog/assets/img/7f51e52e6eb2.jpg)
 
 ### 附录二 用C++进行TCP套接字网络编程
 
@@ -249,7 +249,7 @@ g++ -o client client.cpp
 >
 > 过程如下：
 >
-> ![图片描述](https://gitee.com/buptsg2019/picgo/raw/master/20210625065503.jpeg)
+> ![图片描述](/blog/assets/img/2b3c9899686e.jpg)
 >
 > #### TCP 网络编程的客户端
 >
@@ -257,13 +257,13 @@ g++ -o client client.cpp
 >
 > 过程如下：
 >
-> ![图片描述](https://doc.shiyanlou.com/courses/3573/1116908/e6a08660699bd4f0e26119e7de2c20bd-0)
+> ![图片描述](/blog/assets/img/c0b15ec13a1e.png)
 >
 > #### 完整流程
 >
 > TCP 网络编程的整体流程如下图所示：
 >
-> ![图片描述](https://gitee.com/buptsg2019/picgo/raw/master/20210625065509.jpeg)
+> ![图片描述](/blog/assets/img/f09b7c4b3fc5.jpg)
 >
 > #### TCP 网络编程的相关数据结构
 >

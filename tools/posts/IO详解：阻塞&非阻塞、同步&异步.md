@@ -58,7 +58,7 @@ description:
 4. **信号I/O**：当数据准备完毕的时候，信号通知程序数据准备完毕，第2阶段阻塞
 5. **异步IO**：1，2都不阻塞，异步IO模型 比如 windows之上的`iocp`、linux `AIO`
 
-![2624C25CAA75E4DA4165D2D4CFB39C3C](https://gitee.com/buptsg2019/picgo/raw/master/20210531185035.png)
+![2624C25CAA75E4DA4165D2D4CFB39C3C](/blog/assets/img/d0d46f3c02b3.png)
 
 （图片截自《Unix网络编程卷1：套接字联网API》）
 

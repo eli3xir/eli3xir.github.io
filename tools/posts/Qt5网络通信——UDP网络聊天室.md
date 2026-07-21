@@ -16,7 +16,7 @@ description:
 
 下面是设计服务端的显示界面，实际上作为网络聊天室的服务端是不需要界面的，但为了方便我们实验调试和使用，这里设计如下界面：
 
-![avatar](https://gitee.com/buptsg2019/picgo/raw/master/20210616014917.png)
+![avatar](/blog/assets/img/948c4f300f38.png)
 
 可以看出，服务端的界面实际上主要用来显示当前客户端链接状态以及对服务端启动、停止、更改 IP 端口等管理操作。
 
@@ -308,7 +308,7 @@ void mainWidget::doQuit(MSG_t &msg, QHostAddress &recvAddres, int recvPort)
 
 接下来就需要设计客户端界面，客户端的主要任务就是在与服务器进行链接后能够发送文字消息并且将从服务器返回的消息进行显示，所以客户端设计成如下界面：
 
-![avatar](https://gitee.com/buptsg2019/picgo/raw/master/20210616015108.png)
+![avatar](/blog/assets/img/c3304ba7b145.png)
 
 首先，创建 Qt 工程 `UdpClientDemo`。
 

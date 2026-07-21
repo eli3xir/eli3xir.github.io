@@ -466,16 +466,16 @@ int main(int argc, char *argv[])
 
 #### 英文版
 
-![image-20210521011131849](https://gitee.com/buptsg2019/picgo/raw/master/20210521011139.png)
+![image-20210521011131849](/blog/assets/img/d8569a1f1662.png)
 
-![image-20210521011324396](https://gitee.com/buptsg2019/picgo/raw/master/20210521011324.png)
+![image-20210521011324396](/blog/assets/img/1f6525c55c42.png)
 
-![image-20210521011336571](https://gitee.com/buptsg2019/picgo/raw/master/20210521011336.png)
+![image-20210521011336571](/blog/assets/img/7378a743865a.png)
 
 #### 中文版
 
-![image-20210521011429389](https://gitee.com/buptsg2019/picgo/raw/master/20210521011429.png)
+![image-20210521011429389](/blog/assets/img/0d303a6424d3.png)
 
-![image-20210521011439947](https://gitee.com/buptsg2019/picgo/raw/master/20210521011439.png)
+![image-20210521011439947](/blog/assets/img/acf92ba3bb16.png)
 
-![image-20210521011452563](https://gitee.com/buptsg2019/picgo/raw/master/20210521011452.png)
+![image-20210521011452563](/blog/assets/img/35c809b360ba.png)

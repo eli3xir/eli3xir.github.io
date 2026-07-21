@@ -85,14 +85,14 @@
 <p>在终端输入 <code>ifconfig -a</code> 命令查看自己的 IP 地址：</p>
 <pre class="hljs"><code>ifconfig -a
 </code></pre>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/image-20210424170205949.png" alt="image-20210424170205949"></p>
+<p><img loading="lazy" src="/blog/assets/img/58e1d32a75aa.png" alt="image-20210424170205949"></p>
 <p>我的 Linux 虚拟机运行结果，可以看到 IP 地址为：192.168.116.128，是北邮本地局域网的地址 。</p>
 <h3>域名</h3>
 <p>用 12 位数字组成的 IP 地址很难记忆，在实际应用时，用户一般不需要记住 IP 地址，互联网给每个 IP 地址起了一个别名，习惯上称作域名。</p>
 <p>域名与计算机的 IP 地址相对应，并把这种对应关系存储在域名服务系统 DNS（Domain Name System）中，这样用户只需记住域名就可以与指定的计算机进行通信了。</p>
 <p>常见的域名包括 com、net 和 org 三种顶级域名后缀，除此之外每个国家还有自己国家专属的域名后缀（比如我国的域名后缀为 cn）。比如常见域名：百度（<a href="https://www.baidu.com/">www.baidu.com</a>）、Linux 组织（<a href="https://lwn.net/">www.lwn.net</a>）等等。</p>
 <p>我们可以使用命令 <code>nslookup</code> 或者 <code>ping</code> 来查看与域名相对应的 IP 地址，比如 <code>ping</code> 一下 <code>github</code> ：</p>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/image-20210424171747514.png" alt="image-20210424171747514"></p>
+<p><img loading="lazy" src="/blog/assets/img/c74c68d06851.png" alt="image-20210424171747514"></p>
 <pre class="hljs"><code>ping www.github.com
 </code></pre>
 <h3>MAC地址</h3>
@@ -121,7 +121,7 @@
 <li>传输层（四层）PDU 指数据段（Segment）</li>
 <li>第五层以上为数据（data）</li>
 </ul>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210505142309.png" alt="1548670748600"></p>
+<p><img loading="lazy" src="/blog/assets/img/a02dda2c39a4.png" alt="1548670748600"></p>
 <p><strong>分用</strong>：当主机收到一个数据帧时，数据就从协议层底向上升，通过每一层时，检查并去掉对应层次的报文首部或尾部，与封装过程正好相反。</p>
 <h3>RFC</h3>
 <p>RFC（Request for Comment）文档是所有以太网协议的正式标准，并在其官网上面公布，由 IETF 标准协会制定。大量的 RFC 并不是正式的标准，出版的目的只是为了提供信息。RFC 的篇幅不一，从几页到几百页不等。每一种协议都用一个数字来标识，如 RFC 3720 是 iSCSI 协议的标准，数字越大意味着 RFC 的内容越新或者是对应的协议（标准）出现的比较晚。</p>
@@ -134,7 +134,7 @@
 <li>在两个网络实体之间提供数据链路通路的建立、维持和释放的管理。</li>
 </ul>
 <p>数据帧的结构是这样的：</p>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210505142111.png" alt="1548670989256"></p>
+<p><img loading="lazy" src="/blog/assets/img/9039989e73a4.png" alt="1548670989256"></p>
 <h3>控制帧的传输</h3>
 <h4>差错控制</h4>
 <p>通信系统必须具备发现差错的能力，并采取措施纠正之，使差错控制在所能允许的尽可能小的范围内，这就是差错控制过程，也是数据链路层的主要功能之一。</p>
@@ -161,7 +161,7 @@
 <li>如果 IP 数据报中含有 END 字符，就连续传输 0xdb 和 0xdc 来取代它。0xdb 是 SLIP 的 ESC 字符，但它的值与 ASCⅡ 码中的 ESC（0x1b）不同；</li>
 <li>如果 IP 数据报中含有 ESC 字符，就连续传输 0xdb 和 0xdd 来取代它。</li>
 </ul>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210528212946.png" alt="图片描述"></p>
+<p><img loading="lazy" src="/blog/assets/img/799da94ab04e.png" alt="图片描述"></p>
 <p>SLIP 的缺陷：</p>
 <ul>
 <li>每一端必须知道对端的 IP 地址，没有办法把本端 IP 地址传递给对端；</li>
@@ -193,7 +193,7 @@
 <li>路径 MTU 指两台通信主机路径中最小的 MTU 值。路径 MTU 是不对称的，它在两个方向上不一定一致。</li>
 </ul>
 <p>用命令 <code>netstat -in</code> 可以查看网络接口的 MTU：</p>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210602085016.png" alt="image-20210602085009314"></p>
+<p><img loading="lazy" src="/blog/assets/img/15e1183f4487.png" alt="image-20210602085009314"></p>
 <h2>IP网际协议</h2>
 <p>IP 数据报：IP 协议位于网络层，它是 TCP/IP 协议族中最为核心的协议，所有的 TCP、UDP、ICMP 及 IGMP 数据都以 IP 数据报格式传输。IP 协议提供的是<strong>不可靠</strong>、<strong>无连接</strong>的数据报传送服务。</p>
 <h3>IP数据报</h3>
@@ -203,7 +203,7 @@
 <li><strong>无连接</strong>（connectionless）：IP 协议对每个数据报的处理是相互独立的。这也说明，IP 数据报可以不按发送顺序接收。如果发送方向接收方发送了两个连续的数据报（先是 A，然后是 B），每个数据报可以选择不同的路线，因此 B 可能在 A 到达之前先到达。</li>
 </ul>
 <p>我们先看一下 IP 数据报的格式，其中没有一个字段是多余的，学习 IP 协议就应从学习它的报文字段意义和作用开始。</p>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210528213324.png" alt="3-1-1"></p>
+<p><img loading="lazy" src="/blog/assets/img/4e78e0778186.png" alt="3-1-1"></p>
 <p>如上图所示，普通的 IP 数据报的<strong>报头</strong>长度 20 字节(除非有选项字段)，各个部分的作用：</p>
 <ul>
 <li><strong>版本号</strong>：4 位，用于标明 IP 版本号，0100 表示 IPv4，0110 表示 IPv6。目前常见的是 IPv4。</li>
@@ -228,7 +228,7 @@
 <li><code>-x</code> ：以十六进制显示包内内容</li>
 <li><code>-c</code> ：tcpdump 将在接受到几个数据包后退出</li>
 </ul>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210602085439.png" alt="image-20210602085439557"></p>
+<p><img loading="lazy" src="/blog/assets/img/2c87852957d7.png" alt="image-20210602085439557"></p>
 <p>首先看到开头的 <code>91.189.91.38.80 &gt; 192.168.116.128.49938</code> 代表的是源 ip 为 <code>91.189.91.38</code>，端口 <code>80</code>，目的 ip 为 <code>192.168.116.128</code>，端口 <code>49938</code>。</p>
 <p>然后看到 <code>0x0000</code> 那行：</p>
 <ul>
@@ -255,7 +255,7 @@
 </ul>
 <p>各类可容纳的地址数目不同，其中我们最常见的为 A、B、C 这三类。</p>
 <p>IP 地址用 32 位二进制数字表示的时候，A、B、C 类 IP 的网络号长度分别为 8 位、16 位、24 位：</p>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210531190729.png" alt="图片描述"></p>
+<p><img loading="lazy" src="/blog/assets/img/7ced6685165f.png" alt="图片描述"></p>
 <p><strong>A 类地址：</strong></p>
 <ul>
 <li>A 类地址网络号范围：1.0.0.0---127.0.0.0；</li>
@@ -280,17 +280,17 @@
 <li>因为主机号有 8 位，所以一个 C 类网络号可以容纳 $2^{8}-2=254$ 个主机号。</li>
 </ul>
 <p>使用 <code>ifconfig</code> 命令可以查看本机 ip：</p>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210602090139.png" alt="image-20210602090139029"></p>
+<p><img loading="lazy" src="/blog/assets/img/c96a4da9d6ef.png" alt="image-20210602090139029"></p>
 <p>我的 ip 地址为<code>inet addr</code>显示的<code>192.168.116.128</code>，是 C 类地址。</p>
 <h3>子网划分</h3>
 <p>IP 地址如果只使用 ABCDE 类来划分，会造成大量的浪费：一个有 500 台主机的网络，无法使用 C 类地址。但如果使用一个 B 类地址，6 万多个主机地址只有 500 个被使用，造成 IP 地址的大量浪费。</p>
 <p>因此，可以在 ABC 类网络的基础上，进一步划分子网：<strong>占用主机号的前几个位，用于表示子网号</strong>。</p>
 <p>这样 IP 地址就可看作 IP = <strong>网络号</strong> + <strong>子网号</strong> + <strong>主机号</strong>。</p>
 <p>子网号的位数没有硬性规定，于是我们用<strong>子网掩码</strong>来确定一个 IP 地址中哪几位是主机号，具体使用方法如图：</p>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210531190903.png" alt="3-3-1"></p>
+<p><img loading="lazy" src="/blog/assets/img/958766d1438d.png" alt="3-3-1"></p>
 <p>子网掩码中的 1 标识了 IP 地址中相应的网络号和子网号，0 标识了主机号。将 IP 地址和子网掩码进行<strong>逻辑与运算</strong>，结果就能区分网络号和子网号。</p>
 <p>使用 <code>ifconfig</code> 命令也可以查看到子网掩码：</p>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210602090200.png" alt=""></p>
+<p><img loading="lazy" src="/blog/assets/img/59e7a91179ee.png" alt=""></p>
 <p>可以从<code>Mask</code>看出子网掩码为<code>255.255.255.0</code>。</p>
 <h3>IP路由选择</h3>
 <p>如果发送方与接收方直接相连（点对点）或都在一个共享网络上（以太网），那么 IP 数据报就能直接送达。</p>
@@ -306,13 +306,13 @@
 <li>如果在转发过程中，IP 数据报的 TTL（生命周期）已经被减为 0，则该 IP 数据报就被抛弃。</li>
 </ul>
 <p>可以使用 <code>route -n</code> 查看路由表：</p>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210602090545.png" alt="image-20210602090545849"></p>
+<p><img loading="lazy" src="/blog/assets/img/704be88fe182.png" alt="image-20210602090545849"></p>
 <p>还可以使用 <code>traceroute</code> 来追踪路由过程，首先需要安装一下：</p>
 <pre class="hljs"><code><span class="hljs-built_in">sudo</span> apt-get update
 <span class="hljs-built_in">sudo</span> apt-get install -y traceroute
 </code></pre>
 <p>接下来使用 <code>traceroute</code> 追踪本机到 <code>buptsg2019.cn</code> 的路由：</p>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210602091520.png" alt="image-20210602091520468"></p>
+<p><img loading="lazy" src="/blog/assets/img/8ed7e6402b22.png" alt="image-20210602091520468"></p>
 <p>记录按序列号从 1 开始，每个记录就是一跳，每跳表示一个网关，我们看到每行有三个时间，单位是 ms，这是探测数据包向每个网关发送三个数据包后，网关响应后返回的时间。用这三个时间来表示到达这个结点的网络速度。</p>
 <p>我们会看到有一些行是以星号表示的。出现这样的情况，可能是防火墙封掉了 ICMP 的返回信息，所以我们得不到什么相关的数据包返回数据。</p>
 <p>还有一些其他选项，比如：</p>
@@ -321,13 +321,13 @@
 </ul>
 <pre class="hljs"><code>traceroute -m 8 buptsg2019.cn
 </code></pre>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210602091639.png" alt="image-20210602091639261"></p>
+<p><img loading="lazy" src="/blog/assets/img/62c47079baa2.png" alt="image-20210602091639261"></p>
 <ul>
 <li>探测包个数设为 4</li>
 </ul>
 <pre class="hljs"><code>traceroute -q 4 buptsg2019.cn
 </code></pre>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210602092102.png" alt="image-20210602092102889"></p>
+<p><img loading="lazy" src="/blog/assets/img/1d7f122d054c.png" alt="image-20210602092102889"></p>
 <ul>
 <li>显示 IP 地址，不查主机名</li>
 </ul>
@@ -340,6 +340,8 @@
 </article>
     <a class="back-link" href="./index.html">← 返回文章列表</a>
   </main>
+  <script src="../js/post.js"></script>
   <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+  <script src="../js/click-fx.js"></script>
 </body>
 </html>

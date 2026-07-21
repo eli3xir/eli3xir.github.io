@@ -59,7 +59,7 @@
 <li>第三阶段（O-Net）：通过一个能力更加强的网络找到人脸上面的五个标记点</li>
 </ul>
 <p>完整的MTCNN模型级联如下：</p>
-<p><img src="https://gitee.com/sg2019/picgo/raw/master/image-20210420144945504.png" alt="image-20210420144945504"></p>
+<p><img loading="lazy" src="https://gitee.com/sg2019/picgo/raw/master/image-20210420144945504.png" alt="image-20210420144945504"></p>
 <p>该模型的特征跟HAAR级联检测在某些程度上有一定的相通之处，都是采用了级联方式，都是在初期就拒绝了绝大多数的图像区域，有效的降低了后期CNN网络的计算量与计算时间。</p>
 <p>MTCNN模型主要贡献在于：</p>
 <ul>
@@ -73,7 +73,7 @@
 <p>图像金字塔是图像多尺度表达的一种常用方法，构造一系列以金字塔形状排列的、分辨率逐步降低、且来源于同一张原始图的图像集合，以适应不同大小的人脸，进行多尺度人脸检测。</p>
 <p>构建方式是通过不同的缩放系数factor对图片进行缩放，每次缩小为原来的factor大小，在MTCNN代码中，按照习惯设为<code>factor = 0.709</code>。</p>
 <p>对应图解：</p>
-<p><img src="https://gitee.com/sg2019/picgo/raw/master/image-20210420151632498.png" alt="image-20210420151632498"></p>
+<p><img loading="lazy" src="https://gitee.com/sg2019/picgo/raw/master/image-20210420151632498.png" alt="image-20210420151632498"></p>
 <h4>代码</h4>
 <pre class="hljs"><code><span class="hljs-comment"># 计算原始输入图像每一次缩放的比例</span>
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">calculateScales</span>(<span class="hljs-params">img</span>):
@@ -285,7 +285,7 @@
 <p>FaceNet的主干网络起到提取特征的作用，传统的FaceNet以Inception-ResNetV1为主干特征提取网络。</p>
 <p>MobilenetV1模型是Google针对手机等嵌入式设备提出的一种轻量级的深层神经网络，其使用的核心思想便是depthwise separable convolution（深度可分离卷积块）。</p>
 <p>深度可分离卷积块由两个部分组成，分别是深度可分离卷积和1x1普通卷积，深度可分离卷积的卷积核大小一般是3x3的，便于理解的话我们可以把它当作是特征提取，1x1的普通卷积可以完成通道数的调整。</p>
-<p><img src="https://gitee.com/sg2019/picgo/raw/master/20191030154355407.png" alt="20191030154355407"></p>
+<p><img loading="lazy" src="https://gitee.com/sg2019/picgo/raw/master/20191030154355407.png" alt="20191030154355407"></p>
 <blockquote>
 <p>**深度可分离卷积块的目的是使用更少的参数来代替普通的3x3卷积。**与普通卷积相比，深度可分离卷积结构块可以减少模型的参数。</p>
 </blockquote>
@@ -358,7 +358,7 @@
     x = _depthwise_conv_block(x, <span class="hljs-number">1024</span>, depth_multiplier, strides=(<span class="hljs-number">2</span>, <span class="hljs-number">2</span>), block_id=<span class="hljs-number">12</span>)
     x = _depthwise_conv_block(x, <span class="hljs-number">1024</span>, depth_multiplier, block_id=<span class="hljs-number">13</span>)
 </code></pre>
-<p><img src="https://upload-images.jianshu.io/upload_images/147042-b88cbde9287e4ce1.png?imageMogr2/auto-orient/strip%7CimageView2/2/format/webp" alt="img"></p>
+<p><img loading="lazy" src="/blog/assets/img/236bd9d67c24.png" alt="img"></p>
 <p>FaceNet总体训练流程如下：</p>
 <ul>
 <li>将图像通过深度卷积神经网络映射到128维的特征空间（欧几里得空间）中，得到对应的128维特征向量</li>
@@ -625,6 +625,8 @@ face_encodings = []
 </article>
     <a class="back-link" href="./index.html">← 返回文章列表</a>
   </main>
+  <script src="../js/post.js"></script>
   <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+  <script src="../js/click-fx.js"></script>
 </body>
 </html>

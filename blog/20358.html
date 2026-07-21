@@ -51,7 +51,7 @@
 <p>对于一个单词，从根开始，沿着单词的各个字母所对应的树中的节点分支向下走，直到单词遍历完，将最后的节点标记为红色，表示该单词已插入Trie树。</p>
 <h4>2. 查询过程</h4>
 <p>同样的，从根开始按照单词的字母顺序向下遍历Trie树，一旦发现某个节点标记不存在或者单词遍历完成而最后的节点未标记为红色，则表示该单词不存在，若最后的节点标记为红色，表示该单词存在。</p>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210602010159.jpeg" alt="img"></p>
+<p><img loading="lazy" src="/blog/assets/img/2b1e5362befa.jpg" alt="img"></p>
 <p>（图片来自百度百科）</p>
 <h3>Trie树数据结构</h3>
 <p>利用串构建一个字典树，这个字典树保存了串的公共前缀信息，因此可以降低查询操作的复杂度。</p>
@@ -71,7 +71,7 @@
 </code></pre>
 <p>其中next是一个指针数组，存放着指向各个孩子结点的指针。</p>
 <p>如给出字符串<code>&quot;ab&quot;</code>、<code>&quot;acb&quot;</code>、<code>&quot;abc&quot;</code>、<code>&quot;a&quot;</code>、<code>&quot;abd&quot;</code>，根据该字符串序列构建一棵Trie树。则构建的树如下：</p>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210602010309.png" alt="image-20210602010309683"></p>
+<p><img loading="lazy" src="/blog/assets/img/a19859d0e363.png" alt="image-20210602010309683"></p>
 <p>Trie树的根结点不包含任何信息，第一个字符串为<code>&quot;abc&quot;</code>，第一个字母为<code>'a'</code>，因此根结点中数组<code>next</code>下标为<code>'a'-97</code>的值不为<code>NULL</code>，其他同理，构建的Trie树如图所示，红色结点表示在该处可以构成一个单词。很显然，如果要查找单词&quot;abc&quot;是否存在，查找长度则为$O(len)$，$len$为要查找的字符串的长度。而若采用一般的逐个匹配查找，则查找长度为$O(len*n)$，$n$为字符串的个数。显然基于Trie树的查找效率要高很多。</p>
 <h3>Trie树查找域名</h3>
 <pre class="hljs"><code><span class="hljs-type">int</span> <span class="hljs-title function_">trieParser</span><span class="hljs-params">(<span class="hljs-type">char</span> ch)</span>
@@ -175,6 +175,8 @@ Trie *<span class="hljs-title function_">trieCreate</span><span class="hljs-para
 </article>
     <a class="back-link" href="./index.html">← 返回文章列表</a>
   </main>
+  <script src="../js/post.js"></script>
   <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+  <script src="../js/click-fx.js"></script>
 </body>
 </html>

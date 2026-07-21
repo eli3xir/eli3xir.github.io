@@ -86,7 +86,7 @@
 <li><strong>信号I/O</strong>：当数据准备完毕的时候，信号通知程序数据准备完毕，第2阶段阻塞</li>
 <li><strong>异步IO</strong>：1，2都不阻塞，异步IO模型 比如 windows之上的<code>iocp</code>、linux <code>AIO</code></li>
 </ol>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/20210531185035.png" alt="2624C25CAA75E4DA4165D2D4CFB39C3C"></p>
+<p><img loading="lazy" src="/blog/assets/img/d0d46f3c02b3.png" alt="2624C25CAA75E4DA4165D2D4CFB39C3C"></p>
 <p>（图片截自《Unix网络编程卷1：套接字联网API》）</p>
 <p>阻塞式I/O模型、非阻塞式I/O模型、I/O复用模型，这三种模型的区别在于第一阶段（阻塞式I/O阻塞在I/O操作上，非阻塞式I/O轮询，I/O复用阻塞在<code>select</code>/<code>poll</code>/<code>epoll</code>上），第二阶段都是一样的，即这里的阻塞不阻塞体现在第一阶段，从这方面来说I/O复用类型也可以归类到阻塞式I/O，它与阻塞式I/O的区别在于阻塞的系统调用不同。而异步I/O的两个阶段都不会阻塞进程。</p>
 <p>其中POSIX将IO只分成了同步IO、异步IO两种模型。</p>
@@ -102,6 +102,8 @@
 </article>
     <a class="back-link" href="./index.html">← 返回文章列表</a>
   </main>
+  <script src="../js/post.js"></script>
   <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+  <script src="../js/click-fx.js"></script>
 </body>
 </html>

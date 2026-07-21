@@ -117,6 +117,7 @@ function layout({ title, description, content, extraHead = '' }) {
   </header>
   ${content}
   <footer class="blog-footer">© ${new Date().getFullYear()} eli3xir · 共 ${posts.length} 篇文章</footer>
+  <script src="../js/click-fx.js"></script>
 </body>
 </html>`;
 }
@@ -127,7 +128,8 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
 
 for (const p of posts) {
   const { body: protectedBody, maths } = protectMath(p.body);
-  const html = restoreMath(md.render(protectedBody), maths);
+  const html = restoreMath(md.render(protectedBody), maths)
+    .replace(/<img /g, '<img loading="lazy" ');
   const katexHead = p.hasMath
     ? `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js"></script>
@@ -151,7 +153,8 @@ for (const p of posts) {
     </div>
     <article class="post-content">${html}</article>
     <a class="back-link" href="./index.html">← 返回文章列表</a>
-  </main>`;
+  </main>
+  <script src="../js/post.js"></script>`;
   fs.writeFileSync(path.join(OUT_DIR, `${p.slug}.html`), layout({ title: p.title, description: p.description, content, extraHead: katexHead }));
 }
 

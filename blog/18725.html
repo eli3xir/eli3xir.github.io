@@ -752,7 +752,7 @@ plt.title(<span class="hljs-string">&#x27;Most popular songs&#x27;</span>)
  
 plt.show()
 </code></pre>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/output_56_0.png" alt="png"></p>
+<p><img loading="lazy" src="/blog/assets/img/e6fa714a092f.png" alt="png"></p>
 <p>这里展示了最受欢迎的歌曲，使用<code>groupby</code>函数可以很方便的对每首歌曲统计其播放情况，我们求的是总和也就是总播放量。这份排行数据就可以当做最受欢迎歌曲来推荐给用户了。
 同样的方法我们还可以对专辑和歌手的播放情况分别进行统计：</p>
 <h3>最受欢迎的releases</h3>
@@ -772,7 +772,7 @@ plt.title(<span class="hljs-string">&#x27;Most popular Release&#x27;</span>)
  
 plt.show()
 </code></pre>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/output_59_0.png" alt="png"></p>
+<p><img loading="lazy" src="/blog/assets/img/7c17b5827d33.png" alt="png"></p>
 <h3>最受欢迎的歌手</h3>
 <pre class="hljs"><code><span class="hljs-comment"># 按歌手来统计其播放总量</span>
 popular_artist = triplet_dataset_sub_song_merged[[<span class="hljs-string">&#x27;artist_name&#x27;</span>,<span class="hljs-string">&#x27;listen_count&#x27;</span>]].groupby(<span class="hljs-string">&#x27;artist_name&#x27;</span>).<span class="hljs-built_in">sum</span>().reset_index()
@@ -790,7 +790,7 @@ plt.title(<span class="hljs-string">&#x27;Most popular Artists&#x27;</span>)
  
 plt.show()
 </code></pre>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/output_61_0.png" alt="png"></p>
+<p><img loading="lazy" src="/blog/assets/img/44bc2170426b.png" alt="png"></p>
 <h3>用户播放过歌曲量的分布</h3>
 <pre class="hljs"><code>user_song_count_distribution = triplet_dataset_sub_song_merged[[<span class="hljs-string">&#x27;user&#x27;</span>,<span class="hljs-string">&#x27;title&#x27;</span>]].groupby(<span class="hljs-string">&#x27;user&#x27;</span>).count().reset_index().sort_values(
 by=<span class="hljs-string">&#x27;title&#x27;</span>,ascending = <span class="hljs-literal">False</span>)
@@ -814,7 +814,7 @@ plt.title(<span class="hljs-string">r&#x27;$\mathrm{Histogram\ of\ User\ Play\ C
 plt.grid(<span class="hljs-literal">True</span>)
 plt.show()
 </code></pre>
-<p><img src="https://gitee.com/buptsg2019/picgo/raw/master/output_64_0.png" alt="png"></p>
+<p><img loading="lazy" src="/blog/assets/img/42860a4f912b.png" alt="png"></p>
 <p>绝大多数用户播放歌曲的数量在100左右，关于数据的处理和介绍已经给大家都分析过了，接下来我们要做的就是构建一个能实际进行推荐的程序了。</p>
 <h2>开始构建推荐系统</h2>
 <pre class="hljs"><code><span class="hljs-keyword">import</span> Recommenders <span class="hljs-keyword">as</span> Recommenders
@@ -1585,6 +1585,8 @@ The number 10 recommended song is Uprising BY Muse
 </article>
     <a class="back-link" href="./index.html">← 返回文章列表</a>
   </main>
+  <script src="../js/post.js"></script>
   <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>
+  <script src="../js/click-fx.js"></script>
 </body>
 </html>
