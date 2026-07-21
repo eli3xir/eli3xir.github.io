@@ -16,7 +16,7 @@ description:
 
 设计和前一个实验类似的服务端显示界面，如下图所示：
 
-![avatar](/blog/assets/img/b00be7506cfa.png)
+![avatar](/assets/img/b00be7506cfa.png)
 
 实际上作为网络聊天室的服务端运行流程与前一个实验的 UDP 服务器管理方式类似，在 TCP 服务器内建立一个 `TcpServer` 类作为 TCP 服务器的类，在该类中包含一个 `TcpServerSocket` 链表容器，通过这个链表来管理当前与服务器建立连接的客户端，并与之进行数据交互。
 
@@ -348,7 +348,7 @@ CONFIG += c++11
 
 设计与之对应的客户端显示界面，如下图所示：
 
-![avatar](/blog/assets/img/415d208d9433.png)
+![avatar](/assets/img/415d208d9433.png)
 
 首先，创建 Qt 工程 `TcpClientDemo`。
 

@@ -7,7 +7,7 @@ tags:
   - 时评
 description: >-
   来源：人民网-观点频道</br>转载自：http://opinion.people.com.cn/n1/2021/0426/c223228-32088418.html
-cover: '/blog/assets/img/f5bece5a7f81.jpg'
+cover: '/assets/img/f5bece5a7f81.jpg'
 abbrlink: 30315
 date: 2021-04-26 00:00:00
 copyright: false
@@ -25,7 +25,7 @@ copyright: false
 
 
 
-![](/blog/assets/img/f5bece5a7f81.jpg)
+![](/assets/img/f5bece5a7f81.jpg)
 
 
 
@@ -39,7 +39,7 @@ copyright: false
 
 
 
-![](/blog/assets/img/0bcdb454b728.jpg)
+![](/assets/img/0bcdb454b728.jpg)
 
 
 

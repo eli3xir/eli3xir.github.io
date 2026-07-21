@@ -167,7 +167,7 @@ g++ -o client client.cpp
 <h3>附录一 传输层的基本概念</h3>
 <blockquote>
 <p>在 TCP/IP 四层参考模型中，从上往下有四种层次：应用层、传输层、网络层、网络接口层，应用层包括 HTTP、FTP、DNS 等协议，而传输层包括 TCP、UDP 两种协议，网络层则包含 IP、ARP 等协议，网络接口层较为底层，一般不是我们研究的对象。其中，传输层是我们在编程开发中较为重要的一层，需要对其中的两种协议尤其是 TCP 理解透彻。</p>
-<p><img loading="lazy" src="/blog/assets/img/dd8de37937e5.jpg" alt="图片描述"></p>
+<p><img loading="lazy" src="/assets/img/dd8de37937e5.jpg" alt="图片描述"></p>
 <h4>传输层的作用</h4>
 <p>传输层的根本目的是在网络层提供的数据通信服务基础上，实现主机的进程间通信的可靠服务。</p>
 <p>有以下两个要点：为位于两个主机内部的两个应用进程之间提供通信服务、提供可靠的通信服务。</p>
@@ -205,15 +205,15 @@ g++ -o client client.cpp
 <li>可靠传输服务。不丢失数据、保持数据有序、向上层不重复提交数据（通过确认机制、拥塞控制等方式实现）， 想象一下 ATM 机转帐应用就需要上述可靠性。</li>
 </ul>
 <p>TCP 的报头如下图所示。</p>
-<p><img loading="lazy" src="/blog/assets/img/0b2749e48e0a.jpg" alt="图片描述"></p>
+<p><img loading="lazy" src="/assets/img/0b2749e48e0a.jpg" alt="图片描述"></p>
 <p>重点关注几个标志位的意义，如下：</p>
-<p><img loading="lazy" src="/blog/assets/img/be8b8b35d04d.jpg" alt="图片描述"></p>
+<p><img loading="lazy" src="/assets/img/be8b8b35d04d.jpg" alt="图片描述"></p>
 <p>TCP 连接包括连接建立、报文传输、连接释放三个阶段，其中连接建立的三次握手过程较为重要。</p>
 <p>建立连接的三次握手过程：</p>
 <p>（1）当客户端准备发起一次 TCP 连接，首先向服务器发送第一个“SYN”报文（控制位 SYN=1）。</p>
 <p>（2）服务器收到 SYN 报文后，如果同意建立连接，则向客户端发送第二个“SYN+ACK”报文（控制位 SYN=1，ACK=1），该报文表示对第一个 SYN 报文请求的确认。</p>
 <p>（3）接收到 SYN+ACK 报文后，客户端发送第三个 ACK 报文，表示对 SYN+ACK 报文的确认。</p>
-<p><img loading="lazy" src="/blog/assets/img/7f51e52e6eb2.jpg" alt="图片描述"></p>
+<p><img loading="lazy" src="/assets/img/7f51e52e6eb2.jpg" alt="图片描述"></p>
 </blockquote>
 <h3>附录二 用C++进行TCP套接字网络编程</h3>
 <blockquote>
@@ -221,14 +221,14 @@ g++ -o client client.cpp
 <h4>TCP 网络编程的服务器端</h4>
 <p>服务器端一般先用 <code>socket</code> 创建一个套接字，然后用 <code>bind</code> 给这个套接字绑定地址（即 ip + 端口号），然后调用 <code>listen</code> 把这个套接字置为监听状态，随后调用 <code>accept</code> 函数从已完成连接队列中取出成功建立连接的套接字，以后就在这个新的套接字上调用 <code>send</code>、<code>recv</code> 来发送数据、接收数据，最后调用 <code>close</code> 来断开连接释放资源即可。</p>
 <p>过程如下：</p>
-<p><img loading="lazy" src="/blog/assets/img/2b3c9899686e.jpg" alt="图片描述"></p>
+<p><img loading="lazy" src="/assets/img/2b3c9899686e.jpg" alt="图片描述"></p>
 <h4>TCP 网络编程的客户端</h4>
 <p>与服务器不同，客户端并不需要 bind 绑定地址，因为端口号是系统自动分配的，而且客户端也不需要设置监听的套接字，因此也不需要 listen。客户端在用 socket 创建套接字后直接调用 connect 向服务器发起连接即可，connect 函数通知 Linux 内核完成 TCP 三次握手连接，最后把连接的结果作为返回值。成功建立连接后我们就可以调用 send 和 recv 来发送数据、接收数据，最后调用 close 来断开连接释放资源。</p>
 <p>过程如下：</p>
-<p><img loading="lazy" src="/blog/assets/img/c0b15ec13a1e.png" alt="图片描述"></p>
+<p><img loading="lazy" src="/assets/img/c0b15ec13a1e.png" alt="图片描述"></p>
 <h4>完整流程</h4>
 <p>TCP 网络编程的整体流程如下图所示：</p>
-<p><img loading="lazy" src="/blog/assets/img/f09b7c4b3fc5.jpg" alt="图片描述"></p>
+<p><img loading="lazy" src="/assets/img/f09b7c4b3fc5.jpg" alt="图片描述"></p>
 <h4>TCP 网络编程的相关数据结构</h4>
 <p>地址结构：</p>
 <pre class="hljs"><code><span class="hljs-keyword">struct</span> <span class="hljs-title class_">sockaddr_in</span> {

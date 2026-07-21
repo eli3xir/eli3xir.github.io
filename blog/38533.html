@@ -33,7 +33,7 @@
     </div>
     <article class="post-content"><h3>服务端程序构建</h3>
 <p>设计和前一个实验类似的服务端显示界面，如下图所示：</p>
-<p><img loading="lazy" src="/blog/assets/img/b00be7506cfa.png" alt="avatar"></p>
+<p><img loading="lazy" src="/assets/img/b00be7506cfa.png" alt="avatar"></p>
 <p>实际上作为网络聊天室的服务端运行流程与前一个实验的 UDP 服务器管理方式类似，在 TCP 服务器内建立一个 <code>TcpServer</code> 类作为 TCP 服务器的类，在该类中包含一个 <code>TcpServerSocket</code> 链表容器，通过这个链表来管理当前与服务器建立连接的客户端，并与之进行数据交互。</p>
 <p>首先，创建 Qt 工程 <code>TcpServerDemo</code> 。</p>
 <p>在 <code>TcpServerDemo.pro</code> 工程文件中添加如下内容：</p>
@@ -328,7 +328,7 @@ mainWidget::~<span class="hljs-built_in">mainWidget</span>()
 </code></pre>
 <h3>构建客户端程序</h3>
 <p>设计与之对应的客户端显示界面，如下图所示：</p>
-<p><img loading="lazy" src="/blog/assets/img/415d208d9433.png" alt="avatar"></p>
+<p><img loading="lazy" src="/assets/img/415d208d9433.png" alt="avatar"></p>
 <p>首先，创建 Qt 工程 <code>TcpClientDemo</code>。</p>
 <p>同样，在项目文件 <code>TcpClientDemo.pro</code> 中添加如下内容：</p>
 <pre class="hljs"><code>QT += network

@@ -33,7 +33,7 @@
     </div>
     <article class="post-content"><h2>网络层其他协议</h2>
 <p>网络层不仅有 IP 协议，还有其它如 ARP、ICMP、IGMP、RARP 等其它协议。</p>
-<p><img loading="lazy" src="/blog/assets/img/e6045782c63b.png" alt="4-1-1"></p>
+<p><img loading="lazy" src="/assets/img/e6045782c63b.png" alt="4-1-1"></p>
 <h3>ARP(Address Resolution Protocol)地址解析协议</h3>
 <h4>功能</h4>
 <p>当主机通过数据链路发送数据的时候，<strong>IP 数据报</strong>会先被封装为一个<strong>数据帧</strong>，而<strong>MAC 地址</strong>会被添加到数据帧的<strong>报头</strong>（链路层介绍时已讲过）。</p>
@@ -80,8 +80,8 @@
 arp -a
 arp -v
 </code></pre>
-<p><img loading="lazy" src="/blog/assets/img/7c98cfe2d986.png" alt="image-20210602093308152"></p>
-<p><img loading="lazy" src="/blog/assets/img/58dbfc347fcf.png" alt="image-20210602093345885"></p>
+<p><img loading="lazy" src="/assets/img/7c98cfe2d986.png" alt="image-20210602093308152"></p>
+<p><img loading="lazy" src="/assets/img/58dbfc347fcf.png" alt="image-20210602093345885"></p>
 <h4>ARP 代理</h4>
 <p>如果 ARP 请求是从一个网络上的主机发往另一个网络上的主机，那么连接这两个网络的路由器就可以回答该 ARP 请求，这个过程称作<strong>代理 ARP</strong>（Proxy ARP）。</p>
 <p>当连接这两个网络的路由器收到该 ARP 请求时，它会发现自己有通向目的主机的路径，随后它会将自己（路由器）的 MAC 地址回复给源主机。源主机会认为路由器的 MAC 地址就是目的主机的 MAC 地址，而对于随后发来的数据帧，路由器会转发到它后面真实 MAC 地址的目的主机。</p>
@@ -97,7 +97,7 @@ arp -v
 <h3>ICMP(Internet Control Message Protocol)控制报文协议</h3>
 <p>通信过程中发生各种问题时，ICMP 将问题反馈，通过这些信息，管理者可以对所发生的问题作出诊断，然后采取适当的措施去解决它。</p>
 <p>ICMP 报文由 8 位错误类型、8 位条件代码和 16 位校验和组成，被封装在一个 IP 数据报中：</p>
-<p><img loading="lazy" src="/blog/assets/img/e3556ea5b971.png" alt="图片描述"></p>
+<p><img loading="lazy" src="/assets/img/e3556ea5b971.png" alt="图片描述"></p>
 <p>报文的类型字段可以有 15 个不同的值，以便描述特定类型的 ICMP 报文，代码字段的值进一步描述不同的条件，各报文类型描述可参考 <a href="https://baike.baidu.com/item/ICMP#7">ICMP_百度百科</a></p>
 <p>也有一些出现差错而不产生 ICMP 报文的情况，比如：</p>
 <ul>

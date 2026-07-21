@@ -33,9 +33,9 @@
     </div>
     <article class="post-content"><h2>TCP/IP</h2>
 <h3>网络模型</h3>
-<p><img loading="lazy" src="/blog/assets/img/49cc3e0d5b3a.png" alt="FmjBwdHOT7MSYhI"></p>
+<p><img loading="lazy" src="/assets/img/49cc3e0d5b3a.png" alt="FmjBwdHOT7MSYhI"></p>
 <h3>数据封装</h3>
-<p><img loading="lazy" src="/blog/assets/img/6deb7c38d465.png" alt="CO9tXaL7xYGWVTq"></p>
+<p><img loading="lazy" src="/assets/img/6deb7c38d465.png" alt="CO9tXaL7xYGWVTq"></p>
 <h3>TCP/IP协议族</h3>
 <p>TCP/IP实际上是一个协同工作的通信家族，为网络数据通信提供通路。TCP/IP协议族大体分为三部分：</p>
 <ul>
@@ -103,17 +103,17 @@
 </ul>
 <p>IP的主要目的是为数据输入/输出网络提供基本算法，为高层协议提供无连接的传送服务。这意味着在IP将数据递交给接收点以前不在传输站点和接收站点之间建立对话。它只是封装和传递数据，但不向发送者或接收者报告包的状态，不处理所遇到的故障。</p>
 <p>IP包由IP协议头与协议数据两部分构成。</p>
-<p><img loading="lazy" src="/blog/assets/img/74bce41f1c3f.png" alt="BnTh2cma8kbFMzj"></p>
+<p><img loading="lazy" src="/assets/img/74bce41f1c3f.png" alt="BnTh2cma8kbFMzj"></p>
 <h4>TCP协议</h4>
 <p>TCP是重要的传输层协议，目的是允许数据同网络上的其他节点进行可靠的交换。它能提供端口编号的译码，以识别主机的应用程序，而且完成数据的可靠传输。</p>
 <ul>
 <li>TCP协议具有严格的内装差错检验算法确保数据的完整性</li>
 <li>TCP是面向字节的顺序协议，这意味着包内的每个字节被分配一个顺序编号，并分配给每包一个顺序编号。</li>
 </ul>
-<p><img loading="lazy" src="/blog/assets/img/b9e596243d9a.png" alt="iQgAXaKs268LrnI"></p>
+<p><img loading="lazy" src="/assets/img/b9e596243d9a.png" alt="iQgAXaKs268LrnI"></p>
 <h4>UDP协议</h4>
 <p>UDP也是传输层协议，它是无连接的，不可靠的传输服务。当接收数据时它不向发送方提供确认信息，它不提供输入包的顺序，如果出现丢失包或重份包的情况，也不会向发送方发出差错报文。由于它执行功能时具有较低的开销，因而执行速度比TCP快。</p>
-<p><img loading="lazy" src="/blog/assets/img/9fce5e040313.png" alt="Ypo53nNEUfC7hFS"></p>
+<p><img loading="lazy" src="/assets/img/9fce5e040313.png" alt="Ypo53nNEUfC7hFS"></p>
 <h2>Linux网络编程</h2>
 <h3>Socket</h3>
 <p>Linux中的网络编程通过Socket(套接字)接口实现，Socket是一种文件描述符。</p>
@@ -210,7 +210,7 @@
 <li>收发数据，用函数<code>send()</code>和<code>recv()</code>，或者<code>read()</code>和<code>write()</code></li>
 <li>关闭网络连接</li>
 </ol>
-<p><img loading="lazy" src="/blog/assets/img/a52b98dc0e2f.png" alt="eV8MXO4z3yJGKSm"></p>
+<p><img loading="lazy" src="/assets/img/a52b98dc0e2f.png" alt="eV8MXO4z3yJGKSm"></p>
 <h4>基于UDP-服务器</h4>
 <ol>
 <li>创建一个socket，用函数<code>socket()</code></li>
@@ -226,7 +226,7 @@
 <li>发送数据，用函数<code>sendto()</code></li>
 <li>关闭网络连接</li>
 </ol>
-<p><img loading="lazy" src="/blog/assets/img/5f2e54e21671.png" alt="UpgvuGB1LyAot6c"></p>
+<p><img loading="lazy" src="/assets/img/5f2e54e21671.png" alt="UpgvuGB1LyAot6c"></p>
 <h3>服务器模型</h3>
 <p><strong>循环服务器</strong>：服务器在同一个时刻只可以响应一个客户端的请求。</p>
 <p><strong>并发服务器</strong>：服务器在同一个时刻可以响应多个客户端的请求。</p>

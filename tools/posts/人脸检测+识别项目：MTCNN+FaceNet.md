@@ -388,7 +388,7 @@ def MobileNet(inputs, embedding_size=128, dropout_keep_prob=0.8, alpha=1.0, dept
     x = _depthwise_conv_block(x, 1024, depth_multiplier, block_id=13)
 ```
 
-![img](/blog/assets/img/236bd9d67c24.png)
+![img](/assets/img/236bd9d67c24.png)
 
 FaceNet总体训练流程如下：
 

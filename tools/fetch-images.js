@@ -8,8 +8,8 @@ const path = require('path');
 const crypto = require('crypto');
 
 const POSTS_DIR = path.join(__dirname, 'posts');
-const IMG_DIR = path.resolve(__dirname, '../blog/assets/img');
-const URL_PREFIX = '/blog/assets/img';
+const IMG_DIR = path.resolve(__dirname, '../assets/img');
+const URL_PREFIX = '/assets/img';
 
 const IMG_RE = /!\[[^\]]*\]\((https?:\/\/[^)\s]+)[^)]*\)|<img[^>]+src="(https?:\/\/[^"]+)"/g;
 

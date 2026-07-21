@@ -7,13 +7,13 @@ tags:
   - Linux
   - 操作系统
 cover: >-
-  /blog/assets/img/4967184f80bd.jpg
+  /assets/img/4967184f80bd.jpg
 abbrlink: 24471
 date: 2021-11-15 16:00:24
 description:
 ---
 
-![Linux基础](/blog/assets/img/4967184f80bd.jpg)
+![Linux基础](/assets/img/4967184f80bd.jpg)
 
 Linux中的命令格式为：`command [options] [arguments]` 中括号表示可选的，即有些命令不需要选项也不需要参数，但有的命令在运行时需要多个选项或参数。
 
@@ -384,9 +384,9 @@ mkdir [选项] [参数]
 > 
 > **umask**：umask 显示的值为从默认的最大权限中减去的值，最大权限为 777。比如 umask 为 0022，即为在同组用户权限和其他用户权限中去掉写权限，通过 `umask -S` 指令可以查看权限。
 >
-> ![image-20211118103337350](/blog/assets/img/e0c97226ecca.png)
+> ![image-20211118103337350](/assets/img/e0c97226ecca.png)
 >
-> ![image-20211118110524555](/blog/assets/img/1e24f0f358be.png)
+> ![image-20211118110524555](/assets/img/1e24f0f358be.png)
 
 参数说明：
 

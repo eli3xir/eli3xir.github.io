@@ -33,7 +33,7 @@
     </div>
     <article class="post-content"><h3>服务端程序构建</h3>
 <p>下面是设计服务端的显示界面，实际上作为网络聊天室的服务端是不需要界面的，但为了方便我们实验调试和使用，这里设计如下界面：</p>
-<p><img loading="lazy" src="/blog/assets/img/948c4f300f38.png" alt="avatar"></p>
+<p><img loading="lazy" src="/assets/img/948c4f300f38.png" alt="avatar"></p>
 <p>可以看出，服务端的界面实际上主要用来显示当前客户端链接状态以及对服务端启动、停止、更改 IP 端口等管理操作。</p>
 <p>首先，创建 Qt 工程 <code>UdpServerDemo</code> 。</p>
 <p>因为需要用到网络通信的模块功能，所以打开 <code>UdpServerDemo.pro</code> 工程文件，添加如下内容：</p>
@@ -306,7 +306,7 @@ mainWidget::~<span class="hljs-built_in">mainWidget</span>()
 <p>以上都编写完成后，构建运行程序，如果编程出现以下错误，是因为在项目文件 <code>UdpServerDemo.pro</code> 中没有在 QT 中添加 <code>network</code> 。修改成 <code>QT += core gui network</code> 后再次编译即可。</p>
 <h3>客户端程序构建</h3>
 <p>接下来就需要设计客户端界面，客户端的主要任务就是在与服务器进行链接后能够发送文字消息并且将从服务器返回的消息进行显示，所以客户端设计成如下界面：</p>
-<p><img loading="lazy" src="/blog/assets/img/c3304ba7b145.png" alt="avatar"></p>
+<p><img loading="lazy" src="/assets/img/c3304ba7b145.png" alt="avatar"></p>
 <p>首先，创建 Qt 工程 <code>UdpClientDemo</code>。</p>
 <p>此时，完成项目工程的创建后，在 <code>UdpClientDemo.pro</code> 工程文件同样添加上 <code>QT += network</code> ，并且添加与服务端进行数据通信使用的数据结构体定义文件 <code>base.h</code> ，参考服务端添加步骤进行添加，内容一致如下：</p>
 <pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">ifndef</span> BASE_H</span>
