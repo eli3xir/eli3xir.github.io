@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { initSnake } from './snake.js';
 
 document.documentElement.classList.add('js');
 
@@ -355,5 +354,4 @@ if (finePointer && !reduced) {
  * 启动
  * ============================================================ */
 document.getElementById('year').textContent = new Date().getFullYear();
-initSnake();
 initLoader(heroIntro);

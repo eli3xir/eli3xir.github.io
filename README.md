@@ -11,7 +11,6 @@
 - **Three.js** `0.185.1` — WebGL 背景（全屏 fbm 噪声 shader，鼠标/滚动驱动）
 - **GSAP** `3.15.0` + ScrollTrigger — 滚动叙事、文字切分入场、卡片倾斜
 - **Lenis** `1.3.25` — 惯性平滑滚动
-- 内嵌霓虹贪吃蛇（原生 canvas，`js/snake.js`）
 
 ## 本地预览
 
@@ -23,10 +22,9 @@ python -m http.server 8000
 ## 文件结构
 
 ```
-├── index.html          # 单页结构：Hero / 关于 / 技能 / 项目 / 游戏 / 联系
+├── index.html          # 单页结构：Hero / 关于 / 技能 / 项目 / 文章 / 联系
 ├── css/style.css       # 暗色主题样式
 ├── js/main.js          # shader 背景 + 交互逻辑（ES Module）
-├── js/snake.js         # 贪吃蛇小游戏
 └── vendor/             # three / gsap / lenis 本地化依赖
 ```
 

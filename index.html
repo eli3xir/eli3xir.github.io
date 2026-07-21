@@ -37,7 +37,7 @@
     <nav class="nav-links">
       <a href="#about" data-hover>关于</a>
       <a href="#work" data-hover>项目</a>
-      <a href="#play" data-hover>游戏</a>
+      <a href="#writing" data-hover>文章</a>
       <a href="#contact" data-hover>联系</a>
     </nav>
   </header>
@@ -121,26 +121,32 @@
       </div>
     </section>
 
-    <!-- 游戏 -->
-    <section id="play" class="section">
-      <h2 class="section-title"><span class="split">休息一下</span></h2>
-      <p class="section-sub reveal">主页里藏了一条蛇。方向键 / WASD 控制，吃到霓虹块加速。</p>
-      <div class="game-wrap reveal">
-        <canvas id="snake" width="480" height="480" tabindex="0" aria-label="贪吃蛇小游戏"></canvas>
-        <div class="game-side">
-          <div class="game-score">SCORE <strong id="snake-score">0</strong></div>
-          <div class="game-best">BEST <strong id="snake-best">0</strong></div>
-          <button id="snake-btn" class="btn-primary" data-hover>开始游戏</button>
-          <div class="game-pad" aria-hidden="true">
-            <button data-dir="up" data-hover>▲</button>
-            <div>
-              <button data-dir="left" data-hover>◀</button>
-              <button data-dir="down" data-hover>▼</button>
-              <button data-dir="right" data-hover>▶</button>
-            </div>
-          </div>
-        </div>
-      </div>
+    <!-- 文章 -->
+    <section id="writing" class="section">
+      <h2 class="section-title"><span class="split">最近写作</span></h2>
+      <ul class="post-list">
+        <li>
+          <a class="post-item reveal" href="#" data-hover>
+            <span class="post-date">2026.07</span>
+            <span class="post-title">用 GLSL 噪声给网页做一层"活"的背景</span>
+            <span class="post-arrow" aria-hidden="true">→</span>
+          </a>
+        </li>
+        <li>
+          <a class="post-item reveal" href="#" data-hover>
+            <span class="post-date">2026.06</span>
+            <span class="post-title">GSAP ScrollTrigger 滚动叙事实践笔记</span>
+            <span class="post-arrow" aria-hidden="true">→</span>
+          </a>
+        </li>
+        <li>
+          <a class="post-item reveal" href="#" data-hover>
+            <span class="post-date">2026.05</span>
+            <span class="post-title">从 0 部署一个 GitHub Pages 个人主页</span>
+            <span class="post-arrow" aria-hidden="true">→</span>
+          </a>
+        </li>
+      </ul>
     </section>
 
     <!-- 联系 -->
