@@ -96,34 +96,43 @@
       </div>
     </section>
 
-    <!-- 项目 -->
-    <section id="work" class="section">
-      <h2 class="section-title"><span class="split">精选项目</span></h2>
-      <div class="work-grid">
-        <article class="card" data-tilt>
-          <div class="card-glow" aria-hidden="true"></div>
-          <span class="card-index">01</span>
-          <h3>项目一</h3>
-          <p>一句话介绍这个项目做了什么、用了什么技术、解决了什么问题。</p>
-          <div class="card-tags"><span>WebGL</span><span>Three.js</span></div>
-          <a class="card-link" href="https://github.com/eli3xir" target="_blank" rel="noopener" data-hover>查看源码 →</a>
-        </article>
-        <article class="card" data-tilt>
-          <div class="card-glow" aria-hidden="true"></div>
-          <span class="card-index">02</span>
-          <h3>项目二</h3>
-          <p>一句话介绍这个项目做了什么、用了什么技术、解决了什么问题。</p>
-          <div class="card-tags"><span>Python</span><span>ML</span></div>
-          <a class="card-link" href="https://github.com/eli3xir" target="_blank" rel="noopener" data-hover>查看源码 →</a>
-        </article>
-        <article class="card" data-tilt>
-          <div class="card-glow" aria-hidden="true"></div>
-          <span class="card-index">03</span>
-          <h3>项目三</h3>
-          <p>一句话介绍这个项目做了什么、用了什么技术、解决了什么问题。</p>
-          <div class="card-tags"><span>Java</span><span>Backend</span></div>
-          <a class="card-link" href="https://github.com/eli3xir" target="_blank" rel="noopener" data-hover>查看源码 →</a>
-        </article>
+    <!-- 项目（横向滚动叙事） -->
+    <section id="work" class="work-section">
+      <div class="work-pin">
+        <h2 class="section-title work-heading"><span class="split">精选项目</span></h2>
+        <div class="work-track">
+          <article class="card" data-tilt>
+            <div class="card-glow" aria-hidden="true"></div>
+            <span class="card-index">01</span>
+            <h3>项目一</h3>
+            <p>一句话介绍这个项目做了什么、用了什么技术、解决了什么问题。</p>
+            <div class="card-tags"><span>WebGL</span><span>Three.js</span></div>
+            <a class="card-link" href="https://github.com/eli3xir" target="_blank" rel="noopener" data-hover>查看源码 →</a>
+          </article>
+          <article class="card" data-tilt>
+            <div class="card-glow" aria-hidden="true"></div>
+            <span class="card-index">02</span>
+            <h3>项目二</h3>
+            <p>一句话介绍这个项目做了什么、用了什么技术、解决了什么问题。</p>
+            <div class="card-tags"><span>Python</span><span>ML</span></div>
+            <a class="card-link" href="https://github.com/eli3xir" target="_blank" rel="noopener" data-hover>查看源码 →</a>
+          </article>
+          <article class="card" data-tilt>
+            <div class="card-glow" aria-hidden="true"></div>
+            <span class="card-index">03</span>
+            <h3>项目三</h3>
+            <p>一句话介绍这个项目做了什么、用了什么技术、解决了什么问题。</p>
+            <div class="card-tags"><span>Java</span><span>Backend</span></div>
+            <a class="card-link" href="https://github.com/eli3xir" target="_blank" rel="noopener" data-hover>查看源码 →</a>
+          </article>
+          <article class="card card-more">
+            <span class="card-index">→</span>
+            <h3>更多在 GitHub</h3>
+            <p>玩具项目、实验代码和学习笔记都在这里。</p>
+            <a class="card-link" href="https://github.com/eli3xir?tab=repositories" target="_blank" rel="noopener" data-hover>全部仓库 →</a>
+          </article>
+        </div>
+        <div class="work-progress" aria-hidden="true"><span></span></div>
       </div>
     </section>
 
@@ -192,6 +201,7 @@
   <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script>
   <script src="js/theme.js"></script>
   <script src="js/click-fx.js"></script>
+  <script src="js/page-transition.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

@@ -327,6 +327,67 @@ document.querySelectorAll('.fact-num').forEach((el) => {
 });
 
 /* ============================================================
+ * 项目区：pin 住后横向滚动（宽屏 & 非减弱动效）
+ * ============================================================ */
+if (!reduced && window.matchMedia('(min-width: 900px)').matches) {
+  const track = document.querySelector('.work-track');
+  const bar = document.querySelector('.work-progress span');
+  if (track) {
+    const dist = () => track.scrollWidth - window.innerWidth;
+    gsap.to(track, {
+      x: () => -dist(),
+      ease: 'none',
+      scrollTrigger: {
+        trigger: '.work-section',
+        start: 'top top',
+        end: () => '+=' + dist(),
+        pin: true,
+        scrub: 1,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => { if (bar) bar.style.transform = `scaleX(${self.progress})`; },
+      },
+    });
+  }
+}
+
+/* ============================================================
+ * Hero 标题：鼠标悬停字符散开，离开弹性重组
+ * ============================================================ */
+(function heroScatter() {
+  const title = document.querySelector('.hero-title');
+  if (!title || !finePointer || reduced) return;
+  const chars = [...title.querySelectorAll('.char')];
+  let scattered = false;
+
+  title.addEventListener('pointerenter', () => {
+    scattered = true;
+    chars.forEach((c) => {
+      gsap.to(c, {
+        x: gsap.utils.random(-90, 90),
+        y: gsap.utils.random(-60, 60),
+        rotation: gsap.utils.random(-30, 30),
+        opacity: 0.55,
+        duration: 0.7,
+        ease: 'power3.out',
+      });
+    });
+  });
+  title.addEventListener('pointerleave', () => {
+    scattered = false;
+    chars.forEach((c, i) => {
+      gsap.to(c, {
+        x: 0, y: 0, rotation: 0, opacity: 1,
+        duration: 1.1,
+        delay: i * 0.03,
+        ease: 'elastic.out(1, 0.55)',
+      });
+    });
+  });
+  // 悬停中移出窗口兜底
+  window.addEventListener('blur', () => { if (scattered) title.dispatchEvent(new Event('pointerleave')); });
+})();
+
+/* ============================================================
  * 打字机
  * ============================================================ */
 function startTyped() {

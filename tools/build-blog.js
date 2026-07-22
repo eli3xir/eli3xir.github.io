@@ -118,6 +118,7 @@ function layout({ title, description, content, extraHead = '' }) {
   ${content}
   <footer class="blog-footer">© ${new Date().getFullYear()} eli3xir · 共 ${posts.length} 篇文章</footer>
   <script src="../js/click-fx.js"></script>
+  <script src="../js/page-transition.js"></script>
 </body>
 </html>`;
 }
