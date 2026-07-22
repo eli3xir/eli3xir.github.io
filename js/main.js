@@ -19,12 +19,16 @@ function initGL() {
   }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
+  const bufSize = renderer.getDrawingBufferSize(new THREE.Vector2());
 
   const uniforms = {
     uTime: { value: 0 },
-    uRes: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+    // 注意：必须用绘图缓冲区的设备像素尺寸，否则高 DPR 屏幕下鼠标坐标错位
+    uRes: { value: bufSize.clone() },
     uMouse: { value: new THREE.Vector2(0.5, 0.5) },
     uScroll: { value: 0 },
+    uBase: { value: new THREE.Color(0x0a0a0f) },   // 底色
+    uSign: { value: 1.0 },                         // 1 = 暗底加亮，-1 = 亮底加暗
     uColA: { value: new THREE.Color(0x7c5cff) },   // 主色
     uColB: { value: new THREE.Color(0x00e5c0) },   // 辅色
     uVariant: { value: 0 },                        // 纹理变体
@@ -43,6 +47,8 @@ function initGL() {
       uniform float uScroll;
       uniform vec3 uColA;
       uniform vec3 uColB;
+      uniform vec3 uBase;
+      uniform float uSign;
       uniform float uVariant;
 
       // hash & noise
@@ -94,17 +100,15 @@ function initGL() {
 
         float n = fbm(p * (2.2 + uVariant * 0.4) + warp * 1.4 + uScroll * 1.5);
 
-        // 调色板：深空底 + 双色霓虹脉络
-        vec3 base = vec3(0.039, 0.039, 0.059);
-
         float vein = smoothstep(0.25, 0.75, n);
         float vein2 = smoothstep(0.55, 0.95, fbm(p * 3.0 - warp + t));
 
-        vec3 col = base;
-        col += uColA * vein * 0.35;
-        col += uColB * vein2 * 0.18;
-        // 鼠标附近提亮
-        col += uColA * exp(-md * 3.0) * 0.12;
+        // 底色 + 明暗两模式（暗底加亮 / 亮底加暗）
+        vec3 col = uBase;
+        col += uSign * uColA * vein * 0.30;
+        col += uSign * uColB * vein2 * 0.15;
+        // 鼠标附近扰动提亮/压暗
+        col += uSign * uColA * exp(-md * 3.0) * 0.10;
         // 暗角
         float vig = smoothstep(1.25, 0.35, length(uv - 0.5));
         col *= mix(0.55, 1.0, vig);
@@ -127,7 +131,7 @@ function initGL() {
 
   window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
-    uniforms.uRes.value.set(window.innerWidth, window.innerHeight);
+    renderer.getDrawingBufferSize(uniforms.uRes.value);
   });
 
   let running = true;
@@ -158,49 +162,40 @@ function initGL() {
 const glUniforms = initGL();
 
 /* ============================================================
- * 背景风格切换（多套调色板 + 纹理变体，平滑过渡）
+ * 主题应用：theme.js 派发 themechange，这里平滑过渡到目标配色
+ * detail: { base, sign, colA, colB, variant }（十六进制数字）
  * ============================================================ */
-const PALETTES = [
-  { name: '星云', a: 0x7c5cff, b: 0x00e5c0, v: 0 },
-  { name: '极光', a: 0x2dd4a7, b: 0x3b82f6, v: 1 },
-  { name: '熔岩', a: 0xff6b35, b: 0xff2d78, v: 2 },
-  { name: '深海', a: 0x2f6bff, b: 0x00c2d1, v: 3 },
-];
-(function initPalette() {
-  const btn = document.getElementById('palette-btn');
-  if (!btn || !glUniforms) return;
-  let idx = Number(localStorage.getItem('palette') || 0) % PALETTES.length;
-  const target = { a: new THREE.Color(), b: new THREE.Color(), v: 0 };
-
-  function hex(c) { return '#' + c.getHexString(); }
-  function apply(immediate) {
-    const p = PALETTES[idx];
-    target.a.setHex(p.a);
-    target.b.setHex(p.b);
-    target.v = p.v;
-    btn.querySelector('.palette-dot').style.background =
-      `linear-gradient(135deg, ${hex(target.a)}, ${hex(target.b)})`;
-    btn.title = `背景：${p.name}（点击切换）`;
-    document.documentElement.style.setProperty('--accent', hex(target.a));
-    document.documentElement.style.setProperty('--accent2', hex(target.b));
-    if (immediate) {
+(function initThemeBridge() {
+  if (!glUniforms) return;
+  const target = {
+    base: new THREE.Color(0x0a0a0f),
+    a: new THREE.Color(0x7c5cff),
+    b: new THREE.Color(0x00e5c0),
+    sign: 1,
+    v: 0,
+  };
+  let first = true;
+  window.addEventListener('themechange', (e) => {
+    const t = e.detail;
+    target.base.setHex(t.base);
+    target.a.setHex(t.colA);
+    target.b.setHex(t.colB);
+    target.sign = t.sign;
+    target.v = t.variant;
+    if (first) { // 首次直接到位，不做渐变
+      first = false;
+      glUniforms.uBase.value.copy(target.base);
       glUniforms.uColA.value.copy(target.a);
       glUniforms.uColB.value.copy(target.b);
+      glUniforms.uSign.value = target.sign;
       glUniforms.uVariant.value = target.v;
     }
-  }
-  apply(true);
-
-  btn.addEventListener('click', () => {
-    idx = (idx + 1) % PALETTES.length;
-    localStorage.setItem('palette', idx);
-    apply(false);
   });
-
-  // 每帧向目标色平滑过渡（挂在 gsap ticker 上即可）
   gsap.ticker.add(() => {
+    glUniforms.uBase.value.lerp(target.base, 0.04);
     glUniforms.uColA.value.lerp(target.a, 0.04);
     glUniforms.uColB.value.lerp(target.b, 0.04);
+    glUniforms.uSign.value += (target.sign - glUniforms.uSign.value) * 0.04;
     glUniforms.uVariant.value += (target.v - glUniforms.uVariant.value) * 0.04;
   });
 })();

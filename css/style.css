@@ -5,8 +5,8 @@
   --muted: #8a8798;
   --accent: #7c5cff;
   --accent2: #00e5c0;
-  --card: rgba(255, 255, 255, 0.04);
-  --border: rgba(255, 255, 255, 0.09);
+  --card: color-mix(in srgb, var(--fg) 5%, transparent);
+  --border: color-mix(in srgb, var(--fg) 14%, transparent);
   --font: "Space Grotesk", "Noto Sans SC", -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
@@ -59,7 +59,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* ===== 背景风格切换按钮 ===== */
-#palette-btn {
+#theme-btn {
   position: fixed;
   right: 24px;
   bottom: 24px;
@@ -75,13 +75,14 @@ a { color: inherit; text-decoration: none; }
   justify-content: center;
   transition: transform 0.2s, border-color 0.2s;
 }
-#palette-btn:hover { transform: scale(1.1) rotate(15deg); border-color: var(--accent); }
-.palette-dot {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
+#theme-btn:hover { transform: scale(1.1) rotate(15deg); border-color: var(--accent); }
+.theme-label {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--accent);
+  transition: color 0.4s;
 }
+#theme-btn.is-festival .theme-label { color: #f5b942; font-size: 0.8rem; }
 
 /* ===== 加载屏 ===== */
 #loader {
@@ -128,7 +129,7 @@ a { color: inherit; text-decoration: none; }
 }
 .cursor-ring {
   width: 36px; height: 36px;
-  border: 1px solid rgba(124, 92, 255, 0.7);
+  border: 1px solid var(--accent);
   transition: width 0.25s, height 0.25s, border-color 0.25s, background 0.25s;
 }
 .cursor-ring.is-hover {
@@ -146,7 +147,6 @@ a { color: inherit; text-decoration: none; }
   align-items: center;
   justify-content: space-between;
   padding: 20px clamp(20px, 5vw, 56px);
-  mix-blend-mode: difference;
 }
 .nav-logo { font-weight: 700; font-size: 1.15rem; letter-spacing: 0.05em; }
 .nav-links { display: flex; gap: clamp(14px, 3vw, 32px); }
@@ -185,7 +185,7 @@ a { color: inherit; text-decoration: none; }
 }
 .hero-title .char {
   display: inline-block;
-  background: linear-gradient(120deg, #fff 30%, var(--accent) 70%, var(--accent2));
+  background: linear-gradient(120deg, var(--fg) 30%, var(--accent) 70%, var(--accent2));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -279,7 +279,7 @@ a { color: inherit; text-decoration: none; }
   padding-right: 48px;
   font-size: clamp(1.4rem, 3.4vw, 2.4rem);
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.25);
+  color: color-mix(in srgb, var(--fg) 28%, transparent);
   will-change: transform;
 }
 .marquee-track span::after {
@@ -305,12 +305,12 @@ a { color: inherit; text-decoration: none; }
   transition: border-color 0.3s;
   overflow: hidden;
 }
-.card:hover { border-color: rgba(124, 92, 255, 0.5); }
+.card:hover { border-color: var(--accent); }
 .card-glow {
   position: absolute;
   width: 220px; height: 220px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(124, 92, 255, 0.25), transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 25%, transparent), transparent 70%);
   top: var(--gy, 50%); left: var(--gx, 50%);
   transform: translate(-50%, -50%);
   pointer-events: none;
@@ -352,7 +352,7 @@ a { color: inherit; text-decoration: none; }
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(124, 92, 255, 0.08), transparent 60%);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 8%, transparent), transparent 60%);
   opacity: 0;
   transition: opacity 0.3s;
 }
@@ -421,7 +421,7 @@ a { color: inherit; text-decoration: none; }
 /* ===== 降级 ===== */
 @media (max-width: 720px) {
   .about-grid { grid-template-columns: 1fr; }
-  .site-nav { position: absolute; mix-blend-mode: normal; }
+  .site-nav { position: absolute; }
 }
 @media (prefers-reduced-motion: reduce) {
   .grain, .hint-line, .typed-caret { animation: none; }
