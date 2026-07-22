@@ -146,7 +146,7 @@ function initGL() {
     const m = uniforms.uMouse.value;
     m.x += (target.x - m.x) * 0.05;
     m.y += (target.y - m.y) * 0.05;
-    renderer.render(scene, camera);
+    if (!window.__glPaused) renderer.render(scene, camera);
     if (!running) renderer.setAnimationLoop(null);
   }
 
