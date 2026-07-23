@@ -108,11 +108,13 @@ function layout({ title, description, content, extraHead = '' }) {
 </head>
 <body>
   <header class="blog-nav">
-    <a class="nav-logo" href="../index.html">eli3xir<span class="accent">.</span></a>
+    <a class="nav-logo" href="/">eli3xir<span class="accent">.</span></a>
     <nav>
-      <a href="../index.html">主页</a>
-      <a href="./index.html">文章</a>
-      <a href="https://github.com/eli3xir" target="_blank" rel="noopener">GitHub</a>
+      <a href="/blog/" style="color:var(--fg);border-bottom:2px solid var(--accent)">文章</a>
+      <a href="/radio/">电台</a>
+      <a href="/lab/">实验</a>
+      <a href="/projects/">项目</a>
+      <a href="/about/">关于</a>
     </nav>
   </header>
   ${content}
@@ -187,5 +189,22 @@ const indexContent = `
 fs.writeFileSync(path.join(OUT_DIR, 'index.html'), layout({ title: '文章', description: 'eli3xir 的技术博客文章列表', content: indexContent }));
 
 console.log(`built ${posts.length} posts + index -> blog/`);
+
+/* ---------- 主页「最新动态」注入 ---------- */
+const homePath = path.join(ROOT, 'index.html');
+if (fs.existsSync(homePath)) {
+  let home = fs.readFileSync(homePath, 'utf8');
+  const latestItems = posts.slice(0, 3).map((p) => `        <li>
+          <a class="post-item reveal" href="blog/${p.slug}.html" data-hover>
+            <span class="post-date">${p.dateStr.slice(0, 7).replace('-', '.')}</span>
+            <span class="post-title">${esc(p.title)}</span>
+            <span class="post-arrow" aria-hidden="true">→</span>
+          </a>
+        </li>`).join('\n');
+  home = home.replace(/<!--LATEST:BEGIN-->[\s\S]*?<!--LATEST:END-->/,
+    `<!--LATEST:BEGIN-->\n${latestItems}\n<!--LATEST:END-->`);
+  fs.writeFileSync(homePath, home);
+  console.log('homepage latest posts updated');
+}
 // 输出最新 3 篇，供首页引用
 for (const p of posts.slice(0, 3)) console.log(`LATEST|${p.dateStr}|${p.title}|blog/${p.slug}.html`);

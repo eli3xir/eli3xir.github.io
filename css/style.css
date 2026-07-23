@@ -483,6 +483,29 @@ a { color: inherit; text-decoration: none; }
 .card-link { color: var(--accent2); font-size: 0.9rem; }
 .card-link:hover { text-decoration: underline; }
 
+/* ===== 主页：最新动态 & 更新日志 ===== */
+.latest { padding-bottom: 0; }
+.log-list {
+  list-style: none;
+  border-top: 1px solid var(--border);
+}
+.log-list li {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 20px;
+  padding: 16px 8px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+.log-list time {
+  color: var(--accent2);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+}
+.log-list span { color: var(--muted); }
+.footer-links a { color: var(--muted); }
+.footer-links a:hover { color: var(--accent2); }
+
 /* ===== 文章列表 ===== */
 .post-list { list-style: none; border-top: 1px solid var(--border); }
 .post-item {

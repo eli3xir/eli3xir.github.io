@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登月 · 创意实验室</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' text-anchor='middle'%3E🌙%3C/text%3E%3C/svg%3E">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/pages.css">
+  <script type="importmap">
+    { "imports": { "three": "/vendor/three/three.module.min.js" } }
+  </script>
+</head>
+<body class="demo-body">
+  <canvas class="scene" id="scene"></canvas>
+  <div class="demo-hud">
+    <h1>🌙 登月</h1>
+    <p>拖拽旋转视角 · 点击「开始着陆」执行软着陆</p>
+    <p class="demo-stat" id="stat">高度 -- m · 速度 -- m/s</p>
+    <button class="demo-btn" id="land-btn">开始着陆</button>
+  </div>
+  <a class="demo-back" href="/lab/">← 返回实验室</a>
+  <script type="module" src="/js/lab-moon.js"></script>
+</body>
+</html>
