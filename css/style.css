@@ -111,6 +111,18 @@ a { color: inherit; text-decoration: none; }
 #skin-center.open .sc-panel { transform: none; }
 .sc-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
 .sc-head h2 { font-size: 1.5rem; }
+.sc-tabs { display: flex; gap: 8px; }
+.sc-tab {
+  font-family: var(--font);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 4px 10px;
+}
+.sc-tab.active { color: var(--fg); border-bottom-color: var(--accent); }
 .sc-close {
   width: 36px; height: 36px;
   font-size: 1.4rem;

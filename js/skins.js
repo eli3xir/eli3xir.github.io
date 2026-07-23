@@ -635,46 +635,91 @@ function buildSkinCenter() {
   overlay.innerHTML = `
     <div class="sc-panel">
       <div class="sc-head">
-        <h2>皮肤中心</h2>
+        <div class="sc-tabs">
+          <button class="sc-tab active" data-tab="skins">皮肤</button>
+          <button class="sc-tab" data-tab="transitions">转场</button>
+        </div>
         <button class="sc-close" aria-label="关闭">×</button>
       </div>
-      <input class="sc-search" type="search" placeholder="搜索皮肤：名字 / 标签，如「可爱」「3D」「代码」…">
+      <input class="sc-search" type="search" placeholder="搜索：名字 / 标签…">
       <div class="sc-grid"></div>
     </div>`;
   document.body.appendChild(overlay);
   const grid = overlay.querySelector('.sc-grid');
   const search = overlay.querySelector('.sc-search');
+  let tab = 'skins';
 
-  function cardHtml(s) {
-    const t = s.id === 'auto' ? SEASON_THEMES[seasonOfMonth(new Date().getMonth())] : s;
-    return `
+  function previewStyle(bg, a, b) {
+    return `background:
+      radial-gradient(circle at 30% 30%, ${b}, transparent 60%),
+      radial-gradient(circle at 70% 70%, ${a}, transparent 55%),
+      ${bg}`;
+  }
+
+  function renderSkins() {
+    grid.innerHTML = SKINS.map((s) => {
+      const t = s.id === 'auto' ? SEASON_THEMES[seasonOfMonth(new Date().getMonth())] : s;
+      return `
       <button class="sc-card" data-id="${s.id}" data-search="${(s.name + ' ' + s.tags.join(' ') + ' ' + s.desc).toLowerCase()}">
-        <span class="sc-preview" style="background:
-          radial-gradient(circle at 30% 30%, ${t.css.accent2}, transparent 60%),
-          radial-gradient(circle at 70% 70%, ${t.css.accent}, transparent 55%),
-          ${t.css.bg}"></span>
+        <span class="sc-preview" style="${previewStyle(t.css.bg, t.css.accent, t.css.accent2)}"></span>
         <span class="sc-name">${s.name}</span>
         <span class="sc-desc">${s.desc}</span>
         <span class="sc-tags">${s.tags.map((t2) => `<i>${t2}</i>`).join('')}</span>
         <span class="sc-check">✓ 使用中</span>
       </button>`;
+    }).join('');
+    markActiveCard();
   }
-  grid.innerHTML = SKINS.map(cardHtml).join('');
 
-  grid.addEventListener('click', (e) => {
-    const card = e.target.closest('.sc-card');
-    if (!card) return;
-    applySkin(card.dataset.id);
-    close();
-  });
-  search.addEventListener('input', () => {
+  function renderTransitions() {
+    const ts = window.__transitions;
+    if (!ts) { grid.innerHTML = '<p style="color:var(--muted)">转场引擎未加载</p>'; return; }
+    const cur = ts.current();
+    const root = getComputedStyle(document.documentElement);
+    const a = root.getPropertyValue('--accent').trim() || '#7c5cff';
+    const b = root.getPropertyValue('--accent2').trim() || '#00e5c0';
+    const bg = root.getPropertyValue('--bg').trim() || '#0a0a0f';
+    grid.innerHTML = ts.list.map((t) => `
+      <button class="sc-card sc-tcard ${t.id === cur ? 'active' : ''}" data-id="${t.id}" data-search="${(t.name + ' ' + t.tags.join(' ') + ' ' + t.desc).toLowerCase()}">
+        <span class="sc-preview" style="${previewStyle(bg, a, b)}"></span>
+        <span class="sc-name">${t.name}</span>
+        <span class="sc-desc">${t.desc}</span>
+        <span class="sc-tags">${t.tags.map((t2) => `<i>${t2}</i>`).join('')}</span>
+        <span class="sc-check">✓ 使用中</span>
+      </button>`).join('');
+  }
+
+  function render() { tab === 'skins' ? renderSkins() : renderTransitions(); applyFilter(); }
+  function applyFilter() {
     const q = search.value.trim().toLowerCase();
     grid.querySelectorAll('.sc-card').forEach((c) => {
       c.style.display = !q || c.dataset.search.includes(q) ? '' : 'none';
     });
+  }
+
+  overlay.querySelectorAll('.sc-tab').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      tab = btn.dataset.tab;
+      overlay.querySelectorAll('.sc-tab').forEach((b) => b.classList.toggle('active', b === btn));
+      search.value = '';
+      render();
+    });
   });
 
-  function open() { overlay.classList.add('open'); markActiveCard(); search.value = ''; search.dispatchEvent(new Event('input')); setTimeout(() => search.focus(), 100); }
+  grid.addEventListener('click', (e) => {
+    const card = e.target.closest('.sc-card');
+    if (!card) return;
+    if (tab === 'skins') {
+      applySkin(card.dataset.id);
+      close();
+    } else {
+      window.__transitions?.set(card.dataset.id);
+      close();
+    }
+  });
+  search.addEventListener('input', applyFilter);
+
+  function open() { overlay.classList.add('open'); render(); setTimeout(() => search.focus(), 100); }
   function close() { overlay.classList.remove('open'); }
   overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
   overlay.querySelector('.sc-close').addEventListener('click', close);
