@@ -152,6 +152,9 @@ a:hover { text-decoration: underline; }
 }
 .lab-thumb.moon { background: radial-gradient(circle at 65% 30%, #d8d8e0 0%, #d8d8e0 12%, transparent 13%), radial-gradient(ellipse at 30% 90%, #3a3a4a, #05050a 70%), #05050a; }
 .lab-thumb.ocean { background: linear-gradient(180deg, #7ec8e3 0%, #2a7fbf 45%, #0a3d66 100%); }
+.lab-thumb.fluid { background: radial-gradient(circle at 30% 40%, rgba(128, 60, 255, 0.8), transparent 50%), radial-gradient(circle at 70% 60%, rgba(0, 220, 190, 0.7), transparent 45%), radial-gradient(circle at 50% 80%, rgba(255, 80, 120, 0.5), transparent 40%), #0a0a14; }
+.lab-thumb.trails { background: repeating-conic-gradient(from 0deg at 50% 55%, rgba(200, 215, 255, 0.25) 0deg 2deg, transparent 2deg 14deg), #02020a; }
+.lab-thumb.galaxy { background: radial-gradient(ellipse at 50% 50%, #ffa040 0%, rgba(255, 160, 64, 0.4) 15%, rgba(106, 77, 255, 0.35) 45%, transparent 70%), #050510; }
 .lab-thumb .lab-emoji { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 3.2rem; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.4)); }
 .lab-body { padding: 20px 22px; }
 .lab-body h3 { font-size: 1.2rem; margin-bottom: 6px; }
