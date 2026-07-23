@@ -6,7 +6,6 @@
   <title>电台 · eli3xir</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' font-weight='bold' text-anchor='middle' fill='%237c5cff'%3Ee3%3C/text%3E%3C/svg%3E">
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css">
   <link rel="stylesheet" href="/css/pages.css">
 </head>
 <body>
@@ -23,25 +22,33 @@
 
   <main class="page">
     <h1>电台</h1>
-    <p class="page-sub">写代码时的背景音，从原博客迁移来的网易云歌单，随机播放。</p>
-    <div class="radio-wrap">
-      <meting-js
-        server="netease"
-        type="playlist"
-        id="6665470324"
-        order="random"
-        preload="none"
-        list-folded="false"
-        list-max-height="420px">
-      </meting-js>
-      <p class="radio-tip">歌单托管于网易云音乐 · 播放器 APlayer + MetingJS</p>
+    <p class="page-sub">声音形式的博客：聊技术、聊折腾、聊最近在做的东西。节目筹备中，敬请期待。</p>
+
+    <div class="proj-grid">
+      <article class="pcard">
+        <span class="idx">EP.001 · 筹备中</span>
+        <h3>为什么是 eli3xir</h3>
+        <p>第一期想聊聊这个网名的来历，以及为什么我又一次开始折腾个人网站。</p>
+        <div class="tags"><span>自我介绍</span><span>闲聊</span></div>
+      </article>
+      <article class="pcard">
+        <span class="idx">EP.002 · 筹备中</span>
+        <h3>把浏览器当成游戏机</h3>
+        <p>这个网站的实验室是怎么做出来的：Three.js、shader 和那些踩过的坑。</p>
+        <div class="tags"><span>WebGL</span><span>前端</span></div>
+      </article>
+      <article class="pcard">
+        <span class="idx">EP.003 · 筹备中</span>
+        <h3>从编译器到机器学习</h3>
+        <p>本科到研究生做过的东西串一串：Pascal-S 编译器、人脸识别、推荐系统。</p>
+        <div class="tags"><span>技术回顾</span></div>
+      </article>
     </div>
   </main>
 
   <footer class="page-footer">© 2026 eli3xir</footer>
-  <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script>
   <script src="/js/click-fx.js"></script>
   <script src="/js/page-transition.js"></script>
+  <script src="/js/player.js"></script>
 </body>
 </html>
