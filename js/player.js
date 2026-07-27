@@ -3,7 +3,7 @@
 (function () {
   const PLAYLIST_API = 'https://api.i-meto.com/meting/api?server=netease&type=playlist&id=6665470324';
   const LS_STATE = 'player-state';
-  const LS_LIST = 'player-playlist-cache';
+  const LS_LIST = 'player-playlist-cache-v2';
 
   /* ---------- 样式 ---------- */
   const css = `
@@ -64,6 +64,44 @@
     #gm-player .gm-vol input { flex: 1; accent-color: var(--accent2, #00e5c0); height: 5px; cursor: pointer; }
     #gm-player .gm-vol-num { font-size: 0.9rem; font-weight: 700; min-width: 42px; text-align: right; color: var(--accent2, #00e5c0); font-variant-numeric: tabular-nums; }
     #gm-player .gm-err { font-size: 0.72rem; opacity: 0.55; padding: 0 12px 8px; }
+
+    /* 滚动歌词面板 */
+    #gm-lyric {
+      position: fixed; left: 16px; bottom: 200px; z-index: 74;
+      width: 340px;
+      padding: 14px 0;
+      background: color-mix(in srgb, var(--bg, #0a0a0f) 78%, #fff 22%);
+      border: 1px solid color-mix(in srgb, var(--fg, #e8e6f0) 14%, transparent);
+      border-radius: 14px;
+      backdrop-filter: blur(12px);
+      color: var(--fg, #e8e6f0);
+      font-family: "Space Grotesk", "Noto Sans SC", sans-serif;
+      box-shadow: 0 10px 32px rgba(0,0,0,0.4);
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: opacity 0.25s, transform 0.25s;
+    }
+    #gm-lyric.open { opacity: 1; pointer-events: auto; transform: none; }
+    #gm-lyric .ly-body { height: 168px; overflow: hidden; position: relative;
+      mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent);
+      -webkit-mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent); }
+    #gm-lyric .ly-track { transition: transform 0.35s ease; }
+    #gm-lyric .ly-line {
+      height: 28px; line-height: 28px;
+      padding: 0 22px;
+      font-size: 0.82rem;
+      color: color-mix(in srgb, var(--fg, #e8e6f0) 45%, transparent);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      transition: color 0.3s, font-size 0.3s;
+    }
+    #gm-lyric .ly-line.cur {
+      color: var(--accent2, #00e5c0);
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+    #gm-lyric .ly-empty { padding: 60px 22px; text-align: center; font-size: 0.8rem; opacity: 0.5; }
   `;
   const style = document.createElement('style');
   style.textContent = css;
@@ -88,6 +126,7 @@
         <button class="gm-prev" title="上一首">⏮</button>
         <button class="gm-play" title="播放/暂停">▶</button>
         <button class="gm-next" title="下一首">⏭</button>
+        <button class="gm-lyricbtn" title="歌词">词</button>
         <button class="gm-listbtn" title="歌单">☰</button>
       </div>
       <div class="gm-progress">
@@ -103,6 +142,12 @@
     </div>
     <div class="gm-err" hidden></div>`;
   document.body.appendChild(el);
+
+  // 歌词面板
+  const lyricEl = document.createElement('div');
+  lyricEl.id = 'gm-lyric';
+  lyricEl.innerHTML = '<div class="ly-body"><div class="ly-track"><div class="ly-empty">歌词加载中…</div></div></div>';
+  document.body.appendChild(lyricEl);
 
   const $ = (s) => el.querySelector(s);
   const audio = new Audio();
@@ -165,6 +210,8 @@
     if (t.pic && $('.gm-cover').src !== t.pic) $('.gm-cover').src = t.pic;
     if (audio.src !== t.url) audio.src = t.url;
     renderList();
+    lastLyricIdx = -1;
+    loadLyrics(t);
     if (wantPlay) document.title = `♪ ${t.name} · eli3xir`;
   }
 
@@ -229,11 +276,91 @@
     if (t) goto(Number(t.dataset.i));
   });
 
+  /* ---------- 歌词引擎 ---------- */
+  const lyricCache = new Map();
+  let lyrics = [];      // [{ t, text }]
+  let lyricOpen = localStorage.getItem('player-lyric') === '1';
+  const lyTrack = lyricEl.querySelector('.ly-track');
+
+  function parseLrc(text) {
+    const out = [];
+    const re = /\[(\d+):(\d+(?:\.\d+)?)\]/g;
+    for (const line of text.split(/\r?\n/)) {
+      const content = line.replace(re, '').trim();
+      if (!content) continue;
+      re.lastIndex = 0;
+      let m;
+      while ((m = re.exec(line))) {
+        out.push({ t: Number(m[1]) * 60 + Number(m[2]), text: content });
+      }
+    }
+    return out.sort((a, b) => a.t - b.t);
+  }
+
+  function renderLyrics() {
+    if (!lyrics.length) {
+      lyTrack.innerHTML = '<div class="ly-empty">纯音乐，请欣赏</div>';
+      return;
+    }
+    lyTrack.innerHTML = lyrics.map((l, i) => `<div class="ly-line" data-i="${i}">${l.text}</div>`).join('');
+  }
+
+  async function loadLyrics(track) {
+    lyrics = [];
+    if (!lyricOpen || !track?.lrc) return;
+    lyTrack.innerHTML = '<div class="ly-empty">歌词加载中…</div>';
+    if (lyricCache.has(track.lrc)) {
+      lyrics = lyricCache.get(track.lrc);
+      renderLyrics();
+      return;
+    }
+    try {
+      const res = await fetch(track.lrc);
+      const raw = await res.text();
+      let text = raw;
+      try { text = JSON.parse(raw).lrc || raw; } catch (_) {}
+      lyrics = parseLrc(text);
+      lyricCache.set(track.lrc, lyrics);
+    } catch (_) {
+      lyrics = [];
+    }
+    renderLyrics();
+  }
+
+  let lastLyricIdx = -1;
+  function syncLyric() {
+    if (!lyricOpen || !lyrics.length) return;
+    const t = audio.currentTime;
+    let idx = 0;
+    for (let i = 0; i < lyrics.length; i++) {
+      if (lyrics[i].t <= t + 0.2) idx = i; else break;
+    }
+    if (idx === lastLyricIdx) return;
+    lastLyricIdx = idx;
+    lyTrack.querySelectorAll('.ly-line').forEach((el2, i) => el2.classList.toggle('cur', i === idx));
+    // 当前行滚到中间（容器高 168，行高 28，中间是第 3 行）
+    lyTrack.style.transform = `translateY(${84 - idx * 28 - 14}px)`;
+  }
+
+  const lyricBtn = $('.gm-lyricbtn');
+  function applyLyricOpen() {
+    lyricEl.classList.toggle('open', lyricOpen);
+    lyricBtn.classList.toggle('on', lyricOpen);
+  }
+  lyricBtn.addEventListener('click', () => {
+    lyricOpen = !lyricOpen;
+    localStorage.setItem('player-lyric', lyricOpen ? '1' : '0');
+    applyLyricOpen();
+    if (lyricOpen) { lastLyricIdx = -1; loadLyrics(playlist[index]); syncLyric(); }
+  });
+  applyLyricOpen();
+
   /* 进度 */
   audio.addEventListener('timeupdate', () => {
     if (audio.duration) $('.gm-seek').value = (audio.currentTime / audio.duration) * 100;
     $('.gm-cur').textContent = fmt(audio.currentTime);
     $('.gm-dur').textContent = fmt(audio.duration);
+    syncLyric();
   });
   $('.gm-seek').addEventListener('input', () => {
     if (audio.duration) audio.currentTime = ($('.gm-seek').value / 100) * audio.duration;
@@ -275,7 +402,7 @@
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length) {
-          list = data.map((t) => ({ name: t.title || t.name, artist: t.author || t.artist, url: t.url, pic: t.pic }));
+          list = data.map((t) => ({ name: t.title || t.name, artist: t.author || t.artist, url: t.url, pic: t.pic, lrc: t.lrc }));
           try { localStorage.setItem(LS_LIST, JSON.stringify(list)); } catch (_) {}
         }
       }
