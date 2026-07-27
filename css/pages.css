@@ -158,6 +158,7 @@ a:hover { text-decoration: underline; }
 .lab-thumb.glass { background: radial-gradient(circle at 30% 30%, rgba(124, 92, 255, 0.7), transparent 55%), radial-gradient(circle at 70% 70%, rgba(0, 229, 192, 0.6), transparent 50%), radial-gradient(circle at 55% 45%, rgba(255, 255, 255, 0.35) 0%, transparent 22%), #0a1428; }
 .lab-thumb.breakout { background: linear-gradient(180deg, #0a0a14 55%, rgba(124, 92, 255, 0.35) 100%), repeating-linear-gradient(90deg, rgba(255, 45, 120, 0.5) 0 18px, rgba(0, 229, 192, 0.5) 18px 36px, rgba(106, 141, 255, 0.5) 36px 54px); }
 .lab-thumb.partext { background: radial-gradient(circle at 40% 40%, rgba(124, 92, 255, 0.5) 0%, transparent 40%), radial-gradient(circle at 60% 60%, rgba(0, 229, 192, 0.45) 0%, transparent 40%), repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,0.12) 0 1px, transparent 1px 7px), #050510; }
+.lab-thumb.bullet { background: repeating-conic-gradient(from 0deg at 50% 40%, rgba(255, 90, 78, 0.35) 0deg 8deg, transparent 8deg 24deg), radial-gradient(circle at 50% 40%, rgba(230, 50, 41, 0.5), transparent 35%), #100505; }
 .lab-thumb .lab-emoji { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 3.2rem; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.4)); }
 .lab-body { padding: 20px 22px; }
 .lab-body h3 { font-size: 1.2rem; margin-bottom: 6px; }
@@ -206,6 +207,101 @@ a:hover { text-decoration: underline; }
 .demo-btn:hover { transform: translateY(-2px); }
 .demo-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
 .demo-stat { font-variant-numeric: tabular-nums; }
+
+/* ===== 电台/播客 ===== */
+.pod-hero {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  margin-bottom: 48px;
+  flex-wrap: wrap;
+}
+.pod-cover {
+  width: 140px;
+  height: 140px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(0, 229, 192, 0.6), transparent 55%),
+    radial-gradient(circle at 70% 70%, rgba(124, 92, 255, 0.7), transparent 55%),
+    #14141f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+}
+.pod-hero h1 { margin-bottom: 6px; }
+.pod-meta { color: var(--muted); font-size: 0.9rem; }
+.pod-subscribe { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.pod-subscribe span {
+  font-size: 0.8rem;
+  padding: 6px 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+}
+
+.ep-list { display: flex; flex-direction: column; gap: 16px; }
+.ep {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px 20px;
+  transition: border-color 0.25s, transform 0.25s;
+}
+.ep:hover { border-color: var(--accent); transform: translateY(-2px); }
+.ep-thumb {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: #fff;
+}
+.ep-body { flex: 1; min-width: 0; }
+.ep-meta {
+  font-size: 0.75rem;
+  color: var(--accent2);
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.ep-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+.ep-desc {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ep-play {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  background: var(--accent);
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.2s;
+}
+.ep-play:hover { transform: scale(1.08); }
+.ep-play:disabled { opacity: 0.35; cursor: default; transform: none; }
+.ep.soon .ep-play { background: var(--card); color: var(--muted); }
+@media (max-width: 560px) {
+  .ep { flex-wrap: wrap; }
+  .ep-thumb { width: 56px; height: 56px; }
+}
 
 /* ===== 页脚 ===== */
 .page-footer {

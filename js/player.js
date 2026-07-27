@@ -95,7 +95,9 @@
       color: color-mix(in srgb, var(--fg, #e8e6f0) 45%, transparent);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       transition: color 0.3s, font-size 0.3s;
+      cursor: pointer;
     }
+    #gm-lyric .ly-line:hover { color: var(--fg, #e8e6f0); }
     #gm-lyric .ly-line.cur {
       color: var(--accent2, #00e5c0);
       font-size: 0.95rem;
@@ -304,6 +306,15 @@
     }
     lyTrack.innerHTML = lyrics.map((l, i) => `<div class="ly-line" data-i="${i}">${l.text}</div>`).join('');
   }
+
+  // 点击歌词跳转进度
+  lyTrack.addEventListener('click', (e) => {
+    const line = e.target.closest('.ly-line');
+    if (!line || !audio.duration) return;
+    audio.currentTime = lyrics[Number(line.dataset.i)].t;
+    lastLyricIdx = -1;
+    syncLyric();
+  });
 
   async function loadLyrics(track) {
     lyrics = [];
