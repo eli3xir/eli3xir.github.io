@@ -38,7 +38,7 @@
     /* 歌单 */
     #gm-player .gm-list-wrap { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; border-top: 1px solid transparent; }
     #gm-player.list-open .gm-list-wrap { max-height: 260px; border-top-color: color-mix(in srgb, var(--fg, #e8e6f0) 12%, transparent); }
-    #gm-player .gm-list { max-height: 260px; overflow-y: auto; scrollbar-width: thin; padding: 6px 0; }
+    #gm-player .gm-list { max-height: 260px; overflow-y: auto; scrollbar-width: thin; padding: 6px 0; overscroll-behavior: contain; }
     #gm-player .gm-track {
       display: flex; align-items: baseline; gap: 8px;
       padding: 7px 14px; cursor: pointer; font-size: 0.8rem;
@@ -152,6 +152,9 @@
   document.body.appendChild(lyricEl);
 
   const $ = (s) => el.querySelector(s);
+  // 阻止滚轮冒泡（否则主页 Lenis 会抢走滚动，歌单滚不动）
+  el.addEventListener('wheel', (e) => e.stopPropagation(), { passive: true });
+  lyricEl.addEventListener('wheel', (e) => e.stopPropagation(), { passive: true });
   const audio = new Audio();
   audio.preload = 'none';
 
