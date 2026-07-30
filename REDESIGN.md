@@ -12,12 +12,14 @@
 
 ## 建模工作流（已验证）
 
-首个试探案例：壁灯建模（参考图 `studio/references/wall-lamp-photo.png`）。
+首个试探案例：壁灯建模。
 
-- **管线**：Three.js 程序化建模（`studio/lamp.html`）→ Playwright 截图迭代外观 → 浏览器内 GLTFExporter 导出 `.glb` → `studio/viewer.html` 回读验证
+- **管线**：Three.js 程序化建模 → Playwright 截图迭代外观 → 浏览器内 GLTFExporter 导出 `.glb` → 回读验证
+- **工具**：已拆分为独立仓库 **model-studio**（MIT 协议，本地 `D:\model-studio`），本仓库只消费导出的资产
 - **产出**：`assets/models/wall-lamp.glb`（725KB，含透射玻璃、实体气泡、黄铜 PBR 材质、点光源）
+- **待改进**：灯管内气泡可见度、发光效果（在 model-studio 仓库迭代后重新导出替换）
 - **结论**：全流程无需安装专业软件；后续更精细的模型可引入 Blender 无界面脚本（`blender --background --python`）
-- **方向**：网站各板块将逐步做建模化改造，3D 资产统一放 `assets/models/`，建模工具统一放 `studio/`
+- **方向**：网站各板块将逐步做建模化改造，3D 资产统一放 `assets/models/`
 
 ## 待补充
 
