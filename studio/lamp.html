@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Model Studio — Wall Lamp</title>
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#0b0b0d}
+  #app{position:fixed;inset:0}
+  #hud{position:fixed;left:12px;top:12px;color:#aaa;font:12px/1.6 monospace;user-select:none}
+  #hud button{margin-right:6px;background:#222;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 10px;cursor:pointer}
+  #hud button:hover{background:#333}
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "/vendor/three/three.module.min.js",
+    "three/addons/": "https://unpkg.com/three@0.185.1/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="app"></div>
+<div id="hud">
+  <button data-shot="hero">hero</button>
+  <button data-shot="front">front</button>
+  <button data-shot="side">side</button>
+  <button data-shot="closeup">closeup</button>
+  <button id="btn-export">export .glb</button>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+/* ---------- renderer / scene ---------- */
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+document.getElementById('app').appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0b0b0d);
+
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.55;
+
+const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.1, 200);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+/* ---------- procedural textures ---------- */
+function bubbleBumpTexture(size = 1024, count = 500) {
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const g = c.getContext('2d');
+  g.fillStyle = '#808080';
+  g.fillRect(0, 0, size, size);
+  for (let i = 0; i < count; i++) {
+    const x = Math.random() * size, y = Math.random() * size;
+    const r = 4 + Math.random() * 22;
+    const grad = g.createRadialGradient(x, y, 0, x, y, r);
+    const up = Math.random() > 0.4;
+    grad.addColorStop(0, up ? '#d8d8d8' : '#383838');
+    grad.addColorStop(0.55, '#808080');
+    grad.addColorStop(1, 'rgba(128,128,128,0)');
+    g.fillStyle = grad;
+    g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(2, 1);
+  return tex;
+}
+
+function plasterTexture(size = 1024) {
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const g = c.getContext('2d');
+  g.fillStyle = '#63615b';
+  g.fillRect(0, 0, size, size);
+  for (let i = 0; i < 26000; i++) {
+    const v = 128 + (Math.random() - 0.5) * 36;
+    g.fillStyle = `rgba(${v},${v},${v - 4},0.05)`;
+    g.fillRect(Math.random() * size, Math.random() * size, 2, 2);
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(2, 2);
+  return tex;
+}
+
+/* ---------- materials ---------- */
+const brass = new THREE.MeshPhysicalMaterial({
+  color: 0xc9963c, metalness: 1.0, roughness: 0.28,
+  clearcoat: 0.4, clearcoatRoughness: 0.25,
+});
+const blackBody = new THREE.MeshStandardMaterial({
+  color: 0x0e0e10, metalness: 0.4, roughness: 0.55,
+});
+const glass = new THREE.MeshPhysicalMaterial({
+  color: 0xffffff, metalness: 0, roughness: 0.16,
+  transmission: 1.0, thickness: 1.1, ior: 1.5,
+  clearcoat: 0.35, clearcoatRoughness: 0.25,
+  attenuationColor: new THREE.Color(0xfff2dd), attenuationDistance: 8,
+});
+const glowCore = new THREE.MeshBasicMaterial({ color: 0xffcf96 });
+
+/* ---------- lamp model ---------- */
+const lamp = new THREE.Group();
+lamp.name = 'wall-lamp';
+
+const DIM = {
+  canopyR: 2.6, canopyDepth: 1.4,
+  bodyR: 1.5, bodyHalf: 2.4,
+  collarR: 1.66, collarH: 1.05,
+  glassR: 1.15, glassLen: 6.2,
+  coreR: 0.5,
+};
+
+function lathe(points, seg = 96) {
+  return new THREE.LatheGeometry(points.map(p => new THREE.Vector2(p[0], p[1])), seg);
+}
+
+// wall canopy: domed disc, axis along Z (rotate later)
+const canopyGeo = lathe([
+  [0.0, -DIM.canopyDepth], [DIM.canopyR * 0.92, -DIM.canopyDepth],
+  [DIM.canopyR, -DIM.canopyDepth * 0.55], [DIM.canopyR * 0.98, -DIM.canopyDepth * 0.15],
+  [DIM.canopyR * 0.75, 0.35], [DIM.canopyR * 0.4, 0.62], [0.0, 0.7],
+]);
+const canopy = new THREE.Mesh(canopyGeo, brass);
+canopy.rotation.x = Math.PI / 2; // lathe Y-axis -> Z-axis
+canopy.position.z = 0;
+canopy.castShadow = canopy.receiveShadow = true;
+lamp.add(canopy);
+
+// small toggle switch on canopy lower-right
+const swBase = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.26, 0.35, 24), brass);
+swBase.rotation.x = Math.PI / 2;
+swBase.position.set(1.15, -1.7, 0.55);
+const swKnob = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.5, 16), brass);
+swKnob.rotation.set(Math.PI / 2 - 0.5, 0, 0.3);
+swKnob.position.set(1.18, -1.62, 0.85);
+lamp.add(swBase, swKnob);
+
+// central black body
+const body = new THREE.Mesh(
+  new THREE.CylinderGeometry(DIM.bodyR, DIM.bodyR, DIM.bodyHalf * 2, 64), blackBody);
+body.position.z = DIM.canopyDepth * 0.55 + 0.2;
+body.castShadow = true;
+lamp.add(body);
+
+// brass collars + glass tubes + glow cores
+const collarY = DIM.bodyHalf + DIM.collarH / 2 - 0.06;
+const glassY = DIM.bodyHalf + DIM.collarH + DIM.glassLen / 2 - 0.12;
+for (const s of [1, -1]) {
+  const collar = new THREE.Mesh(
+    new THREE.CylinderGeometry(DIM.collarR, DIM.collarR, DIM.collarH, 64), brass);
+  collar.position.set(0, s * collarY, body.position.z);
+  collar.castShadow = true;
+  lamp.add(collar);
+
+  // glass tube: displaced surface like hand-blown seedy/rock glass
+  const r = DIM.glassR, L = DIM.glassLen, f = 0.28;
+  const profile = [[0, -L / 2], [r * 0.82, -L / 2], [r, -L / 2 + f]];
+  const STEPS = 48;
+  for (let i = 1; i < STEPS; i++)
+    profile.push([r, -L / 2 + f + (L - 2 * f) * (i / STEPS)]);
+  profile.push([r, L / 2 - f], [r * 0.82, L / 2], [0, L / 2]);
+  const glassGeo = lathe(profile, 128);
+  // radial noise displacement -> chunky bumpy silhouette
+  const pos = glassGeo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+    const rad = Math.hypot(x, z);
+    if (rad < r * 0.5) continue; // skip end caps
+    const th = Math.atan2(z, x);
+    const n =
+      Math.sin(th * 5 + y * 2.1) * 0.35 +
+      Math.sin(th * 11 - y * 3.7 + 1.7) * 0.25 +
+      Math.sin(th * 23 + y * 8.3 + 4.1) * 0.18 +
+      Math.sin(y * 14.7 + th * 3) * 0.22;
+    const k = 1 + n * 0.075;
+    pos.setX(i, x * k);
+    pos.setZ(i, z * k);
+  }
+  glassGeo.computeVertexNormals();
+  const tube = new THREE.Mesh(glassGeo, glass);
+  tube.position.set(0, s * glassY, body.position.z);
+  lamp.add(tube);
+
+  // inner warm diffuser core
+  const core = new THREE.Mesh(
+    new THREE.CylinderGeometry(DIM.coreR, DIM.coreR, L - 0.5, 32), glowCore);
+  core.position.copy(tube.position);
+  lamp.add(core);
+
+  // real air bubbles suspended in the glass (annulus between core and shell)
+  const bubbleGeo = new THREE.SphereGeometry(1, 10, 8);
+  const bubbleMat = new THREE.MeshPhysicalMaterial({
+    color: 0xfff8ea, roughness: 0.05, metalness: 0,
+    transmission: 0.9, ior: 1.0, thickness: 0.05,
+    envMapIntensity: 2.2,
+  });
+  const N = 130;
+  const bubbles = new THREE.InstancedMesh(bubbleGeo, bubbleMat, N);
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion(),
+        v = new THREE.Vector3(), sc = new THREE.Vector3();
+  for (let i = 0; i < N; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const rad = DIM.coreR + 0.12 + Math.random() * (DIM.glassR - DIM.coreR - 0.3);
+    const br = 0.035 + Math.random() * 0.13;
+    v.set(Math.cos(ang) * rad, (Math.random() - 0.5) * (L - 0.7), Math.sin(ang) * rad);
+    sc.setScalar(br);
+    m.compose(v, q, sc);
+    bubbles.setMatrixAt(i, m);
+  }
+  bubbles.position.copy(tube.position);
+  lamp.add(bubbles);
+
+  // real light source inside each tube
+  const pt = new THREE.PointLight(0xffc98a, 30, 42, 2);
+  pt.position.copy(tube.position);
+  pt.castShadow = false;
+  lamp.add(pt);
+}
+
+scene.add(lamp);
+
+/* ---------- environment: plaster wall ---------- */
+const wall = new THREE.Mesh(
+  new THREE.PlaneGeometry(80, 60),
+  new THREE.MeshStandardMaterial({ map: plasterTexture(), roughness: 0.95, metalness: 0 }));
+wall.position.z = -DIM.canopyDepth + 0.05;
+wall.receiveShadow = true;
+scene.add(wall);
+
+scene.add(new THREE.HemisphereLight(0x9aa3b5, 0x1a1a1c, 0.18));
+
+/* ---------- camera shots ---------- */
+const SHOTS = {
+  hero:    { pos: [14, 4, 30],   tgt: [0, 0, 1] },
+  front:   { pos: [0, 0.5, 40],  tgt: [0, 0, 1] },
+  side:    { pos: [28, 2, 9],    tgt: [0, 0, 1] },
+  closeup: { pos: [6, 6, 11],    tgt: [0, 4.5, 1] },
+};
+function applyShot(name) {
+  const s = SHOTS[name] || SHOTS.hero;
+  camera.position.set(...s.pos);
+  controls.target.set(...s.tgt);
+  controls.update();
+}
+document.querySelectorAll('#hud [data-shot]').forEach(b =>
+  b.addEventListener('click', () => applyShot(b.dataset.shot)));
+applyShot(new URLSearchParams(location.search).get('shot') || 'hero');
+
+/* ---------- GLB export ---------- */
+window.__exportGLB = () => new Promise((resolve, reject) => {
+  new GLTFExporter().parse(lamp,
+    res => {
+      const bytes = new Uint8Array(res);
+      let bin = '';
+      for (let i = 0; i < bytes.length; i += 8192)
+        bin += String.fromCharCode(...bytes.subarray(i, i + 8192));
+      resolve(btoa(bin));
+    },
+    reject,
+    { binary: true });
+});
+document.getElementById('btn-export').addEventListener('click', async () => {
+  const b64 = await window.__exportGLB();
+  const a = document.createElement('a');
+  a.href = 'data:model/gltf-binary;base64,' + b64;
+  a.download = 'wall-lamp.glb';
+  a.click();
+});
+
+/* ---------- loop ---------- */
+window.__ready = false;
+renderer.setAnimationLoop(() => {
+  controls.update();
+  renderer.render(scene, camera);
+  window.__ready = true;
+});
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>
