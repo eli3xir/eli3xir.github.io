@@ -1,131 +1,260 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>eli3xir — Creative Developer</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' font-weight='bold' text-anchor='middle' fill='%237c5cff'%3Ee3%3C/text%3E%3C/svg%3E">
-  <meta name="description" content="eli3xir 的个人作品集：代码、图形与交互。">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
-  <script type="importmap">
-    { "imports": { "three": "./vendor/three/three.module.min.js" } }
-  </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>姜山 · 房间</title>
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#0d0b09}
+  #app{position:fixed;inset:0}
+  #tip{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
+    color:#e8dcc8;font:14px/1.6 "Microsoft YaHei",sans-serif;background:rgba(20,16,12,.72);
+    padding:8px 20px;border-radius:20px;pointer-events:none;transition:opacity .3s}
+  #label{position:fixed;color:#ffe9c4;font:15px "Microsoft YaHei",sans-serif;
+    background:rgba(30,22,14,.85);padding:5px 14px;border-radius:6px;pointer-events:none;
+    display:none;transform:translate(-50%,-140%);white-space:nowrap;z-index:10}
+  .nav-btn{position:fixed;background:rgba(30,22,14,.85);color:#ffe9c4;
+    border:1px solid #6b5335;border-radius:8px;padding:8px 18px;cursor:pointer;
+    font:14px "Microsoft YaHei",sans-serif;display:none;z-index:10}
+  .nav-btn:hover{background:rgba(60,45,28,.9)}
+  #back{left:24px;top:24px}
+  #enter{left:24px;top:76px;border-color:#c9963c;color:#ffd9a0}
+  #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+    color:#e8dcc8;font:16px "Microsoft YaHei",sans-serif;background:#0d0b09;z-index:99;
+    transition:opacity .6s}
+  #fade{position:fixed;inset:0;background:#0d0b09;opacity:0;pointer-events:none;
+    transition:opacity .5s;z-index:50}
+  #brand{position:fixed;right:26px;top:24px;color:rgba(232,220,200,.55);
+    font:13px/1.5 "Microsoft YaHei",sans-serif;text-align:right;pointer-events:none;z-index:10}
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "/vendor/three/three.module.min.js",
+    "three/addons/": "https://unpkg.com/three@0.185.1/examples/jsm/"
+  }
+}
+</script>
 </head>
 <body>
-  <!-- 加载屏 -->
-  <div id="loader" aria-hidden="true">
-    <div class="loader-inner">
-      <span class="loader-name">eli3xir</span>
-      <span class="loader-count">0%</span>
-    </div>
-  </div>
+<div id="app"></div>
+<div id="loading">正在进入房间…</div>
+<div id="tip">移动鼠标环视房间，点击物件进入板块</div>
+<div id="label"></div>
+<button id="back" class="nav-btn">← 返回房间</button>
+<button id="enter" class="nav-btn">进入 →</button>
+<div id="brand">姜山 eli3xir<br>3D Room Homepage</div>
+<div id="fade"></div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-  <!-- 自定义光标（仅精确指针设备启用） -->
-  <div class="cursor-dot" aria-hidden="true"></div>
-  <div class="cursor-ring" aria-hidden="true"></div>
+/* ---------- renderer / scene ---------- */
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+document.getElementById('app').appendChild(renderer.domElement);
 
-  <!-- WebGL 背景 -->
-  <canvas id="gl" aria-hidden="true"></canvas>
-  <!-- 皮肤中心 -->
-  <button id="theme-btn" data-hover aria-label="皮肤中心">
-    <span class="theme-label">·</span>
-  </button>
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0d0b09);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.06;
 
-  <!-- 噪点纹理层 -->
-  <div class="grain" aria-hidden="true"></div>
+const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.05, 60);
+scene.add(new THREE.HemisphereLight(0x8a7a64, 0x14100c, 0.12));
 
-  <header class="site-nav">
-    <a class="nav-logo" href="/" data-hover>eli3xir<span class="accent">.</span></a>
-    <nav class="nav-links">
-      <a href="/blog/" data-hover>文章</a>
-      <a href="/radio/" data-hover>电台</a>
-      <a href="/lab/" data-hover>实验</a>
-      <a href="/projects/" data-hover>项目</a>
-      <a href="/about/" data-hover>关于</a>
-    </nav>
-  </header>
+/* ---------- modules (zone-based picking; imported meshes carry no names) ---------- */
+const MODULES = {
+  lab:      { name: '实验室', url: 'lab/',    zone: [4.7, 7.05, 0.25, 1.6, -1.2, 0.15],
+              cam: [5.85, 1.4, -2.8], tgt: [5.85, 0.95, -0.5] },
+  articles: { name: '文章',   url: 'blog/',   zone: [3.0, 4.7, 0.25, 1.4, -1.2, 0.15],
+              cam: [3.85, 1.4, -2.8], tgt: [3.85, 0.9, -0.5] },
+  radio:    { name: '电台',   url: 'radio/',  zone: [1.9, 3.0, 0.25, 2.2, -1.2, 0.15],
+              cam: [2.45, 1.5, -2.4], tgt: [2.45, 1.15, -0.45] },
+  about:    { name: '关于',   url: 'about/',  zone: [0.3, 2.0, 1.35, 2.55, -0.4, 0.15],
+              cam: [1.15, 1.9, -2.4], tgt: [1.15, 1.9, -0.05] },
+  skin:     { name: '皮肤',   url: null,      zone: [0.55, 1.85, 0.55, 1.35, -0.4, 0.15],
+              cam: [1.2, 1.25, -2.2], tgt: [1.2, 1.05, -0.06] },
+};
+const ZONE_ORDER = ['about', 'skin', 'radio', 'articles', 'lab'];
+function moduleAt(point) {
+  for (const id of ZONE_ORDER) {
+    const [x0, x1, y0, y1, z0, z1] = MODULES[id].zone;
+    if (point.x >= x0 && point.x <= x1 && point.y >= y0 && point.y <= y1 &&
+        point.z >= z0 && point.z <= z1) return id;
+  }
+  return null;
+}
 
-  <main id="top">
-    <!-- HERO -->
-    <section class="hero">
-      <p class="hero-kicker reveal">CREATIVE DEVELOPER · 作品集</p>
-      <h1 class="hero-title">
-        <span class="split">ELI3XIR</span>
-      </h1>
-      <p class="hero-sub">
-        <span id="typed"></span><span class="typed-caret">_</span>
-      </p>
-      <div class="hero-hint" aria-hidden="true">
-        <span>SCROLL</span>
-        <div class="hint-line"></div>
-      </div>
-    </section>
+/* ---------- load room + lightmaps ---------- */
+window.__ready = false;
+window.__error = null;
+const manager = new THREE.LoadingManager();
+const loadingEl = document.getElementById('loading');
+manager.onProgress = (url, loaded, total) => {
+  loadingEl.textContent = `正在进入房间… ${Math.round(loaded / total * 100)}%`;
+};
+manager.onLoad = () => {
+  loadingEl.style.opacity = 0;
+  setTimeout(() => loadingEl.remove(), 700);
+  window.__ready = true;
+};
+const texLoader = new THREE.TextureLoader(manager);
+const lmManifest = await fetch('assets/room/lightmaps/manifest.json').then(r => r.json()).catch(() => ({}));
+const lmMap = {};
+for (const [k, v] of Object.entries(lmManifest)) lmMap[k.replaceAll('.', '')] = v;
+const lmCache = {};
+function lightmapFor(file) {
+  if (!lmCache[file]) {
+    const t = texLoader.load('assets/room/lightmaps/' + file);
+    t.flipY = false;
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.channel = 1;
+    lmCache[file] = t;
+  }
+  return lmCache[file];
+}
+new GLTFLoader(manager).load('assets/room/room.glb', gltf => {
+  scene.add(gltf.scene);
+  const kill = [];
+  gltf.scene.traverse(o => {
+    if (o.isMesh) {
+      const entry = lmMap[o.name] || lmMap[o.name.replace(/_\d+$/, '')];
+      if (entry) {
+        o.material = o.material.clone();
+        o.material.lightMap = lightmapFor(entry.file);
+        o.material.lightMapIntensity = 1.15;
+      }
+    }
+    if (o.isLight) kill.push(o);
+  });
+  kill.forEach(o => o.removeFromParent());
+  window.__scene = scene;
+  window.__camera = camera;
+}, undefined, err => { window.__error = String(err && err.message || err); });
 
-    <!-- 最新动态 -->
-    <section id="latest" class="section latest">
-      <h2 class="section-title"><span class="split">最新动态</span></h2>
-      <ul class="post-list">
-<!--LATEST:BEGIN-->
-        <li>
-          <a class="post-item reveal" href="blog/65374.html" data-hover>
-            <span class="post-date">2021.11</span>
-            <span class="post-title">虚拟机上OpenEuler安装及配置</span>
-            <span class="post-arrow" aria-hidden="true">→</span>
-          </a>
-        </li>
-        <li>
-          <a class="post-item reveal" href="blog/24471.html" data-hover>
-            <span class="post-date">2021.11</span>
-            <span class="post-title">Linux指令温故知新</span>
-            <span class="post-arrow" aria-hidden="true">→</span>
-          </a>
-        </li>
-        <li>
-          <a class="post-item reveal" href="blog/50706.html" data-hover>
-            <span class="post-date">2021.06</span>
-            <span class="post-title">C++聊天室项目：多线程+MySQL</span>
-            <span class="post-arrow" aria-hidden="true">→</span>
-          </a>
-        </li>
-<!--LATEST:END-->
-      </ul>
-      <a class="more-link reveal" href="/blog/" data-hover>全部文章 →</a>
-    </section>
+/* ---------- 2.5D camera rig ---------- */
+const HOME = { cam: new THREE.Vector3(4, 1.62, -5.3), tgt: new THREE.Vector3(4, 1.0, -0.3) };
+const PAN_X = 1.7, PAN_Y = 0.22;
+let mouseX = 0, mouseY = 0;
+let focused = null, tween = null;
+const camPos = HOME.cam.clone(), camTgt = HOME.tgt.clone();
 
-    <!-- 更新日志 -->
-    <section id="changelog" class="section">
-      <h2 class="section-title"><span class="split">更新日志</span></h2>
-      <ul class="log-list">
-        <li class="reveal"><time>2026.07.22</time><span>站点改版：拆分文章 / 电台 / 实验 / 项目 / 关于五个板块，主页瘦身</span></li>
-        <li class="reveal"><time>2026.07.22</time><span>创意实验室上线：登月 &amp; 大海航行（Three.js 实时渲染）</span></li>
-        <li class="reveal"><time>2026.07.22</time><span>皮肤中心：5 套可搜索皮肤（四季 / 星云 / 小黄人 / Low Poly / Vibe Coding）</span></li>
-        <li class="reveal"><time>2026.07.21</time><span>迁移原 Hexo 博客 39 篇文章，图床本地化，文章页浮动目录</span></li>
-        <li class="reveal"><time>2026.07.20</time><span>eli3xir.github.io 上线</span></li>
-      </ul>
-    </section>
-  </main>
+addEventListener('pointermove', e => {
+  mouseX = (e.clientX / innerWidth) * 2 - 1;
+  mouseY = (e.clientY / innerHeight) * 2 - 1;
+});
 
-  <footer class="site-footer">
-    <span>© <span id="year"></span> eli3xir</span>
-    <span class="footer-links">
-      <a href="mailto:sg2019@bupt.edu.cn" data-hover>sg2019@bupt.edu.cn</a> ·
-      <a href="https://github.com/eli3xir" target="_blank" rel="noopener" data-hover>GitHub</a> ·
-      <a href="https://gitee.com/buptsg2019" target="_blank" rel="noopener" data-hover>Gitee</a>
-    </span>
-  </footer>
+function flyTo(cam, tgt, done) {
+  tween = {
+    t: 0, dur: 1.25,
+    fromCam: camPos.clone(), fromTgt: camTgt.clone(),
+    toCam: new THREE.Vector3(...cam), toTgt: new THREE.Vector3(...tgt),
+    done,
+  };
+}
+const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-  <!-- 全局音乐播放器（自研，跨页续播） -->
+/* ---------- picking & navigation ---------- */
+const ray = new THREE.Raycaster();
+const ptr = new THREE.Vector2();
+const labelEl = document.getElementById('label');
+const tipEl = document.getElementById('tip');
+const backEl = document.getElementById('back');
+const enterEl = document.getElementById('enter');
+const fadeEl = document.getElementById('fade');
+let hovered = null, downAt = null;
 
-  <script src="vendor/gsap/gsap.min.js"></script>
-  <script src="vendor/gsap/ScrollTrigger.min.js"></script>
-  <script src="vendor/lenis/lenis.min.js"></script>
-  <script src="js/player.js"></script>
-  <script src="js/click-fx.js"></script>
-  <script src="js/page-transition.js"></script>
-  <script type="module" src="js/main.js"></script>
-  <script type="module" src="js/skins.js"></script>
+function pick(e) {
+  ptr.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  ray.setFromCamera(ptr, camera);
+  const hits = ray.intersectObjects(scene.children, true);
+  for (const h of hits) {
+    const id = moduleAt(h.point);
+    if (id) return id;
+  }
+  return null;
+}
+
+addEventListener('pointermove', e => {
+  if (focused || !window.__ready) return;
+  hovered = pick(e);
+  if (hovered) {
+    labelEl.textContent = MODULES[hovered].name;
+    labelEl.style.display = 'block';
+    labelEl.style.left = e.clientX + 'px';
+    labelEl.style.top = e.clientY + 'px';
+    document.body.style.cursor = 'pointer';
+  } else {
+    labelEl.style.display = 'none';
+    document.body.style.cursor = 'default';
+  }
+});
+
+addEventListener('pointerdown', e => downAt = [e.clientX, e.clientY]);
+addEventListener('pointerup', e => {
+  if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 6) return;
+  if (focused || !window.__ready) return;
+  const id = pick(e);
+  if (id) focusModule(id);
+});
+
+function focusModule(id) {
+  focused = id;
+  labelEl.style.display = 'none';
+  tipEl.style.opacity = 0;
+  backEl.style.display = 'block';
+  if (MODULES[id].url) enterEl.style.display = 'block';
+  const m = MODULES[id];
+  flyTo(m.cam, m.tgt);
+}
+function unfocus() {
+  focused = null;
+  tipEl.style.opacity = 1;
+  backEl.style.display = 'none';
+  enterEl.style.display = 'none';
+  flyTo(HOME.cam.toArray(), HOME.tgt.toArray());
+}
+backEl.addEventListener('click', unfocus);
+enterEl.addEventListener('click', () => {
+  const url = focused && MODULES[focused].url;
+  if (!url) return;
+  fadeEl.style.opacity = 1;
+  setTimeout(() => location.href = url, 520);
+});
+addEventListener('keydown', e => { if (e.key === 'Escape' && focused) unfocus(); });
+
+/* ---------- loop ---------- */
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  if (tween) {
+    tween.t += dt / tween.dur;
+    const k = ease(Math.min(tween.t, 1));
+    camPos.lerpVectors(tween.fromCam, tween.toCam, k);
+    camTgt.lerpVectors(tween.fromTgt, tween.toTgt, k);
+    if (tween.t >= 1) { const d = tween.done; tween = null; d && d(); }
+  } else if (!focused) {
+    const px = HOME.cam.x + mouseX * PAN_X;
+    const py = HOME.cam.y - mouseY * PAN_Y;
+    camPos.x += (px - camPos.x) * 0.06;
+    camPos.y += (py - camPos.y) * 0.06;
+    camTgt.x += ((HOME.tgt.x + mouseX * PAN_X * 1.25) - camTgt.x) * 0.06;
+    camTgt.y += ((HOME.tgt.y - mouseY * 0.3) - camTgt.y) * 0.06;
+  }
+  camera.position.copy(camPos);
+  camera.lookAt(camTgt);
+  renderer.render(scene, camera);
+});
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
 </body>
 </html>
