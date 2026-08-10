@@ -59,6 +59,13 @@
 
 墙宽 8m。从左到右：**实验桌**（上方挂壁灯）→ **书桌**（桌上有绿植，上方挂壁灯）→ **留声机** → 右侧墙上高处**便签墙**、其下**挂画（皮肤）**；地毯在中间家具前方地面。
 
+## 实施进展（2026-08-07）
+
+- **已上线（model-studio）**：建模管线、房间构建/烘焙/导出脚本（`blender/`）、交互 demo（`room.html`）
+- **网站 redesign 分支**：新首页 = 3D 房间（烘焙光照 + 2.5D 相机 + 空间区域拾取 + 板块运镜导航）；皮肤中心 `skin/`（换肤 = 房间色调 tint，localStorage 持久化）；旧板块页面（blog/lab/radio/about）暂时保留作为落地页
+- **烘焙管线**：Cycles 192 采样 GPU → 每物件 lightmap → JPEG 1024 优化（37MB→3.7MB）→ GLB 导出（`blender/bake_lightmap.py` / `export_room.py` / `tools/optimize_lightmaps.py`）
+- 已知遗留：旧首页的皮肤/播放器/转场系统未迁移（待新版逐步重建或舍弃）
+
 ## 待补充
 
 - [ ] 新版的技术栈选型

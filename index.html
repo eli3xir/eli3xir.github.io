@@ -77,7 +77,7 @@ const MODULES = {
               cam: [2.45, 1.5, -2.4], tgt: [2.45, 1.15, -0.45] },
   about:    { name: '关于',   url: 'about/',  zone: [0.3, 2.0, 1.35, 2.55, -0.4, 0.15],
               cam: [1.15, 1.9, -2.4], tgt: [1.15, 1.9, -0.05] },
-  skin:     { name: '皮肤',   url: null,      zone: [0.55, 1.85, 0.55, 1.35, -0.4, 0.15],
+  skin:     { name: '皮肤',   url: 'skin/',  zone: [0.55, 1.85, 0.55, 1.35, -0.4, 0.15],
               cam: [1.2, 1.25, -2.2], tgt: [1.2, 1.05, -0.06] },
 };
 const ZONE_ORDER = ['about', 'skin', 'radio', 'articles', 'lab'];
@@ -89,6 +89,36 @@ function moduleAt(point) {
   }
   return null;
 }
+
+/* ---------- skins (tint presets, shared with skin/ page) ---------- */
+const SKINS = {
+  default: { name: '暖黄书房', colors: null }, // baked original
+  brick:   { name: '砖红复古', colors: {
+    wall_plaster: [0.72, 0.48, 0.38], floor_wood: [0.45, 0.26, 0.16],
+    ceiling: [0.78, 0.68, 0.60], trim: [0.50, 0.38, 0.32],
+    rug: [0.40, 0.18, 0.14], rug_inner: [0.58, 0.32, 0.24], cork: [0.60, 0.40, 0.24] } },
+  forest:  { name: '墨绿工作室', colors: {
+    wall_plaster: [0.42, 0.52, 0.42], floor_wood: [0.38, 0.26, 0.16],
+    ceiling: [0.70, 0.72, 0.66], trim: [0.40, 0.44, 0.38],
+    rug: [0.30, 0.34, 0.22], rug_inner: [0.44, 0.48, 0.32], cork: [0.52, 0.42, 0.24] } },
+  ocean:   { name: '灰蓝夜晚', colors: {
+    wall_plaster: [0.48, 0.56, 0.68], floor_wood: [0.30, 0.24, 0.20],
+    ceiling: [0.62, 0.66, 0.74], trim: [0.38, 0.42, 0.50],
+    rug: [0.22, 0.26, 0.36], rug_inner: [0.34, 0.40, 0.52], cork: [0.50, 0.42, 0.30] } },
+  cream:   { name: '米白极简', colors: {
+    wall_plaster: [0.88, 0.85, 0.78], floor_wood: [0.58, 0.46, 0.32],
+    ceiling: [0.92, 0.90, 0.86], trim: [0.68, 0.62, 0.54],
+    rug: [0.62, 0.52, 0.44], rug_inner: [0.74, 0.64, 0.54], cork: [0.68, 0.52, 0.34] } },
+};
+function applySkin(id) {
+  const skin = SKINS[id] || SKINS.default;
+  if (!skin.colors || !window.__scene) return;
+  window.__scene.traverse(o => {
+    if (o.isMesh && o.material && skin.colors[o.material.name])
+      o.material.color.setRGB(...skin.colors[o.material.name]);
+  });
+}
+const currentSkin = localStorage.getItem('room-skin') || 'default';
 
 /* ---------- load room + lightmaps ---------- */
 window.__ready = false;
@@ -135,6 +165,7 @@ new GLTFLoader(manager).load('assets/room/room.glb', gltf => {
   kill.forEach(o => o.removeFromParent());
   window.__scene = scene;
   window.__camera = camera;
+  applySkin(currentSkin);
 }, undefined, err => { window.__error = String(err && err.message || err); });
 
 /* ---------- 2.5D camera rig ---------- */

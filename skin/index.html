@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>皮肤中心 · 姜山</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; background: #0d0b09; color: #e8dcc8;
+    font: 15px/1.7 "Microsoft YaHei", sans-serif; padding: 48px 24px; }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 26px; font-weight: normal; margin: 0 0 6px; }
+  .sub { color: #9a8a72; font-size: 13px; margin-bottom: 36px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; }
+  .card { background: rgba(30, 22, 14, .6); border: 1px solid #4a3a28; border-radius: 12px;
+    padding: 18px; cursor: pointer; transition: transform .2s, border-color .2s; }
+  .card:hover { transform: translateY(-3px); border-color: #c9963c; }
+  .card.active { border-color: #c9963c; box-shadow: 0 0 0 2px rgba(201, 150, 60, .35); }
+  .swatches { display: flex; height: 64px; border-radius: 8px; overflow: hidden; margin-bottom: 12px; }
+  .swatches span { flex: 1; }
+  .name { font-size: 16px; }
+  .desc { color: #9a8a72; font-size: 12px; margin-top: 4px; }
+  #toast { position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%);
+    background: rgba(30, 22, 14, .9); border: 1px solid #c9963c; color: #ffd9a0;
+    padding: 10px 24px; border-radius: 20px; opacity: 0; transition: opacity .3s; pointer-events: none; }
+  .back { display: inline-block; margin-top: 36px; color: #ffd9a0; text-decoration: none;
+    border: 1px solid #6b5335; padding: 8px 20px; border-radius: 8px; }
+  .back:hover { background: rgba(60, 45, 28, .9); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>皮肤中心</h1>
+  <div class="sub">换皮肤 = 换房间的墙面与装潢色调，选择后立即生效并记住</div>
+  <div class="grid" id="grid"></div>
+  <a class="back" href="../">← 回到房间</a>
+</div>
+<div id="toast"></div>
+<script>
+const SKINS = {
+  default: { name: '暖黄书房', desc: '烘焙原色，夜晚的暖黄灯光',
+    sw: ['#b8ad9c', '#6b4d2e', '#7a3b28', '#9c6b40'] },
+  brick:   { name: '砖红复古', desc: '红砖墙与深色木地板，老咖啡馆',
+    sw: ['#b87a61', '#734229', '#662e23', '#93523d'] },
+  forest:  { name: '墨绿工作室', desc: '墨绿墙面，安静的工作室气质',
+    sw: ['#6b856b', '#614229', '#4d5740', '#856b3d'] },
+  ocean:   { name: '灰蓝夜晚', desc: '灰蓝冷调，深夜模式',
+    sw: ['#7a8fad', '#4d3d33', '#384252', '#5c6b85'] },
+  cream:   { name: '米白极简', desc: '米白墙面浅色木，清爽极简',
+    sw: ['#e0d9c7', '#947552', '#9e8570', '#ad8557'] },
+};
+const grid = document.getElementById('grid');
+const toast = document.getElementById('toast');
+const cur = localStorage.getItem('room-skin') || 'default';
+for (const [id, s] of Object.entries(SKINS)) {
+  const card = document.createElement('div');
+  card.className = 'card' + (id === cur ? ' active' : '');
+  card.innerHTML = `
+    <div class="swatches">${s.sw.map(c => `<span style="background:${c}"></span>`).join('')}</div>
+    <div class="name">${s.name}</div>
+    <div class="desc">${s.desc}</div>`;
+  card.onclick = () => {
+    localStorage.setItem('room-skin', id);
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    toast.textContent = `已应用「${s.name}」，回到房间查看效果`;
+    toast.style.opacity = 1;
+    setTimeout(() => toast.style.opacity = 0, 2200);
+  };
+  grid.appendChild(card);
+}
+</script>
+</body>
+</html>
