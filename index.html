@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>姜山 · 房间</title>
+<title>eli3xir · 房间</title>
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:#0d0b09}
   #app{position:fixed;inset:0}
@@ -43,7 +43,7 @@
 <div id="label"></div>
 <button id="back" class="nav-btn">← 返回房间</button>
 <button id="enter" class="nav-btn">进入 →</button>
-<div id="brand">姜山 eli3xir<br>3D Room Homepage</div>
+<div id="brand">eli3xir<br>3D Room Homepage</div>
 <div id="fade"></div>
 <script type="module">
 import * as THREE from 'three';
@@ -171,11 +171,12 @@ new GLTFLoader(manager).load('assets/room/room.glb', gltf => {
 /* ---------- 2.5D camera rig ---------- */
 const HOME = { cam: new THREE.Vector3(4, 1.62, -5.3), tgt: new THREE.Vector3(4, 1.0, -0.3) };
 const PAN_X = 1.7, PAN_Y = 0.22;
-let mouseX = 0, mouseY = 0;
+let mouseX = 0, mouseY = 0, isTouch = false;
 let focused = null, tween = null;
 const camPos = HOME.cam.clone(), camTgt = HOME.tgt.clone();
 
 addEventListener('pointermove', e => {
+  isTouch = e.pointerType === 'touch';
   mouseX = (e.clientX / innerWidth) * 2 - 1;
   mouseY = (e.clientY / innerHeight) * 2 - 1;
 });
@@ -270,11 +271,13 @@ renderer.setAnimationLoop(() => {
     camTgt.lerpVectors(tween.fromTgt, tween.toTgt, k);
     if (tween.t >= 1) { const d = tween.done; tween = null; d && d(); }
   } else if (!focused) {
-    const px = HOME.cam.x + mouseX * PAN_X;
+    // desktop: view follows mouse direction; touch: natural drag (inverse)
+    const dir = isTouch ? 1 : -1;
+    const px = HOME.cam.x + dir * mouseX * PAN_X;
     const py = HOME.cam.y - mouseY * PAN_Y;
     camPos.x += (px - camPos.x) * 0.06;
     camPos.y += (py - camPos.y) * 0.06;
-    camTgt.x += ((HOME.tgt.x + mouseX * PAN_X * 1.25) - camTgt.x) * 0.06;
+    camTgt.x += ((HOME.tgt.x + dir * mouseX * PAN_X * 1.25) - camTgt.x) * 0.06;
     camTgt.y += ((HOME.tgt.y - mouseY * 0.3) - camTgt.y) * 0.06;
   }
   camera.position.copy(camPos);
