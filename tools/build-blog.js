@@ -122,6 +122,7 @@ function layout({ title, description, content, extraHead = '' }) {
   <script src="../js/click-fx.js"></script>
   <script src="../js/page-transition.js"></script>
   <script src="../js/player.js"></script>
+  <script src="../js/back-to-room.js"></script>
 </body>
 </html>`;
 }
