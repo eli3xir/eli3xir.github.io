@@ -19,6 +19,10 @@
   .nav-btn:hover{background:rgba(60,45,28,.9)}
   #back{left:24px;top:24px}
   #enter{left:24px;top:76px;border-color:#c9963c;color:#ffd9a0}
+  #disc{left:24px;top:128px}
+  #nowplaying{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
+    color:#ffd9a0;font:13px "Microsoft YaHei",sans-serif;background:rgba(20,16,12,.72);
+    padding:7px 18px;border-radius:18px;display:none;z-index:10}
   #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
     color:#e8dcc8;font:16px "Microsoft YaHei",sans-serif;background:#0d0b09;z-index:99;
     transition:opacity .6s}
@@ -43,6 +47,8 @@
 <div id="label"></div>
 <button id="back" class="nav-btn">← 返回房间</button>
 <button id="enter" class="nav-btn">进入 →</button>
+<button id="disc" class="nav-btn">⏭ 切碟</button>
+<div id="nowplaying"></div>
 <div id="brand">eli3xir<br>3D Room Homepage</div>
 <div id="fade"></div>
 <script type="module">
@@ -191,6 +197,67 @@ function flyTo(cam, tgt, done) {
 }
 const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
+/* ---------- gramophone: spinning vinyl + real audio ---------- */
+const SPIN_CENTER = new THREE.Vector3(2.39, 1.155, -0.45);
+let spinPivot = null, spinning = false;
+const deck = { playlist: null, idx: 0, el: new Audio(), fetching: false };
+deck.el.preload = 'none';
+
+const discEl = document.getElementById('disc');
+const npEl = document.getElementById('nowplaying');
+
+function attachRecord() {
+  if (spinPivot || !window.__scene) return;
+  spinPivot = new THREE.Group();
+  spinPivot.position.copy(SPIN_CENTER);
+  window.__scene.add(spinPivot);
+  const box = new THREE.Box3(), c = new THREE.Vector3();
+  const parts = [];
+  window.__scene.traverse(o => {
+    if (o.isMesh) {
+      box.setFromObject(o);
+      box.getCenter(c);
+      if (c.distanceTo(SPIN_CENTER) < 0.09) parts.push(o);
+    }
+  });
+  parts.forEach(o => spinPivot.attach(o));
+}
+
+async function fetchPlaylist() {
+  if (deck.playlist || deck.fetching) return;
+  deck.fetching = true;
+  try {
+    const r = await fetch('https://api.i-meto.com/meting/api?server=netease&type=playlist&id=6665470324');
+    deck.playlist = await r.json();
+  } catch (e) { deck.playlist = null; }
+  deck.fetching = false;
+}
+
+function playDisc(i) {
+  if (!deck.playlist || !deck.playlist.length) return;
+  deck.idx = ((i % deck.playlist.length) + deck.playlist.length) % deck.playlist.length;
+  const t = deck.playlist[deck.idx];
+  deck.el.src = t.url;
+  deck.el.play().catch(() => { npEl.textContent = '点击任意处开始播放'; });
+  npEl.textContent = `♪ ${t.title} — ${t.author}`;
+  npEl.style.display = 'block';
+}
+
+function startGramophone() {
+  attachRecord();
+  spinning = true;
+  discEl.style.display = 'block';
+  if (deck.playlist) playDisc(deck.idx);
+  else fetchPlaylist().then(() => playDisc(deck.idx));
+}
+function stopGramophone() {
+  spinning = false;
+  discEl.style.display = 'none';
+  npEl.style.display = 'none';
+  deck.el.pause();
+}
+discEl.addEventListener('click', () => playDisc(deck.idx + 1));
+
 /* ---------- picking & navigation ---------- */
 const ray = new THREE.Raycaster();
 const ptr = new THREE.Vector2();
@@ -241,10 +308,12 @@ function focusModule(id) {
   tipEl.style.opacity = 0;
   backEl.style.display = 'block';
   if (MODULES[id].url) enterEl.style.display = 'block';
+  if (id === 'radio') startGramophone();
   const m = MODULES[id];
   flyTo(m.cam, m.tgt);
 }
 function unfocus() {
+  if (focused === 'radio') stopGramophone();
   focused = null;
   tipEl.style.opacity = 1;
   backEl.style.display = 'none';
@@ -282,6 +351,7 @@ renderer.setAnimationLoop(() => {
   }
   camera.position.copy(camPos);
   camera.lookAt(camTgt);
+  if (spinning && spinPivot) spinPivot.rotation.y += dt * 2.4;
   renderer.render(scene, camera);
 });
 addEventListener('resize', () => {
