@@ -172,6 +172,7 @@ new GLTFLoader(manager).load('assets/room/room.glb', gltf => {
   window.__scene = scene;
   window.__camera = camera;
   applySkin(currentSkin);
+  buildLabFx();
 }, undefined, err => { window.__error = String(err && err.message || err); });
 
 /* ---------- 2.5D camera rig ---------- */
@@ -196,6 +197,66 @@ function flyTo(cam, tgt, done) {
   };
 }
 const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+/* ---------- lab: potion bubbles & vapor on focus ---------- */
+function makeDot() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d');
+  const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grad.addColorStop(0, 'rgba(255,255,255,1)');
+  grad.addColorStop(0.4, 'rgba(255,255,255,.7)');
+  grad.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 64, 64);
+  const t = new THREE.CanvasTexture(c);
+  return t;
+}
+const dotTex = makeDot();
+const labEmitters = [];
+function addEmitter(origin, color, count, rise, spread, size, speed) {
+  const pos = new Float32Array(count * 3);
+  const seed = new Float32Array(count * 2);
+  for (let i = 0; i < count; i++) {
+    pos[i * 3] = origin.x; pos[i * 3 + 1] = origin.y; pos[i * 3 + 2] = origin.z;
+    seed[i * 2] = Math.random(); seed[i * 2 + 1] = Math.random();
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({
+    map: dotTex, color, transparent: true, opacity: 0.85,
+    size, sizeAttenuation: true, depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const pts = new THREE.Points(geo, mat);
+  pts.visible = false;
+  scene.add(pts);
+  labEmitters.push({ pts, origin, seed, count, rise, spread, speed, t: 0 });
+}
+function buildLabFx() {
+  addEmitter(new THREE.Vector3(5.36, 1.02, -0.59), 0x51e88c, 26, 0.16, 0.045, 0.014, 0.05);  // erlenmeyer
+  addEmitter(new THREE.Vector3(5.74, 1.10, -0.44), 0xb478e8, 26, 0.15, 0.05, 0.014, 0.045);  // round flask
+  addEmitter(new THREE.Vector3(6.06, 0.98, -0.55), 0x63a4f0, 22, 0.13, 0.04, 0.013, 0.04);   // beaker
+  addEmitter(new THREE.Vector3(6.38, 1.10, -0.56), 0xe8c858, 18, 0.1, 0.05, 0.011, 0.035);   // test tubes
+  addEmitter(new THREE.Vector3(5.88, 1.10, -0.74), 0xcabfae, 16, 0.3, 0.03, 0.03, 0.06);     // lamp vapor
+}
+function updateLabFx(dt) {
+  for (const e of labEmitters) {
+    if (!e.pts.visible) continue;
+    e.t += dt;
+    const p = e.pts.geometry.attributes.position;
+    for (let i = 0; i < e.count; i++) {
+      const life = (e.t * e.speed + e.seed[i * 2]) % 1;
+      const wob = Math.sin(e.t * 3 + e.seed[i * 2 + 1] * 6.28) * e.spread * life;
+      p.setXYZ(i,
+        e.origin.x + wob + (e.seed[i * 2] - 0.5) * e.spread,
+        e.origin.y + life * e.rise,
+        e.origin.z + (e.seed[i * 2 + 1] - 0.5) * e.spread);
+    }
+    p.needsUpdate = true;
+  }
+}
+function setLabFx(on) { labEmitters.forEach(e => { e.pts.visible = on; if (on) e.t = 0; }); }
 
 /* ---------- gramophone: spinning vinyl + real audio ---------- */
 const SPIN_CENTER = new THREE.Vector3(2.39, 1.155, -0.45);
@@ -309,11 +370,13 @@ function focusModule(id) {
   backEl.style.display = 'block';
   if (MODULES[id].url) enterEl.style.display = 'block';
   if (id === 'radio') startGramophone();
+  if (id === 'lab') setLabFx(true);
   const m = MODULES[id];
   flyTo(m.cam, m.tgt);
 }
 function unfocus() {
   if (focused === 'radio') stopGramophone();
+  if (focused === 'lab') setLabFx(false);
   focused = null;
   tipEl.style.opacity = 1;
   backEl.style.display = 'none';
@@ -352,6 +415,7 @@ renderer.setAnimationLoop(() => {
   camera.position.copy(camPos);
   camera.lookAt(camTgt);
   if (spinning && spinPivot) spinPivot.rotation.y += dt * 2.4;
+  updateLabFx(dt);
   renderer.render(scene, camera);
 });
 addEventListener('resize', () => {
