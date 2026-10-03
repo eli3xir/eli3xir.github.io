@@ -101,7 +101,7 @@ function layout({ title, description, content, extraHead = '' }) {
   <meta name="description" content="${esc(description || title)}">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0f'/%3E%3Ctext x='16' y='23' font-size='18' font-weight='bold' text-anchor='middle' fill='%237c5cff'%3Ee3%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="../css/blog.css">
-  ${extraHead}
+${extraHead}
   <link rel="stylesheet" href="/css/experience.css" data-experience-style>
   <script type="importmap">{"imports":{"three":"/vendor/three/three.module.min.js","three/addons/":"/vendor/three/addons/"}}</script>
 </head>
@@ -116,7 +116,7 @@ function layout({ title, description, content, extraHead = '' }) {
       <a href="/about/">关于</a>
     </nav>
   </header>
-  ${content}
+${content.trim()}
   <footer class="blog-footer">© ${new Date().getFullYear()} eli3xir · 共 ${posts.length} 篇文章</footer>
   <script type="module" src="/js/experience/entry.js"></script>
 </body>
