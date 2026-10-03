@@ -68,7 +68,11 @@ export function enhanceContent(main,route,{signal,score,world,announce}) {
       announce(`找到 ${count} 篇文章`);
     };
     search.addEventListener('input',apply,options);
-    buttons.forEach(button=>button.addEventListener('click',()=>{tag=tag===button.dataset.tag?null:button.dataset.tag;buttons.forEach(b=>{b.classList.toggle('active',b.dataset.tag===tag);b.setAttribute('aria-pressed',String(b.dataset.tag===tag));});apply();score.cue('hover');},options));
+    buttons.forEach(button=>button.addEventListener('click',()=>{
+      const selected=(button.dataset.tag||'').toLowerCase();tag=tag===selected?null:selected;
+      buttons.forEach(b=>{const active=(b.dataset.tag||'').toLowerCase()===tag;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});
+      apply();score.cue('hover');
+    },options));
   }
   if(route.article)enhancePost(main,{signal,announce});
   const revealElements=[...main.querySelectorAll('.lab-card,.pcard,.ep,.fact-num,.post-item')];

@@ -28,7 +28,8 @@ export async function startServer(){
 
 export async function launchBrowser(){
   return chromium.launch({headless:true,executablePath:process.env.BROWSER_EXECUTABLE||undefined,
-    args:process.env.BROWSER_ANGLE?[`--use-angle=${process.env.BROWSER_ANGLE}`]:[]});
+    args:process.env.BROWSER_ANGLE?[`--use-angle=${process.env.BROWSER_ANGLE}`]:[],
+    proxy:process.env.BROWSER_PROXY?{server:process.env.BROWSER_PROXY}:undefined});
 }
 
 export function publicRoutes(){

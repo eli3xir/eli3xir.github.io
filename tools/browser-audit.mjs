@@ -5,9 +5,10 @@ import assert from 'node:assert/strict';
 import { root,output,startServer,launchBrowser,publicRoutes,ready,settle,observe } from './browser-support.mjs';
 
 fs.mkdirSync(output,{recursive:true});
-const server=await startServer();let browser;
+const server=process.env.BASE_URL?{base:process.env.BASE_URL.replace(/\/$/,''),close:async()=>{}}:await startServer();let browser;
 const report={date:new Date().toISOString(),environment:{platform:process.platform,cpu:os.cpus()[0].model,node:process.version},
   routes:[],direct:[],cases:[],failures:[],knownExternalFailures:[]};
+report.base=server.base;
 const routes=publicRoutes();
 const major=['/','/lab/','/blog/','/radio/','/projects/','/about/','/skin/'];
 const visual=process.env.AUDIT_SCREENSHOTS!=='0';
@@ -85,12 +86,28 @@ try{
         const matches=await page.locator('.post-item:visible').count();assert.ok(matches>0&&matches<39);
         await page.locator('#search').fill('zz-no-such-post-zz');assert.equal(await page.locator('.post-item:visible').count(),0);
         await page.locator('#search').fill('');
-        const tag=page.locator('.tag-btn').first();await tag.click();assert.equal(await tag.getAttribute('aria-pressed'),'true');await tag.click();
+        const tag=page.locator('.tag-btn[data-tag="c++"]');await tag.click();assert.equal(await tag.getAttribute('aria-pressed'),'true');
+        const tagged=await page.locator('.post-item:visible').count();assert.ok(tagged>0&&tagged<39);await tag.click();assert.equal(await page.locator('.post-item:visible').count(),39);
         await page.evaluate(()=>window.studio.router.navigate('/blog/24471.html'));await settle(page);
         const button=page.locator('.code-bar button').first();await button.click();await page.waitForFunction(()=>document.querySelector('.code-bar button')?.textContent==='已复制');
         const copied=await page.evaluate(()=>navigator.clipboard.readText());assert.ok(copied.length>0);
         const toc=page.locator('.studio-toc a').first();await toc.click();assert.ok(new URL(page.url()).hash.length>1);
-        return{matches,copiedCharacters:copied.length};
+        return{matches,tagged,copiedCharacters:copied.length};
+      });
+      await verify('offscreen article pauses GPU rendering and navigation resumes it',async()=>{
+        await page.evaluate(()=>window.studio.router.navigate('/blog/24471.html'));await settle(page);
+        await page.evaluate(()=>scrollTo(0,innerHeight*1.5));
+        await page.waitForFunction(()=>!window.studio.world.running);
+        const before=await page.evaluate(()=>({frames:window.studio.world.renderedFrames,time:window.studio.score.time}));
+        await page.waitForTimeout(300);
+        const after=await page.evaluate(()=>({frames:window.studio.world.renderedFrames,time:window.studio.score.time}));
+        assert.equal(after.frames,before.frames);assert.ok(after.time>before.time);
+        await page.evaluate(()=>scrollTo(0,0));await page.waitForFunction(()=>window.studio.world.running);
+        await page.waitForFunction(frames=>window.studio.world.renderedFrames>frames,before.frames);
+        await page.evaluate(()=>scrollTo(0,innerHeight*1.5));await page.waitForFunction(()=>!window.studio.world.running);
+        await page.evaluate(()=>window.studio.router.navigate('/lab/'));await settle(page);
+        assert.equal(await page.evaluate(()=>window.studio.world.running),true);
+        return{idleFrames:after.frames-before.frames,scoreContinues:true,final:'/lab/'};
       });
       await verify('back/forward, rapid navigation, failed fetch recovery',async()=>{
         await page.evaluate(()=>window.studio.router.navigate('/about/'));await settle(page);

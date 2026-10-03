@@ -55,17 +55,17 @@ export class World {
     this.particles=createParticles(innerWidth<700?1200:2800);this.scene.add(this.particles);
     this.actor=createCharacter();this.scene.add(this.actor.root);
     this.actor.root.rotation.y=0;
-    this.moving=0;this.scroll=0;this.transition=0;this.last=performance.now();this.frames=[];
+    this.moving=0;this.scroll=0;this.transition=0;this.last=performance.now();this.frames=[];this.renderedFrames=0;
     this.events=new AbortController();
     const options={signal:this.events.signal};
     addEventListener('resize',()=>this.resize(),options);
     addEventListener('pointermove',e=>this.move(e),{...options,passive:true});
     addEventListener('pointerdown',e=>{if(!e.target.closest('a,button,input,select,textarea'))this.down=[e.clientX,e.clientY];},options);
     addEventListener('pointerup',e=>this.pick(e),options);
-    addEventListener('scroll',()=>{this.scroll=Math.min(1,scrollY/innerHeight);this.moving=1;},{...options,passive:true});
+    addEventListener('scroll',()=>{this.scroll=Math.min(1,scrollY/innerHeight);this.moving=1;this.updateVisibility();},{...options,passive:true});
     document.addEventListener('visibilitychange',()=>{
       this.last=performance.now();
-      if(document.hidden)this.renderer.setAnimationLoop(null);else this.start();
+      this.updateVisibility();
     },options);
     this.reduced.addEventListener('change',()=>{this.moving=1;},options);
     this.resize();this.start();
@@ -79,7 +79,7 @@ export class World {
     this.camera.aspect=innerWidth/innerHeight;
     this.bloom.enabled=quality!=='low'&&!this.reduced.matches;
     this.key.castShadow=quality!=='low'&&this.route?.id!=='home';
-    this.offsetCamera();this.camera.updateProjectionMatrix();this.setRig();this.moving=1;
+    this.offsetCamera();this.camera.updateProjectionMatrix();this.setRig();this.moving=1;this.updateVisibility();
   }
 
   offsetCamera() {
@@ -101,7 +101,7 @@ export class World {
   show(route) {
     if(this.model){this.scene.remove(this.model.root);if(!this.model.persistent)disposeGroup(this.model.root);}
     this.route=route;this.focused=null;this.hovered=null;this.scroll=0;
-    this.model=route.id==='home'?createRoom(this.status):createModel(route);
+    this.model=route.id==='home'?createRoom((...args)=>{if(this.route?.id==='home')this.status(...args);}):createModel(route);
     this.model.focus?.(null);
     this.scene.add(this.model.root);
     if(route.id!=='home')this.status(1,'世界已就绪');
@@ -125,7 +125,14 @@ export class World {
 
   focus(id) { this.focused=id;this.model?.focus?.(id);this.offsetCamera();this.setRig();this.moving=1;this.actor.react(); }
   applySkin(id){this.model?.applySkin?.(id);document.body.dataset.skin=id;this.rim.color.set(id==='ocean'?0x8ab6de:id==='forest'?0x88d6b0:0xa1d8d3);this.moving=1;}
-  transitionAt(progress){this.transition=progress;this.moving=1;}
+  transitionAt(progress){this.transition=progress;this.moving=1;this.updateVisibility();}
+
+  updateVisibility(){
+    const hero=document.querySelector('.world-hero');
+    this.occluded=Boolean(hero&&hero.getBoundingClientRect().bottom<=0);
+    if(document.hidden||(this.occluded&&this.transition===0))this.stop();
+    else this.start();
+  }
 
   move(event) {
     this.targetPointer.set(event.clientX/innerWidth*2-1,-(event.clientY/innerHeight)*2+1);
@@ -146,7 +153,11 @@ export class World {
     else this.actor.react();
   }
 
-  start(){this.renderer.setAnimationLoop(now=>this.frame(now));}
+  stop(){if(!this.running)return;this.running=false;this.renderer.setAnimationLoop(null);}
+  start(){
+    if(this.running||document.hidden||(this.occluded&&this.transition===0))return;
+    this.running=true;this.last=performance.now();this.renderer.setAnimationLoop(now=>this.frame(now));
+  }
 
   frame(now) {
     const dt=Math.min((now-this.last)/1000,.06);this.last=now;
@@ -192,11 +203,11 @@ export class World {
       const id=this.model.pick?.(this.ray)||null;
       if(id!==this.hovered){this.hovered=id;this.onHover(id,this.pointerEvent);}
     }
-    this.renderer.info.reset();this.composer.render(dt);
+    this.renderer.info.reset();this.composer.render(dt);this.renderedFrames++;
     if(this.frames.length<180)this.frames.push(dt*1000);
   }
 
   diagnostics(){return{chapter:this.route?.id,drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,
     geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,pixelRatio:this.renderer.getPixelRatio(),
-    roomReady:this.model?.loaded??null,frameTimes:this.frames};}
+    roomReady:this.model?.loaded??null,rendering:this.running,renderedFrames:this.renderedFrames,frameTimes:this.frames};}
 }

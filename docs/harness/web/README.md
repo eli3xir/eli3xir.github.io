@@ -28,4 +28,8 @@
 
 ## 推送与发布
 
-2026-10-03 的环境中仓库旧代理为 7890，实际环境代理为 7897。使用命令级覆盖 `git -c http.proxy=http://127.0.0.1:7897 push`；不修改全局代理。首版代码 `353915d` 已推送至 `feat/cinematic-atlas`。发布以远端提交和 GitHub Pages 实际访问核对，不能只依据本地提交声明上线。
+2026-10-03 的环境中仓库旧代理为 7890，实际环境代理为 7897。使用命令级覆盖 `git -c http.proxy=http://127.0.0.1:7897 push`；不修改全局代理。
+
+首版已合并并推送 `main`，GitHub Pages 的 `55ea138` [发布任务](https://github.com/eli3xir/eli3xir.github.io/actions/runs/37092164788) 成功，55 个线上页面及入口已实际核对。发布以远端提交和 GitHub Pages 实际访问核对，不能只依据本地提交声明上线。
+
+线上浏览器复查设置 `BASE_URL=https://eli3xir.github.io`；有代理需求时设置 `BROWSER_PROXY=http://127.0.0.1:7897`。报告的 `base` 和 `scope` 记录实际目标与范围，本地、入口与全量结果应分别说明。
