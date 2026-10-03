@@ -41,6 +41,8 @@
 
 本项目新几何、动画和配乐原创实现。采用外部代码或资产时必须记录来源、版本、许可及实际使用范围。
 
+2026-10-04 对照 Three.js r185 官方 [MeshPhysicalMaterial 源码](https://github.com/mrdoob/three.js/blob/r185/src/materials/MeshPhysicalMaterial.js) 和 [Texture 源码](https://github.com/mrdoob/three.js/blob/r185/src/textures/Texture.js)，核对各向异性方向/强度通道、非颜色数据、mipmap 与纹理过滤。首次文档目录链接返回 404，改为固定版本官方源文件核验。唱片数据纹理由本站代码生成，未采用第三方材质图；物理材质增加每像素开销，不能仅凭减少三角形宣称所有设备更快。
+
 ## 实际查看与采用
 
 玻璃金箔马赛克视频的公开下载副本时长 80.04 秒。使用 Blender 4.5.12 LTS 解码观察第 8、30、62 秒：同一组块体组成海面与太阳，局部破裂，随后整体卷曲。这提供了持续元素、材质和变形承载叙事的参考；下载副本与内容观察不能直接证明原帖的模型归属或生成方式。视频与参考帧仅存于临时研究目录，没有作为本站资产发布。

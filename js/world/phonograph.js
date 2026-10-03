@@ -3,6 +3,7 @@ import {brass,ink,mesh,ring} from './materials.js';
 import {batchStatic} from './batch.js';
 import {casing} from './hardware.js';
 import {recordLabel,createMeters} from './phonograph-parts.js';
+import {createVinylSurface,OUTER_GROOVE,INNER_GROOVE} from './vinyl.js';
 
 export function createPhonograph(playback){
   const root=new THREE.Group(),deck=new THREE.Group();root.add(deck);deck.rotation.set(.3,-.3,-.04);
@@ -10,8 +11,7 @@ export function createPhonograph(playback){
   mesh(casing(2.6,.4,1.8),new THREE.MeshPhysicalMaterial({color:0x21372d,metalness:.35,roughness:.3,clearcoat:.6}),deck,[0,-.46,0]);
   mesh(casing(2.63,.025,1.83),metal,deck,[0,-.247,0]);
   const record=mesh(new THREE.CylinderGeometry(.78,.78,.034,112),black,deck,[-.3,-.215,0]);record.userData.action='play';
-  const grooves=new THREE.MeshStandardMaterial({color:0x394840,metalness:.6,roughness:.34});
-  for(let i=0;i<28;i++)ring(record,.2+i*.02,.002,.019,grooves);
+  createVinylSurface(record);
   const label=mesh(new THREE.CircleGeometry(.185,64),new THREE.MeshStandardMaterial({map:recordLabel(),roughness:.6}),record,[0,.021,0]);label.rotation.x=-Math.PI/2;
   mesh(new THREE.CylinderGeometry(.02,.02,.09,16),metal,record,[0,.055,0]);
   const arm=new THREE.Group();arm.position.set(.87,-.071,.55);deck.add(arm);
@@ -47,7 +47,7 @@ export function createPhonograph(playback){
       if(state.active&&lastCycle>.9&&state.cycle<.1)returnUntil=now+.65;lastCycle=state.cycle;
       const target=state.active&&now>=returnUntil?1:0;
       lower=reduced?target:THREE.MathUtils.damp(lower,target,11,dt);arm.rotation.z=-.18*(1-lower);
-      const radius=.69-state.cycle*.43,distance=Math.hypot(1.17,.55);
+      const radius=THREE.MathUtils.lerp(OUTER_GROOVE,INNER_GROOVE,state.cycle),distance=Math.hypot(1.17,.55);
       const yaw=state.active?Math.atan2(-.55,1.17)+Math.acos(THREE.MathUtils.clamp((distance*distance+1.21-radius*radius)/(2*distance*1.1),-1,1)):.46;
       arm.rotation.y=reduced?yaw:THREE.MathUtils.damp(arm.rotation.y,yaw,8,dt);
       meters.forEach((meter,i)=>{meter.level=reduced?0:THREE.MathUtils.damp(meter.level,state.levels[i]||0,13,dt);meter.pivot.rotation.z=.83-meter.level*1.66;});
