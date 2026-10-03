@@ -1,3 +1,6 @@
 tools/node_modules/
 tools/package-lock.json
 .playwright-cli/
+temp-docs/
+tools/test-results/
+tools/*.tgz
