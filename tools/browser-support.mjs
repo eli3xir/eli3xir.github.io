@@ -39,8 +39,8 @@ export function publicRoutes(){
 }
 
 export async function ready(page){
-  await page.waitForFunction(()=>window.studio,{timeout:25000});
-  await page.waitForFunction(()=>window.__ready||window.__error||window.studio.route.id!=='home',{timeout:25000});
+  await page.waitForFunction(()=>window.studio,null,{timeout:25000});
+  await page.waitForFunction(()=>window.__ready||window.__error||window.studio.route.id!=='home',null,{timeout:150000});
 }
 
 export async function settle(page){

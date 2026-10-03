@@ -4,6 +4,7 @@ import { SKINS, readSetting } from '../experience/domain.js';
 import { batchStatic } from './batch.js';
 import { createRoomEffects } from './room-effects.js';
 import { createRoomLighting, tuneRoomMaterial } from './room-lighting.js';
+import { downloadRoom } from './room-download.js';
 
 const ZONES = {
   lab: [4.7,7.1,.25,1.6,-1.2,.15], blog: [3,4.7,.25,1.4,-1.2,.15],
@@ -21,7 +22,12 @@ let cached = null;
 function deadline(promise,ms){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('材质加载超时')),ms);})]).finally(()=>clearTimeout(timer));}
 
 export function createRoom(status) {
-  if (cached) { if(cached.loaded)status(1, '房间已就绪');else if(cached.failed)cached.retry();return cached; }
+  if (cached) {
+    if(cached.loaded)status(1,'房间已就绪');
+    else if(cached.failed)cached.retry();
+    else status(cached.progress??.05,cached.message||'正在搬入工作室');
+    return cached;
+  }
   const root = new THREE.Group();
   const room = new THREE.Group(); room.position.set(-4,-1.1,0);root.add(room);
   const effects=createRoomEffects(room);let vinyl=null;let focused=null;
@@ -29,6 +35,7 @@ export function createRoom(status) {
   const model = { root, room, persistent:true, loaded:false, actorPosition:[.2,.1,-1.3],
     focus(id){focused=id;effects.setFocus(id);},update(t,beat){effects.update(t,beat);if(vinyl&&focused==='radio')vinyl.rotation.y=-t*2.4;} };
   cached = model;
+  const report=(progress,message,error)=>{model.progress=progress;model.message=message;status(progress,message,error);};
   model.applySkin = id => {
     const skin = SKINS[id] || SKINS.default;
     room.traverse(object => {
@@ -54,12 +61,11 @@ export function createRoom(status) {
   };
   const loadRoom = async()=>{
     model.failed=false;
-    status(.05,'正在点亮工作室');
+    report(.05,'正在点亮工作室');
     const loader = new GLTFLoader();
-    const response=await fetch('/assets/room/room.glb',{signal:AbortSignal.timeout(18000)});
-    if(!response.ok)throw new Error(`房间模型 HTTP ${response.status}`);
-    const gltf=await loader.parseAsync(await response.arrayBuffer(),'/assets/room/');
-    status(.65,'正在点亮材质');
+    const bytes=await downloadRoom(progress=>report(.05+progress*.55,progress?`正在搬入工作室 · ${Math.round(progress*100)}%`:'正在搬入工作室'));
+    const gltf=await loader.parseAsync(bytes,'/assets/room/');
+    report(.65,'正在点亮材质');
     // Keep partially lit surfaces out of the live scene while maps arrive.
     gltf.scene.visible=false;
     room.add(gltf.scene);
@@ -103,12 +109,12 @@ export function createRoom(status) {
     model.loaded=true;
     model.applySkin(readSetting('room-skin','default'));
     gltf.scene.visible=true;
-    status(1,results.some(result=>result.status==='rejected')?'灯亮了，部分材质暂时未能加载':'灯亮了，欢迎进来');
+    report(1,results.some(result=>result.status==='rejected')?'灯亮了，部分材质暂时未能加载':'灯亮了，欢迎进来');
     return model;
   };
   model.retry=()=>{
     model.ready=loadRoom();
-    model.ready.catch(error=>{model.failed=true;status(-1,'房间暂时没能加载，文字入口仍可使用；返回房间时会重试',error);});
+    model.ready.catch(error=>{model.failed=true;report(-1,'房间暂时没能加载，文字入口仍可使用；返回房间时会重试',error);});
     return model.ready;
   };
   model.retry();

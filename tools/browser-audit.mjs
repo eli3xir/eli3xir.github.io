@@ -17,7 +17,7 @@ report.scope=process.env.AUDIT_CASE|| (process.env.AUDIT_QUICK==='1'?'major rout
 async function verify(name,action){
   if(process.env.AUDIT_CASE&&!name.includes(process.env.AUDIT_CASE))return;
   try{const evidence=await action();report.cases.push({name,ok:true,evidence});console.log(`PASS ${name}`);}
-  catch(error){report.cases.push({name,ok:false,error:error.message});report.failures.push(`${name}: ${error.message}`);console.log(`FAIL ${name}: ${error.message}`);}
+  catch(error){report.cases.push({name,ok:false,error:error.message,stack:error.stack});report.failures.push(`${name}: ${error.message}`);console.log(`FAIL ${name}: ${error.message}`);}
 }
 
 try{
@@ -389,10 +389,11 @@ try{
   });
   await verify('room stays hidden until delayed lighting is ready, including a missing map',async()=>{
     const context=await browser.newContext({reducedMotion:'reduce'}),page=await context.newPage(),log=observe(page);
-    let release,seen;const gate=new Promise(resolve=>{release=resolve;}),firstMap=new Promise(resolve=>{seen=resolve;});let intercepted=0;
-    await page.route('**/assets/room/lightmaps/*.jpg',async request=>{intercepted++;seen();await gate;await request.continue();});
+    let release;const gate=new Promise(resolve=>{release=resolve;});let intercepted=0;
+    const firstMap=page.waitForRequest('**/assets/room/lightmaps/*.jpg',{timeout:135000});
+    await page.route('**/assets/room/lightmaps/*.jpg',async request=>{intercepted++;await gate;await request.continue();});
     try{
-      await page.goto(server.base);await page.waitForFunction(()=>window.studio?.world.model.room.children.some(child=>child.type==='Group'&&child.name!=='practical-light'));await firstMap;
+      await Promise.all([page.goto(server.base),firstMap]);await page.waitForFunction(()=>window.studio?.world.model.room.children.some(child=>child.type==='Group'&&child.name!=='practical-light'));
       const pending=await page.evaluate(()=>{const model=window.studio.world.model;const imported=model.room.children.find(child=>child.type==='Group'&&child.name!=='practical-light');return{loaded:model.loaded,visible:imported.visible,loading:document.querySelector('.scene-status').classList.contains('loading')};});
       assert.ok(intercepted>0);assert.equal(pending.loaded,false);assert.equal(pending.visible,false);assert.equal(pending.loading,true);
       await page.waitForTimeout(200);assert.equal(await page.evaluate(()=>window.studio.world.model.loaded),false);

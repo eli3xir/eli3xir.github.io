@@ -13,6 +13,7 @@
 | `npm run validate` | 55 页入口、import map、本地文件、脚本类型/语法及正文保留 |
 | `npm run test:browser` | 全量连续/直接访问、交互与降级行为；自动创建本地服务 |
 | `npm run test:audio` | 实际 OfflineAudioContext 渲染完整配乐、音量与重叠提示音，检查峰值/削波 |
+| `npm run test:loading` | 真实 HTTP 慢速分块传输、下载中往返导航、停滞连接取消 |
 | `npm run test:performance` | 指定 GPU 下的桌面与手机视口帧间隔；注明模拟限制 |
 
 首次浏览器检查前执行 `npx playwright-core install chromium`。已安装的浏览器可通过环境变量 `BROWSER_EXECUTABLE` 指定。Windows 可以用 `BROWSER_ANGLE=d3d11`；报告实际渲染器。
