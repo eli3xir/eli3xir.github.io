@@ -20,10 +20,6 @@ export function createParticles(count = 2600) {
         // Physical pages and message packets carry their own motion; retain only sparse dust there.
         if(uMode<.5){ p=vec3((aSeed.x-.5)*8.,(aSeed.y-.5)*3.,(aSeed.z-.5)*3.);
           p.y+=sin(t+aSeed.w*12.)*.15; }
-        else if(uMode<1.5){ float h=fract(aSeed.y+t*.12);
-          float spiral=h*15.708+t+step(.5,aSeed.x)*3.14159;
-          float r=.82+sin(h*3.14159)*.42+(aSeed.z-.5)*.045;
-          p=vec3(cos(spiral)*r,h*3.1-1.05,sin(spiral)*r); }
         else if(uMode<2.5||(uMode>3.5&&uMode<4.5)){
           p=vec3((aSeed.x-.5)*4.4,(aSeed.y-.5)*3.5,(aSeed.z-.5)*2.);
           p.y+=sin(t+aSeed.w*12.)*.08;visibility=step(.76,aSeed.w)*.65;
@@ -43,7 +39,7 @@ export function createParticles(count = 2600) {
           p=vec3((panel-2.)*.58+(aSeed.z-.5)*.43,(row/27.-.5)*1.76,
             cos(panel*.7)*.3-.08);p.y+=sin(t*5.+panel*.6)*.1; }
         // A few drifting grains retain the atmosphere around each precise formation.
-        if((uMode<1.5||uMode>4.5)&&uMode>.5&&aSeed.w>.86){p=vec3((aSeed.x-.5)*4.4,(aSeed.y-.5)*3.5,(aSeed.z-.5)*2.);
+        if(uMode>4.5&&aSeed.w>.86){p=vec3((aSeed.x-.5)*4.4,(aSeed.y-.5)*3.5,(aSeed.z-.5)*2.);
           p.y+=sin(t+aSeed.w*12.)*.08;}
         float gather=smoothstep(0.,1.,uGather);
         float spin=gather*6.283185+a;

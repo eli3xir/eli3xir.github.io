@@ -1,51 +1,14 @@
 import * as THREE from 'three';
-import { brass, ink, paper, glass, mesh, ring, liquidMaterial } from './materials.js';
+import { brass, ink, paper, glass, mesh, ring } from './materials.js';
 import { createExperiment } from './experiments.js';
 import { createBook } from './book.js';
 import { createSignalBench } from './signal-bench.js';
 import {createPhonograph} from './phonograph.js';
+import {createPotion} from './potion.js';
 
 function plinth(root, radius = 1) {
   mesh(new THREE.CylinderGeometry(radius, radius * 1.04, .14, 96), ink(), root, [0, -1.16, 0]);
   ring(root, radius * 1.01, .012, -1.09);
-}
-
-function potion() {
-  const root = new THREE.Group();
-  let flight=null,queued=null,disposed=false;
-  const shape = [[.05,-.85],[.38,-.84],[.58,-.68],[.62,-.3],[.58,.12],[.3,.45],[.18,.67],[.18,1.05],[.23,1.08]];
-  const vesselMaterial=glass(0xe7f1eb);
-  Object.assign(vesselMaterial,{opacity:.34,transmission:.55,roughness:.07,thickness:.1});
-  const vessel = mesh(new THREE.LatheGeometry(shape.map(p => new THREE.Vector2(...p)), 112), vesselMaterial, root);
-  const fillShape=[[0,-.81],[.35,-.8],[.55,-.64],[.57,-.3],[.54,0],[.535,.035],[0,.035]];
-  const liquid = mesh(new THREE.LatheGeometry(fillShape.map(p=>new THREE.Vector2(...p)),96),liquidMaterial('#63dcb4'),root);
-  mesh(new THREE.CylinderGeometry(.17, .17, .06, 64), brass(), root, [0, 1.1, 0]);
-  const cap = mesh(new THREE.CylinderGeometry(.22, .2, .15, 64), ink(), root, [0, 1.27, 0]);
-  ring(root, .58, .013, -.48);
-  for (let i = 0; i < 3; i++) {
-    const a = i * Math.PI * 2 / 3;
-    const leg = mesh(new THREE.CylinderGeometry(.025, .04, .55, 12), brass(), root, [Math.cos(a)*.56,-.9,Math.sin(a)*.56]);
-    leg.rotation.z = Math.cos(a) * -.2; leg.rotation.x = Math.sin(a) * .2;
-  }
-  const orbit = ring(root, 1.02, .008, .05); orbit.rotation.x = 1.1; orbit.rotation.z = .32;
-  plinth(root, .87);
-  function begin(options){flight={start:options.now+options.delay,duration:options.duration};options.onStart?.(options.delay);}
-  return { root, actorPosition: [.72, 1.33, .1],
-    hitTest(ray){root.updateMatrixWorld(true);return ray.intersectObjects([vessel,cap],false).length>0;},
-    next(options){if(disposed)return false;if(flight){queued=options;return false;}begin(options);return true;},
-    update(t,beat,scroll,now=0,reduced=false){
-      if(disposed)return;
-      // Interaction completes on the UI clock even when the score is suspended.
-      const p=flight?(reduced?1:THREE.MathUtils.clamp((now-flight.start)/flight.duration,0,1)):0;
-      const reaction=Math.sin(p*Math.PI)**2;
-      liquid.material.uniforms.uTime.value=t;liquid.material.uniforms.uBeat.value=beat.pulse+reaction*.25;
-      cap.position.y=1.27+Math.sin(t*.7)*.05+reaction*.29;
-      cap.rotation.z=Math.sin(p*Math.PI*6)*reaction*.13;
-      orbit.rotation.y=t*.12;vessel.rotation.y=Math.sin(t*.2)*.04;
-      if(flight&&p===1){flight=null;if(queued&&!reduced){const next=queued;queued=null;begin({...next,now,delay:0});}else queued=null;}
-    },
-    dispose(){disposed=true;flight=queued=null;}
-  };
 }
 
 function about() {
@@ -77,5 +40,5 @@ function skin() {
 
 export function createModel(route) {
   if(route.experiment)return createExperiment(route.experimentId);
-  return ({ lab:potion, blog:()=>createBook(route.contentTitle,route.readingEntries), radio:()=>createPhonograph(route.radioPlayback), projects:()=>createSignalBench(route.relay), about, skin }[route.id] || potion)();
+  return ({ lab:createPotion, blog:()=>createBook(route.contentTitle,route.readingEntries), radio:()=>createPhonograph(route.radioPlayback), projects:()=>createSignalBench(route.relay), about, skin }[route.id] || createPotion)();
 }

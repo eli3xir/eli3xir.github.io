@@ -34,6 +34,9 @@ export class World {
     this.renderer.domElement.setAttribute('aria-hidden','true');
     container.append(this.renderer.domElement);
     this.scene=new THREE.Scene();
+    // Reset the background after the shadow pass, including the transmission target.
+    // These linear values retain the previous postprocessed clear-color appearance.
+    this.scene.background=new THREE.Color().setRGB(16/255,21/255,19/255);
     const pmrem=new THREE.PMREMGenerator(this.renderer);
     const environment=new RoomEnvironment();
     this.environment=pmrem.fromScene(environment,.04).texture;

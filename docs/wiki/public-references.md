@@ -45,6 +45,8 @@
 
 ## 实际查看与采用
 
+2026-10-04 对照 [MeshPhysicalMaterial 文档](https://threejs.org/docs/pages/MeshPhysicalMaterial.html) 核对透射与不透明度、厚度的关系；随后追踪固定 r185 的 [WebGLRenderer 透射过程](https://github.com/mrdoob/three.js/blob/r185/src/renderers/WebGLRenderer.js)、[WebGLBackground](https://github.com/mrdoob/three.js/blob/r185/src/renderers/webgl/WebGLBackground.js) 与 [WebGLShadowMap](https://github.com/mrdoob/three.js/blob/r185/src/renderers/webgl/WebGLShadowMap.js)。本站实际对照显示：阴影开启、场景无显式背景时瓶颈发白；显式背景可保留阴影并恢复透射。该观察针对本站当前渲染链，不泛化为所有 Three.js 场景。新瓶身、液面和气泡均由本站代码生成。
+
 玻璃金箔马赛克视频的公开下载副本时长 80.04 秒。使用 Blender 4.5.12 LTS 解码观察第 8、30、62 秒：同一组块体组成海面与太阳，局部破裂，随后整体卷曲。这提供了持续元素、材质和变形承载叙事的参考；下载副本与内容观察不能直接证明原帖的模型归属或生成方式。视频与参考帧仅存于临时研究目录，没有作为本站资产发布。
 
 Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐字节一致；采用需要的 addon 闭包，MIT 许可随代码本地保留。KaTeX 0.16.22 来自官方 npm 包，MIT 许可及字体本地保留。Cormorant Garamond 和 Space Grotesk 从 Google Fonts 官方仓库取得，SIL OFL 文本随字体保留。既有 PixiJS 依赖用于原实验，未改写为另一套玩法。
