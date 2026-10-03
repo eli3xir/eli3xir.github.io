@@ -112,6 +112,8 @@ export class World {
     this.particles.material.uniforms.uMode.value=['home','lab','blog','radio','projects','about','skin'].indexOf(route.id);
     this.particles.material.uniforms.uColor.value.set(route.color);
     this.scene.environmentIntensity=route.id==='home'?.12:.42;
+    this.renderer.toneMappingExposure=route.id==='home'?.88:.92;
+    this.bloom.threshold=route.id==='home'?8:1.35;
     this.key.intensity=route.id==='home'?2:16;this.rim.intensity=route.id==='home'?3:22;
     this.fill.intensity=route.id==='home'?.35:2;
     this.key.castShadow=readSetting('visual-quality','auto')!=='low'&&route.id!=='home';
@@ -199,7 +201,8 @@ export class World {
     const actorPos=this.route?.id==='home'&&this.focused?ROOM_VIEWS[this.focused].target.map((value,i)=>value+(i===1?.4:i===2?-.18:0)):(this.model?.actorPosition||[0,0,0]);
     const actorScale=innerWidth<700&&this.route?.id!=='home'?.72:1;
     const journey=this.transition*this.transition*(3-2*this.transition);
-    this.actor.root.scale.setScalar(THREE.MathUtils.lerp(this.model?.actorScale||1,1,journey)*actorScale);
+    const idleScale=(this.model?.actorScale||1)*(this.route?.id==='home'&&this.focused?.5:1);
+    this.actor.root.scale.setScalar(THREE.MathUtils.lerp(idleScale,1,journey)*actorScale);
     const focusedView=this.route?.id==='home'&&ROOM_VIEWS[this.focused];
     const portalBody=focusedView?new THREE.Vector3(focusedView.target[0],focusedView.target[1]+.4,focusedView.target[2]-.75):new THREE.Vector3(0,.35,this.route?.id==='home'?-2.5:1.6);
     const verticalOffset=actorScale<1?-.3:0;
@@ -218,7 +221,7 @@ export class World {
     if(this.transition>0)this.onPortal(this.portalPosition());
     this.burst=(this.burst||0)*Math.exp(-dt*3);
     uniforms.uSize.value=this.renderer.getPixelRatio();uniforms.uEnergy.value=(this.route?.id==='home'?.28:.5)*(.78+mood*.35)+this.transition*.5+this.burst*.5;
-    this.bloom.strength=.18+mood*.07;
+    this.bloom.strength=this.route?.id==='home'?.018+mood*.012:.18+mood*.07;
     this.particles.visible=true;
     this.model.root.visible=true;this.actor.root.visible=true;
     this.film.uniforms.uTime.value=t;this.film.uniforms.uTransition.value=this.transition;

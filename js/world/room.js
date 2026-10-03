@@ -80,7 +80,11 @@ export function createRoom(status) {
         if(!lightmaps.has(entry.file)) lightmaps.set(entry.file,deadline(textures.loadAsync('/assets/room/lightmaps/'+entry.file),12000).then(texture=>{
           texture.flipY=false;texture.colorSpace=THREE.SRGBColorSpace;texture.channel=1;return texture;
         }));
-        pending.push(lightmaps.get(entry.file).then(texture=>{object.material.lightMap=texture;object.material.lightMapIntensity=1.05;object.material.needsUpdate=true;}));
+        pending.push(lightmaps.get(entry.file).then(texture=>{
+          object.material.lightMap=texture;
+          object.material.lightMapIntensity=1.05*(Number.isFinite(entry.scale)&&entry.scale>0?entry.scale:1);
+          object.material.needsUpdate=true;
+        }));
       }
       if(/glass|lamp.*tube|light.*glass/i.test(object.material.name)) {
         object.material.emissive?.set(0xffd095);object.material.emissiveIntensity=.55;

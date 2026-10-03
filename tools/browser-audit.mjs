@@ -225,6 +225,43 @@ try{
     }
     return results;
   });
+  await verify('HDR room maps load with their brightness range through skins and focused views',async()=>{
+    const results=[];
+    for(const width of [1440,390]){
+      const context=await browser.newContext({viewport:{width,height:width===1440?1000:844}});
+      const page=await context.newPage(),log=observe(page);
+      await page.goto(server.base);await ready(page);await settle(page);
+      const maps=await page.evaluate(async()=>{
+        const manifest=await fetch('/assets/room/lightmaps/manifest.json').then(response=>response.json());
+        const seen=new Set(),result=[];
+        window.studio.world.model.room.traverse(obj=>{
+          for(const mat of [obj.material].flat().filter(Boolean)){
+            if(!mat.lightMap||seen.has(mat.uuid))continue;seen.add(mat.uuid);
+            const file=new URL(mat.lightMap.image.src).pathname.split('/').pop();
+            const entry=Object.values(manifest).find(entry=>entry.file===file);
+            if(entry?.scale)result.push({file,intensity:mat.lightMapIntensity,expected:entry.scale*1.05,
+              width:mat.lightMap.image.width,height:mat.lightMap.image.height,expectedSize:entry.size,channel:mat.lightMap.channel});
+          }
+        });
+        window.auditHDRTextures=result.map(map=>map.file);
+        return result;
+      });
+      assert.equal(maps.length,15);
+      for(const map of maps){assert.ok(Number.isFinite(map.intensity)&&map.intensity>0);assert.ok(Math.abs(map.intensity-map.expected)<1e-6);
+        assert.equal(map.width,map.expectedSize);assert.equal(map.height,map.expectedSize);assert.ok(map.width<=1024);assert.equal(map.channel,1);}
+      for(const skin of ['default','brick','forest','ocean','cream']){
+        await page.evaluate(skin=>window.studio.world.applySkin(skin),skin);
+        await page.waitForTimeout(100);
+      }
+      for(const focus of ['lab','blog','radio','projects','about','skin']){
+        await page.evaluate(focus=>window.studio.world.focus(focus),focus);await page.waitForTimeout(100);
+      }
+      const rendered=await page.evaluate(()=>window.studio.world.diagnostics());
+      assert.equal(rendered.roomReady,true);assert.ok(rendered.renderedFrames>15);assert.ok(rendered.drawCalls>0);
+      assert.deepEqual(log.errors,[]);results.push({width,maps});await context.close();
+    }
+    return results;
+  });
   await verify('late audio activation preserves the shared clock and releases PCM copies',async()=>{
     const results=[];
     for(const config of [{width:1440,reduced:false},{width:390,reduced:false},{width:1280,reduced:true}]){

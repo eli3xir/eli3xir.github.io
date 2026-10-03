@@ -5,3 +5,4 @@ temp-docs/
 tools/test-results/
 tools/*.tgz
 node_modules/
+__pycache__/

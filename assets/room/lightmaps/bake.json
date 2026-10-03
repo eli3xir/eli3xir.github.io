@@ -1,0 +1,103 @@
+{
+  "source": "model-studio/room/room.blend",
+  "sourceSha256": "bacd3b7a8c56c28bb30764f91cc58e17f80c71feae8d73207b4be2a5ba02d883",
+  "glbSha256": "e84a92fb7cf455014446c81237aec2157e32e3a906e711d5f9c26849c96e82cc",
+  "samples": 512,
+  "backend": "OPTIX",
+  "textures": [
+    {
+      "name": "wall_back",
+      "scale": 52.09252166748047,
+      "seconds": 77.29599999997299,
+      "bytes": 35874
+    },
+    {
+      "name": "wall_left",
+      "scale": 1.2236084938049316,
+      "seconds": 65.17099999997299,
+      "bytes": 41139
+    },
+    {
+      "name": "wall_right",
+      "scale": 3.013031482696533,
+      "seconds": 66.81299999996554,
+      "bytes": 37927
+    },
+    {
+      "name": "floor",
+      "scale": 2.4158272743225098,
+      "seconds": 64.60999999998603,
+      "bytes": 54696
+    },
+    {
+      "name": "ceiling",
+      "scale": 5.802011966705322,
+      "seconds": 82.59400000004098,
+      "bytes": 47725
+    },
+    {
+      "name": "gramo_cab",
+      "scale": 4.321256160736084,
+      "seconds": 7.25,
+      "bytes": 21168
+    },
+    {
+      "name": "labbench_top",
+      "scale": 48.01811981201172,
+      "seconds": 44.42099999997299,
+      "bytes": 60627
+    },
+    {
+      "name": "labbench_shelf",
+      "scale": 1.8485747575759888,
+      "seconds": 21.125,
+      "bytes": 78529
+    },
+    {
+      "name": "rug",
+      "scale": 2.6024723052978516,
+      "seconds": 10.844000000040978,
+      "bytes": 58450
+    },
+    {
+      "name": "rug_inner",
+      "scale": 2.4826278686523438,
+      "seconds": 21.23499999998603,
+      "bytes": 49517
+    },
+    {
+      "name": "bb_back",
+      "scale": 1.8951870203018188,
+      "seconds": 12.670999999972992,
+      "bytes": 33957
+    },
+    {
+      "name": "bb_left",
+      "scale": 1.021611213684082,
+      "seconds": 17.125,
+      "bytes": 41201
+    },
+    {
+      "name": "bb_right",
+      "scale": 1.928446888923645,
+      "seconds": 17.45299999997951,
+      "bytes": 36581
+    },
+    {
+      "name": "Mesh_0.001",
+      "scale": 8.108336448669434,
+      "seconds": 7.829000000027008,
+      "bytes": 150545
+    },
+    {
+      "name": "Mesh_9.001",
+      "scale": 1.1565157175064087,
+      "seconds": 17.734000000054948,
+      "bytes": 95967
+    }
+  ],
+  "blender": "4.5.12 LTS",
+  "webMaxSize": 1024,
+  "originalBytes": 1787737,
+  "publishedBytes": 843903
+}

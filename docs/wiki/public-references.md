@@ -33,6 +33,7 @@
 | [MDN BaseAudioContext.currentTime](https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/currentTime) | 声音播放和视觉同步时钟 |
 | [MDN AudioWorkletProcessor.process](https://developer.mozilla.org/en-US/docs/Web/API/AudioWorkletProcessor/process) | 对比实时逐采样合成与离线缓冲生成的工作方式 |
 | [MDN OfflineAudioContext](https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext) / [Web Audio 规范](https://webaudio.github.io/web-audio-api/) | 在浏览器实际渲染完整配乐与重叠提示音，检查有限值、峰值及削波 |
+| [Blender 4.5 Render Baking](https://docs.blender.org/manual/en/4.5/render/cycles/baking.html) / [Denoise](https://docs.blender.org/manual/en/4.5/compositing/types/filter/denoise.html) | 既有 UV 的漫反射光照烘焙，法线引导 HDR 去噪与显示颜色分离；网页正文已下载核对 |
 
 本项目新几何、动画和配乐原创实现。采用外部代码或资产时必须记录来源、版本、许可及实际使用范围。
 
