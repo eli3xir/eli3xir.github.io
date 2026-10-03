@@ -8,7 +8,7 @@
 
 - Three.js 0.185.1、本地 GLB、Cycles lightmap、程序化模型、GPU 粒子、接触阴影与光晕。
 - Cormorant Garamond / Space Grotesk 本地字体；中文使用设备字体。
-- 原创 `After Hours`：112 BPM、四声部、逐采样生成 PCM；默认静音，访客手势开启。
+- 原创 `After Hours`：112 BPM、32 小节、四个乐章和四声部、逐采样生成 PCM；默认静音，访客手势开启。
 - 文章搜索、标签、目录、锚点与代码复制；本地 KaTeX 公式渲染。
 - 五种房间色调、移动导航、画质控制、减少动态效果及 WebGL / 加载失败降级。
 
@@ -34,6 +34,7 @@ npm test
 npm run validate
 npx playwright-core install chromium
 npm run test:browser
+npm run test:audio
 npm run test:performance
 ```
 

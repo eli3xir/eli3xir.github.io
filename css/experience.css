@@ -61,8 +61,6 @@ body[data-skin="brick"]{--studio-gold:#c78870}body[data-skin="forest"]{--studio-
 .sound-bars{display:flex;gap:2px;align-items:center;height:15px}
 .sound-bars i{width:2px;height:5px;background:#c8ceaa}
 .sound-bars i:nth-child(2){height:11px}.sound-bars i:nth-child(3){height:8px}
-.playing .sound-bars i{animation:sound-wave .75s ease-in-out infinite alternate}
-.playing .sound-bars i:nth-child(2){animation-delay:-.2s}.playing .sound-bars i:nth-child(3){animation-delay:-.5s}
 .sound-settings>summary{list-style:none;font-size:9px;color:#89967f;cursor:pointer;padding:5px}
 .sound-settings>summary::-webkit-details-marker{display:none}
 .settings-panel{position:absolute;left:0;bottom:50px;width:240px;padding:20px;background:#1b241e;border:1px solid #424d39;color:#d8dcc7;box-shadow:0 15px 60px #0006}
@@ -82,8 +80,9 @@ body[data-skin="brick"]{--studio-gold:#c78870}body[data-skin="forest"]{--studio-
 .preview-close{position:absolute;right:14px;top:12px;color:#b8c0a8;background:none;border:0;width:35px;height:35px;font-size:25px}
 .room-focused .hero-copy,.room-focused .world-caption{opacity:0;transform:translateY(15px);pointer-events:none}
 .portal-layer{--portal:0;position:fixed;inset:0;z-index:100;pointer-events:none}
-.portal-surface{position:absolute;inset:0;background:#e7dfc8;clip-path:circle(calc(var(--portal)*150%) at 72% 50%);display:flex;align-items:center;justify-content:center;color:#46513b;overflow:hidden}
+.portal-surface{position:absolute;inset:0;background:#e7dfc8;clip-path:circle(calc(var(--portal)*150%) at var(--portal-x,72%) var(--portal-y,50%));display:flex;align-items:center;justify-content:center;color:#46513b;overflow:hidden}
 .portal-label{font-size:10px;letter-spacing:.28em;position:absolute;left:8.3%;top:48%}
+.portal-heading{position:absolute;left:8.3%;top:53%;max-width:75%;font:400 clamp(24px,3vw,48px)/1.4 Georgia,"Microsoft YaHei",serif;letter-spacing:.04em}
 .portal-symbol{font-size:clamp(200px,40vw,650px);font-family:Georgia,serif;font-weight:400;position:absolute;right:2%;opacity:.12;transform:rotate(calc(var(--portal)*90deg))}
 .is-transitioning{cursor:progress}.is-transitioning #page-view{pointer-events:none}
 [data-experience] #content{--bg:#ece5d3;--fg:#273126;--muted:#73786a;--accent:#84653a;--accent2:#3b6951;--border:#d4cebc;--card:transparent;position:relative;background:#ece5d3;color:#273126;margin:0;width:100%;max-width:none;padding:90px max(8.3vw,24px) 110px;min-height:350px;box-shadow:0 -1px 0 #c2c6a030}
@@ -155,6 +154,8 @@ body[data-skin="brick"]{--studio-gold:#c78870}body[data-skin="forest"]{--studio-
 .skin-check{position:absolute;top:14px;right:14px;width:24px;height:24px;display:grid;place-items:center;color:#ece5d3;background:#263228;border-radius:50%;opacity:0}.skin-option[aria-pressed="true"] .skin-check{opacity:1}
 .score-card{display:flex;justify-content:space-between;align-items:center;gap:35px;padding:35px 0 55px;border-bottom:1px solid #c8c5af;margin-bottom:70px}
 .score-card h2{font:italic 65px/1.1 Georgia,serif;margin:0 0 20px}.score-card p{max-width:580px;font-size:13px;color:#767f67}
+.score-movements{display:flex;gap:18px;flex-wrap:wrap;margin:25px 0 15px;font-size:9px;color:#8b8e74}.score-movements .active{color:#365b40}
+.score-track{max-width:580px;height:1px;background:#cbc5ad;overflow:hidden}.score-track i{display:block;width:0;height:100%;background:#52754e;transition:width .15s linear}.score-card .score-now{font-size:9px;letter-spacing:.08em;margin:12px 0 0}
 .score-button{color:#3b6245;background:none;border:1px solid #8c9b7b;padding:14px 22px;font-size:12px;white-space:nowrap}
 [data-experience] #content .pod-hero{gap:35px;margin-bottom:70px}.pod-cover{display:none!important}
 [data-experience] #content .ep{border-radius:0;background:none;border:0;border-top:1px solid #cbc7b3;padding:30px 0}.ep-thumb{border-radius:0!important}
@@ -170,7 +171,6 @@ body[data-skin="brick"]{--studio-gold:#c78870}body[data-skin="forest"]{--studio-
 .experiment-gate{position:fixed;inset:0;z-index:200;background:#101513f5;color:#ece5d3;display:flex;flex-direction:column;gap:24px;align-items:center;justify-content:center;text-align:center;font:14px/2 "Microsoft YaHei",sans-serif}
 .experiment-gate button{background:transparent;color:#ece5d3;border:1px solid #a7ab8c;padding:12px 24px;cursor:pointer;font:inherit}
 .embedded-experiment:not(.experiment-playing) *{animation:none!important}
-@keyframes sound-wave{to{transform:scaleY(.45)}}
 @keyframes content-reveal{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
 @media(min-width:1500px){.hero-copy{left:10vw}.chapter-dock{left:10vw;right:10vw}}
 @media(max-width:1250px){.hero-title{font-size:clamp(60px,6.5vw,90px)}.studio-toc{display:none}[data-experience] #content .lab-thumb{height:210px}.skin-grid{grid-template-columns:repeat(3,1fr)}.post-tags{display:none!important}[data-experience] #content .post-item>a{grid-template-columns:100px 1fr}}
@@ -194,7 +194,7 @@ body[data-skin="brick"]{--studio-gold:#c78870}body[data-skin="forest"]{--studio-
   .sound-dock{left:7vw;bottom:24px;padding:6px 8px}.sound-toggle{font-size:9px}.room-link{right:7vw;bottom:26px;padding:7px 9px;font-size:9px}
   .scene-status{top:95px;right:7vw;font-size:9px}.studio-toast{bottom:82px;font-size:10px;width:max-content}
   .object-preview{left:7vw;right:7vw;top:18%;width:auto;padding:25px}.object-preview h2{font-size:34px}
-  .portal-label{font-size:8px;top:38%;left:8%;max-width:190px;line-height:2}.portal-symbol{right:-8%;top:38%}
+  .portal-label{font-size:8px;top:38%;left:8%;max-width:190px;line-height:2}.portal-heading{left:8%;top:45%;max-width:84%;font-size:25px}.portal-symbol{right:-8%;top:38%}
   [data-experience] #content{padding:60px 7vw 80px}[data-experience] #content>h1:first-child{font-size:29px}
   [data-experience] #content .about-lead{font-size:17px}[data-experience] #content .facts{gap:32px;margin:45px 0}[data-experience] #content .fact-num{font-size:49px}[data-experience] #content .fact-label{font-size:9px}
   [data-experience] #content .lab-grid{grid-template-columns:1fr;gap:25px}[data-experience] #content .lab-thumb{height:260px}[data-experience] #content .lab-body p{min-height:0}

@@ -1,4 +1,5 @@
 import { SKINS, readSetting, writeSetting } from './domain.js';
+import { BARS, MOVEMENTS } from '../audio/composition.js';
 
 export function pageContent(doc,route) {
   if(route.id==='home')return null;
@@ -30,7 +31,8 @@ export function pageContent(doc,route) {
   main.querySelectorAll('script').forEach(script=>script.remove());
   if(route.id==='radio'){
     const score=document.createElement('section');score.className='score-card';
-    score.innerHTML='<div><p class="eyebrow">AN ORIGINAL, CODE-COMPOSED SCORE</p><h2>After Hours</h2><p>和弦慢慢铺开，旋律开始冒险。所有音色与鼓点，逐个采样写进声音。</p></div><button class="score-button" data-score-toggle>试听原创配乐 <span aria-hidden="true">↗</span></button>';
+    score.innerHTML='<div><p class="eyebrow">AN ORIGINAL, CODE-COMPOSED SCORE</p><h2>After Hours</h2><p>灯亮起来，灵感开始冒险。留一点空白，再把答案带回房间。所有音色与鼓点，逐个采样写进声音。</p><div class="score-movements" aria-label="配乐的四个乐章"></div><div class="score-track" aria-hidden="true"><i></i></div><p class="score-now"></p></div><button class="score-button" data-score-toggle>试听原创配乐 <span aria-hidden="true">↗</span></button>';
+    MOVEMENTS.forEach((movement,i)=>{const span=document.createElement('span');span.dataset.movement=movement.movement;span.textContent=`0${i+1} / ${movement.title}`;score.querySelector('.score-movements').append(span);});
     main.prepend(score);
   }
   main.querySelectorAll('.lab-card').forEach((card,i)=>{
@@ -49,8 +51,15 @@ export function enhanceContent(main,route,{signal,score,world,announce}) {
   const scoreButton=main.querySelector('[data-score-toggle]');
   if(scoreButton){
     scoreButton.addEventListener('click',async()=>{try{await score.toggle();}catch(e){announce(e.message);}},options);
-    const unsubscribe=score.subscribe(state=>{scoreButton.textContent=state.generating?'正在唤醒声音…':state.playing?'暂停试听 ↗':'试听原创配乐 ↗';scoreButton.disabled=state.generating;});
-    signal.addEventListener('abort',unsubscribe,{once:true});
+    const timeline=()=>{
+      const rhythm=score.rhythm;
+      main.querySelector('.score-now').textContent=score.playing?`${rhythm.title} / 第 ${Math.floor(rhythm.cycleBar)+1} 小节`:'四个乐章 / 一段好奇心的旅程';
+      main.querySelector('.score-track i').style.width=`${score.playing?rhythm.cycleBar/BARS*100:0}%`;
+      main.querySelectorAll('[data-movement]').forEach(item=>item.classList.toggle('active',score.playing&&item.dataset.movement===rhythm.movement));
+    };
+    const unsubscribe=score.subscribe(state=>{scoreButton.textContent=state.generating?'正在唤醒声音…':state.playing?'暂停试听 ↗':'试听原创配乐 ↗';scoreButton.disabled=state.generating;timeline();});
+    const timer=setInterval(timeline,150);
+    signal.addEventListener('abort',()=>{unsubscribe();clearInterval(timer);},{once:true});
   }
   main.querySelectorAll('[data-skin]').forEach(button=>button.addEventListener('click',()=>{
     const saved=writeSetting('room-skin',button.dataset.skin);world?.applySkin(button.dataset.skin);

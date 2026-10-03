@@ -21,6 +21,21 @@ export function createChrome(score, callbacks) {
   const quality=dock.querySelector('select');quality.value=readSetting('visual-quality','auto');
   quality.addEventListener('change',e=>{writeSetting('visual-quality',e.target.value);callbacks.quality();});
   const button=dock.querySelector('.sound-toggle');
+  const bars=[...dock.querySelectorAll('.sound-bars i')];let meterFrame=0;
+  const motion=matchMedia('(prefers-reduced-motion: reduce)');
+  function syncMeter(){
+    cancelAnimationFrame(meterFrame);
+    if(!score.playing||document.hidden||motion.matches){
+      bars.forEach(bar=>{bar.style.transform=score.playing?'scaleY(.65)':'';});return;
+    }
+    const tick=()=>{
+      const rhythm=score.rhythm;
+      bars.forEach((bar,i)=>{bar.style.transform=`scaleY(${.35+.65*Math.exp(-((rhythm.beat+i*.25)%1)*5)})`;});
+      if(score.playing&&!document.hidden)meterFrame=requestAnimationFrame(tick);
+    };tick();
+  }
+  document.addEventListener('visibilitychange',syncMeter);
+  motion.addEventListener('change',syncMeter);
   button.addEventListener('click',async()=>{
     button.disabled=true;
     try{await score.toggle();}catch(error){callbacks.announce(`声音暂时无法启动：${error.message}`);}
@@ -29,6 +44,7 @@ export function createChrome(score, callbacks) {
   score.subscribe(state=>{
     button.setAttribute('aria-pressed',String(state.playing));dock.classList.toggle('playing',state.playing);
     dock.querySelector('.sound-label').textContent=state.generating?'正在唤醒声音…':state.playing?'声音已开启':'开启声音';
+    syncMeter();
   });
   const corner=document.createElement('a');corner.className='room-link';corner.href='/';corner.innerHTML='<span aria-hidden="true">↖</span> 回到房间';
   return {header,dock,corner,update(route){

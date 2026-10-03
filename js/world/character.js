@@ -32,16 +32,17 @@ export function createCharacter() {
   const halo = mesh(new THREE.TorusGeometry(.26, .006, 8, 64), brass(), root);
   halo.rotation.x = Math.PI / 2; halo.position.y = -.32;
   let surprise = 0;
-  return { root, react() { surprise = 1; }, update(time, rhythm, pointer, large = false) {
-    surprise *= .965;
-    head.position.y = Math.sin(time * 1.7) * .038 + rhythm.pulse * .015 + surprise * .07;
+  return { root, beacon:lamp, react() { surprise = 1; }, update(time, rhythm, pointer, large = false,dt=1/60) {
+    surprise *= Math.exp(-dt*2.2);
+    const beat=rhythm.beat||0,mood=rhythm.energy??.55;
+    head.position.y = Math.sin(beat*Math.PI) * .026 + rhythm.pulse * .015 + surprise * .07;
     head.rotation.y = pointer.x * .35 + Math.sin(time * .5) * .12;
-    head.rotation.z = Math.sin(time * 1.4) * .065;
+    head.rotation.z = Math.sin(beat*Math.PI) * .04*(.5+mood*.5);
     const blink = time % 5.3 > 5.15 ? .12 : 1;
     eyes.forEach(eye => { eye.scale.y = blink + surprise * .4; });
-    limbs[1].rotation.z = large ? Math.sin(time * 3) * .23 - .15 : -surprise * .7;
-    core.scale.setScalar(1 + rhythm.pulse * .08);
-    lamp.scale.setScalar(1 + rhythm.pulse * .15);
+    limbs[1].rotation.z = large ? Math.sin(beat*Math.PI) * .23*(.5+mood*.5) - .15 : -surprise * .7;
+    core.scale.setScalar(1 + rhythm.pulse * .08*(.5+mood*.5));
+    lamp.scale.setScalar(1 + rhythm.pulse * .15*(.5+mood*.5));
     halo.rotation.z = time * .3;
     shell.rotation.y = time * .05;
     antenna.rotation.z = Math.sin(time * 2) * .04;

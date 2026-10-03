@@ -1,5 +1,6 @@
 import { readSetting, writeSetting, MIXES, beatState } from '../experience/domain.js';
 import { renderCue, SAMPLE_RATE } from './synth.js';
+import { MASTER_GAIN, movementAt } from './composition.js';
 
 export class Score {
   constructor() {
@@ -9,7 +10,8 @@ export class Score {
     this.volume = Number(readSetting('score-volume', '.45'));
     this.volume = Math.min(1, Math.max(0, Number.isFinite(this.volume) ? this.volume : .45));
     this.started = performance.now() / 1000;
-    this.offset = Number(readSetting('score-position', '0', 'sessionStorage')) || 0;
+    const position=Number(readSetting('score-position','0','sessionStorage'));
+    this.offset=Number.isFinite(position)?Math.max(0,position):0;
     this.mix = MIXES.home;
     this.sources = [];
     this.gains = [];
@@ -23,7 +25,7 @@ export class Score {
     if(this.sources.length)return this.offset;
     return this.offset + performance.now() / 1000 - this.started;
   }
-  get rhythm() { return beatState(this.time); }
+  get rhythm() { const time=this.time;return{time,...beatState(time),...movementAt(time)}; }
 
   async prepare() {
     if (this.data) return this.data;
@@ -35,7 +37,7 @@ export class Score {
       const timeout = setTimeout(() => { worker.terminate(); reject(new Error('配乐生成超时，请重试')); }, 15000);
       worker.onmessage = ({ data }) => { clearTimeout(timeout); worker.terminate(); resolve(data); };
       worker.onerror = e => { clearTimeout(timeout); worker.terminate(); reject(new Error(e.message)); };
-      worker.postMessage({type:'compose'});
+      worker.postMessage({type:'compose',rate:innerWidth<700?24000:SAMPLE_RATE});
     }).then(data => { this.data = data; return data; }).finally(() => { this.generating = false; this.pending = null; this.notify(); });
     return this.pending;
   }
@@ -54,20 +56,22 @@ export class Score {
     if (this.sources.length) { this.playing = true; this.started = performance.now() / 1000; this.notify(); return; }
     const data = await this.prepare();
     this.master = this.context.createGain();
-    this.master.gain.value = this.volume * .48;
+    this.master.gain.value = this.volume * MASTER_GAIN;
     const limiter = this.context.createDynamicsCompressor();
     limiter.threshold.value = -12;
     limiter.ratio.value = 5;
     this.master.connect(limiter).connect(this.context.destination);
     const start = this.context.currentTime + .06;
-    const position = this.time % data.duration;
-    this.zero = start - position;
+    const timeline=this.time,playbackRate=data.duration/data.musicalDuration;
+    const position=(timeline%data.musicalDuration)*playbackRate;
+    this.zero = start - timeline;
     data.stems.forEach((samples, i) => {
       const buffer = this.context.createBuffer(1, samples.length, data.rate);
       buffer.getChannelData(0).set(samples);
       const source = this.context.createBufferSource();
       source.buffer = buffer;
       source.loop = true;
+      source.playbackRate.value=playbackRate;
       const gain = this.context.createGain();
       gain.gain.value = this.mix[i];
       const pan = this.context.createStereoPanner();
@@ -77,6 +81,8 @@ export class Score {
       this.sources.push(source);
       this.gains.push(gain);
     });
+    // AudioBuffers now own the samples. Release the transferred worker copies.
+    this.data.pcmBytes=data.stems.reduce((sum,stem)=>sum+stem.byteLength,0);this.data.stems=null;
     this.playing = true;
     this.notify();
   }
@@ -95,16 +101,18 @@ export class Score {
   }
 
   setVolume(value) {
-    this.volume = Math.min(1, Math.max(0, Number(value)));
+    const numeric=Number(value);if(!Number.isFinite(numeric))return;
+    this.volume = Math.min(1, Math.max(0, numeric));
     writeSetting('score-volume', this.volume);
-    this.master?.gain.setTargetAtTime(this.volume * .48, this.context.currentTime, .04);
+    this.master?.gain.setTargetAtTime(this.volume * MASTER_GAIN, this.context.currentTime, .04);
     this.notify();
   }
 
   cue(kind = 'reveal', delay = 0) {
     if (!this.playing || this.context.state !== 'running') return;
-    const samples = renderCue(kind);
-    const buffer = this.context.createBuffer(1, samples.length, SAMPLE_RATE);
+    const rate=this.data?.rate||SAMPLE_RATE;
+    const samples = renderCue(kind,rate,beatState(this.time+delay).bar);
+    const buffer = this.context.createBuffer(1, samples.length, rate);
     buffer.getChannelData(0).set(samples);
     const source = this.context.createBufferSource();
     source.buffer = buffer;

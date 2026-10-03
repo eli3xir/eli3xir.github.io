@@ -28,9 +28,11 @@
 | [GSAP Timeline 官方文档](https://gsap.com/docs/v3/GSAP/Timeline/) | 多阶段运动的同步与可控时间线 |
 | [Three.js GLTFLoader](https://threejs.org/docs/pages/GLTFLoader.html) | 模型读取、失败处理、资源生命周期 |
 | [Three.js UnrealBloomPass](https://threejs.org/docs/pages/UnrealBloomPass.html) | 亮部光晕、阈值和色调映射；避免全画面过曝 |
+| [Three.js Vector3](https://threejs.org/docs/pages/Vector3.html) / [Camera](https://threejs.org/docs/pages/Camera.html) | 将角色实际发光点投影为页面纸幕圆心；相机矩阵先更新 |
 | [MDN AudioBuffer.getChannelData](https://developer.mozilla.org/en-US/docs/Web/API/AudioBuffer/getChannelData) | 写入逐采样 PCM 数据 |
 | [MDN BaseAudioContext.currentTime](https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/currentTime) | 声音播放和视觉同步时钟 |
 | [MDN AudioWorkletProcessor.process](https://developer.mozilla.org/en-US/docs/Web/API/AudioWorkletProcessor/process) | 对比实时逐采样合成与离线缓冲生成的工作方式 |
+| [MDN OfflineAudioContext](https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext) / [Web Audio 规范](https://webaudio.github.io/web-audio-api/) | 在浏览器实际渲染完整配乐与重叠提示音，检查有限值、峰值及削波 |
 
 本项目新几何、动画和配乐原创实现。采用外部代码或资产时必须记录来源、版本、许可及实际使用范围。
 

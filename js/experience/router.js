@@ -1,8 +1,10 @@
 import { nextBeatDelay } from './domain.js';
+import { BPM } from '../audio/composition.js';
 
 export class Router {
-  constructor({mount,transition,score,announce}) {
+  constructor({mount,transition,score,announce,onIntent=()=>{}}) {
     this.mount=mount;this.transition=transition;this.score=score;this.announce=announce;
+    this.onIntent=onIntent;
     this.cache=new Map();this.busy=false;this.pending=null;this.animation=null;
     this.currentURL=new URL(location.href);
     addEventListener('click',e=>this.click(e));
@@ -54,12 +56,13 @@ export class Router {
     if(url.href===this.currentURL.href)return;
     this.busy=true;document.body.classList.add('is-transitioning');
     try{
+      this.onIntent(url);
       // Attach both handlers immediately: a failed fetch can precede the cover animation.
       const loading=this.load(url).then(doc=>({doc}),error=>({error}));
       const delay=nextBeatDelay(this.score.time);
       if(this.score.playing)await new Promise(resolve=>setTimeout(resolve,delay*1000));
       this.score.cue('reveal');
-      await this.animate(0,1,this.score.playing?60000/112:430);
+      await this.animate(0,1,this.score.playing?60000/BPM:430);
       const result=await loading;if(result.error)throw result.error;
       const doc=result.doc;
       if(this.score.playing)await new Promise(resolve=>setTimeout(resolve,nextBeatDelay(this.score.time,1)*1000));
@@ -68,7 +71,7 @@ export class Router {
       this.currentURL=url;
       scrollTo(0,0);
       this.score.cue('reveal');
-      await this.animate(1,0,this.score.playing?120000/112:760);
+      await this.animate(1,0,this.score.playing?120000/BPM:760);
       const h1=document.querySelector('.hero-title');h1?.setAttribute('tabindex','-1');h1?.focus({preventScroll:true});
       if(url.hash)document.getElementById(decodeURIComponent(url.hash.slice(1)))?.scrollIntoView();
     }catch(error){

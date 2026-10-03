@@ -15,9 +15,10 @@ import { createStage } from './stage.js';
 import { readSetting } from '../experience/domain.js';
 
 export class World {
-  constructor(container,score,{status,onHover,onPick}={}) {
+  constructor(container,score,{status,onHover,onPick,onPortal}={}) {
     this.container=container;this.score=score;this.status=status||(()=>{});
     this.onHover=onHover||(()=>{});this.onPick=onPick||(()=>{});
+    this.onPortal=onPortal||(()=>{});
     this.pointer=new THREE.Vector2();this.targetPointer=new THREE.Vector2();
     this.ray=new THREE.Raycaster();this.focused=null;this.down=null;this.hovered=null;
     this.reduced=matchMedia('(prefers-reduced-motion: reduce)');
@@ -127,6 +128,12 @@ export class World {
   applySkin(id){this.model?.applySkin?.(id);document.body.dataset.skin=id;this.rim.color.set(id==='ocean'?0x8ab6de:id==='forest'?0x88d6b0:0xa1d8d3);this.moving=1;}
   transitionAt(progress){this.transition=progress;this.moving=1;this.updateVisibility();}
 
+  portalPosition(){
+    this.camera.updateMatrixWorld();
+    const point=this.actor.beacon.getWorldPosition(new THREE.Vector3()).project(this.camera);
+    return{x:(point.x+1)/2,y:(1-point.y)/2};
+  }
+
   updateVisibility(){
     const hero=document.querySelector('.world-hero');
     this.occluded=Boolean(hero&&hero.getBoundingClientRect().bottom<=0);
@@ -167,8 +174,9 @@ export class World {
     if(reduced&&this.moving<.01&&this.transition===0)return;
     this.moving*=.92;
     // The score clock also advances in silent mode, and freezes when playback pauses.
-    const t=reduced?0:this.score.time;
-    const rhythm=reduced?{pulse:0,phase:0,bar:0}:this.score.rhythm;
+    const rhythm=reduced?{time:0,beat:0,pulse:0,phase:0,bar:0,energy:.55}:this.score.rhythm;
+    const t=rhythm.time,mood=rhythm.energy;
+    this.storyFrame={time:t,beat:rhythm.beat,movement:rhythm.movement,energy:mood};
     const damping=1-Math.exp(-dt*6);
     this.pointer.lerp(this.targetPointer,damping);
     const wanted=this.desiredCamera.clone();
@@ -187,23 +195,30 @@ export class World {
         this.model.root.scale.setScalar((this.model.displayScale||1)*(mobile?.72:1)*(1-this.transition*.08));
       }
     }
-    this.actor.update(t,rhythm,this.pointer,this.route?.id==='about');
+    this.actor.update(t,rhythm,this.pointer,this.route?.id==='about',dt);
     const actorPos=this.route?.id==='home'&&this.focused?ROOM_VIEWS[this.focused].target.map((value,i)=>value+(i===1?.4:i===2?-.18:0)):(this.model?.actorPosition||[0,0,0]);
     const actorScale=innerWidth<700&&this.route?.id!=='home'?.72:1;
     const journey=this.transition*this.transition*(3-2*this.transition);
     this.actor.root.scale.setScalar(THREE.MathUtils.lerp(this.model?.actorScale||1,1,journey)*actorScale);
-    const portalZ=this.route?.id==='home'?-2.5:1.6;
+    const focusedView=this.route?.id==='home'&&ROOM_VIEWS[this.focused];
+    const portalBody=focusedView?new THREE.Vector3(focusedView.target[0],focusedView.target[1]+.4,focusedView.target[2]-.75):new THREE.Vector3(0,.35,this.route?.id==='home'?-2.5:1.6);
+    const verticalOffset=actorScale<1?-.3:0;
     this.actor.root.position.set(
-      THREE.MathUtils.lerp(actorPos[0]*actorScale+Math.sin(t*.45)*.07,0,journey),
-      THREE.MathUtils.lerp(actorPos[1]*actorScale-(actorScale<1?.3:0)+Math.sin(t*.8)*.08,.35*actorScale,journey)+Math.sin(journey*Math.PI)*.12,
-      THREE.MathUtils.lerp(actorPos[2]*actorScale,portalZ*actorScale,journey));
+      THREE.MathUtils.lerp(actorPos[0]*actorScale+Math.sin(t*.45)*.07,portalBody.x*actorScale,journey),
+      THREE.MathUtils.lerp(actorPos[1]*actorScale+verticalOffset+Math.sin(t*.8)*.08,portalBody.y*actorScale+verticalOffset,journey)+Math.sin(journey*Math.PI)*.12,
+      THREE.MathUtils.lerp(actorPos[2]*actorScale,portalBody.z*actorScale,journey));
     this.actor.root.rotation.z=-journey*.3;
     this.particles.scale.setScalar(actorScale);this.particles.position.y=actorScale<1?-.3:0;
     const uniforms=this.particles.material.uniforms;
-    uniforms.uTime.value=t;uniforms.uBeat.value=rhythm.pulse;uniforms.uGather.value=this.transition;
-    uniforms.uPortal.value.set(0,.67,portalZ);
+    uniforms.uTime.value=t;uniforms.uBeat.value=rhythm.pulse*(.5+mood*.5);uniforms.uGather.value=this.transition;
+    // The same real beacon drives particles and the page aperture, including
+    // responsive scale, character tilt, breathing and the focused room camera.
+    const beacon=this.actor.beacon.getWorldPosition(new THREE.Vector3());
+    uniforms.uPortal.value.copy(this.particles.worldToLocal(beacon));
+    if(this.transition>0)this.onPortal(this.portalPosition());
     this.burst=(this.burst||0)*Math.exp(-dt*3);
-    uniforms.uSize.value=this.renderer.getPixelRatio();uniforms.uEnergy.value=this.route?.id==='home'?.28:.5+this.transition*.5+this.burst*.5;
+    uniforms.uSize.value=this.renderer.getPixelRatio();uniforms.uEnergy.value=(this.route?.id==='home'?.28:.5)*(.78+mood*.35)+this.transition*.5+this.burst*.5;
+    this.bloom.strength=.18+mood*.07;
     this.particles.visible=true;
     this.model.root.visible=true;this.actor.root.visible=true;
     this.film.uniforms.uTime.value=t;this.film.uniforms.uTransition.value=this.transition;
@@ -218,5 +233,5 @@ export class World {
 
   diagnostics(){return{chapter:this.route?.id,drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,
     geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,pixelRatio:this.renderer.getPixelRatio(),
-    roomReady:this.model?.loaded??null,rendering:this.running,renderedFrames:this.renderedFrames,frameTimes:this.frames};}
+    roomReady:this.model?.loaded??null,rendering:this.running,renderedFrames:this.renderedFrames,story:this.storyFrame,frameTimes:this.frames};}
 }

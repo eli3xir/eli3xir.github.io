@@ -11,7 +11,8 @@
 | `npm run build:blog` | 从 Markdown 重建 39 篇文章和列表；不递归删除博客目录 |
 | `npm test` | 节拍、路由、拒绝存储、采样、接入脚本重复运行 |
 | `npm run validate` | 55 页入口、import map、本地文件、脚本类型/语法及正文保留 |
-| `npm run test:browser` | 全量连续/直接访问和九类行为；自动创建本地服务 |
+| `npm run test:browser` | 全量连续/直接访问、交互与降级行为；自动创建本地服务 |
+| `npm run test:audio` | 实际 OfflineAudioContext 渲染完整配乐、音量与重叠提示音，检查峰值/削波 |
 | `npm run test:performance` | 指定 GPU 下的桌面与手机视口帧间隔；注明模拟限制 |
 
 首次浏览器检查前执行 `npx playwright-core install chromium`。已安装的浏览器可通过环境变量 `BROWSER_EXECUTABLE` 指定。Windows 可以用 `BROWSER_ANGLE=d3d11`；报告实际渲染器。
@@ -23,6 +24,8 @@
 检查输出在忽略目录 `tools/test-results/`；截图研究与临时脚本在 `temp-docs/`。稳定结果写入 [验证记录](../../wiki/verification.md)。`window.studio.diagnostics()` 提供当前画面调用、几何和纹理统计。`AUDIT_QUICK=1` 只测七个入口；完整验收不设置它。`AUDIT_SCREENSHOTS=0` 可只跑行为。
 
 单个行为复查可用 `AUDIT_CASE` 指定场景名称的片段，例如 `reduced-motion experiment`。输出的 `scope` 明确区分完整、入口和单场景检查。
+
+`test:audio` 同时检查 32 kHz 与 24 kHz、默认和最大音量。报告合成时间、PCM 字节数、整体/乐章 RMS 与峰值；信号通过不能替代音乐听感评审，也不能用桌面合成时间推断真实手机性能。
 
 失效的旧外部图床独立记入 `knownExternalFailures`；新的站内资源失败仍使检查失败。PNG 截图和帧间隔不能自动决定艺术效果是否合格。
 

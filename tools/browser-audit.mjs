@@ -198,6 +198,77 @@ try{
     }
     await context.close();return result;
   });
+  await verify('portal follows the actual beacon on desktop, mobile, and focused room views',async()=>{
+    const results=[];
+    for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
+      const context=await browser.newContext({viewport});const page=await context.newPage();const log=observe(page);
+      await page.goto(server.base+'/about/');await ready(page);
+      for(const focus of [null,'lab']){
+        if(focus){await page.evaluate(()=>window.studio.router.navigate('/'));await ready(page);await settle(page);await page.evaluate(()=>window.studio.world.focus('lab'));}
+        await page.evaluate(()=>window.studio.router.transition(.72));
+        await page.waitForTimeout(180);
+        const evidence=await page.evaluate(()=>{
+          const world=window.studio.world;const beacon=world.actor.beacon.getWorldPosition(world.actor.root.position.clone());
+          const seed=world.particles.material.uniforms.uPortal.value.clone().applyMatrix4(world.particles.matrixWorld);
+          const projected=beacon.clone().project(world.camera);
+          const curtain=document.querySelector('.portal-layer');
+          const x=parseFloat(curtain.style.getPropertyValue('--portal-x'))/100,y=parseFloat(curtain.style.getPropertyValue('--portal-y'))/100;
+          const expectedX=Math.max(.03,Math.min(.97,(projected.x+1)/2)),expectedY=Math.max(.03,Math.min(.97,(1-projected.y)/2));
+          return{seedDistance:seed.distanceTo(beacon),pixelError:Math.hypot((x-expectedX)*innerWidth,(y-expectedY)*innerHeight),
+            focused:world.focused,actorX:world.actor.root.position.x,origin:[x,y],finite:[x,y].every(Number.isFinite)};
+        });
+        assert.ok(evidence.seedDistance<1e-5,JSON.stringify(evidence));assert.ok(evidence.pixelError<1,JSON.stringify(evidence));assert.equal(evidence.finite,true);
+        if(focus){assert.equal(evidence.focused,'lab');assert.ok(evidence.actorX>1.5);}
+        assert.deepEqual(log.errors,[]);results.push({viewport,focus,...evidence});await page.evaluate(()=>window.studio.router.transition(0));
+      }
+      await context.close();
+    }
+    return results;
+  });
+  await verify('late audio activation preserves the shared clock and releases PCM copies',async()=>{
+    const results=[];
+    for(const config of [{width:1440,reduced:false},{width:390,reduced:false},{width:1280,reduced:true}]){
+      const context=await browser.newContext({viewport:{width:config.width,height:900},reducedMotion:config.reduced?'reduce':'no-preference'});
+      await context.addInitScript(()=>sessionStorage.setItem('score-position','320'));
+      const page=await context.newPage(),log=observe(page);
+      await page.goto(server.base+'/radio/');await ready(page);await settle(page);
+      const before=await page.evaluate(()=>window.studio.score.time);
+      await page.locator('.sound-toggle').click();await page.waitForFunction(()=>window.studio.score.playing,{timeout:20000});
+      await page.waitForFunction(()=>document.querySelector('[data-movement="breath"]').classList.contains('active'));
+      const evidence=await page.evaluate(()=>{
+        const score=window.studio.score,world=window.studio.world;
+        window.auditLateSources=score.sources.slice();
+        return{time:score.time,rate:score.data.rate,pcmBytes:score.data.pcmBytes,rawReleased:score.data.stems===null,
+          generationMs:score.data.generationMs,sourceCount:score.sources.length,listeners:score.listeners.size,
+          duration:score.data.musicalDuration,sourceRate:score.sources[0].playbackRate.value,
+          story:world.storyFrame,particleTime:world.particles.material.uniforms.uTime.value,filmTime:world.film.uniforms.uTime.value,
+          movement:score.rhythm.movement,progress:parseFloat(document.querySelector('.score-track i').style.width)};
+      });
+      assert.ok(before>=320);assert.ok(evidence.time>=before-.1&&evidence.time<before+15);
+      assert.equal(evidence.rate,config.width<700?24000:32000);assert.ok(evidence.pcmBytes>25000000);
+      assert.equal(evidence.rawReleased,true);assert.equal(evidence.sourceCount,4);assert.equal(evidence.listeners,2);
+      assert.equal(evidence.movement,'breath');assert.ok(evidence.progress>50&&evidence.progress<75);
+      assert.equal(evidence.story.time,evidence.particleTime);assert.equal(evidence.story.time,evidence.filmTime);
+      if(!config.reduced)assert.ok(Math.abs(evidence.story.time-evidence.time)<.1);
+      if(config.reduced){
+        const meter=await page.locator('.sound-bars i').evaluateAll(bars=>bars.map(bar=>bar.style.transform));
+        await page.waitForTimeout(180);
+        assert.deepEqual(await page.locator('.sound-bars i').evaluateAll(bars=>bars.map(bar=>bar.style.transform)),meter);
+        assert.ok(meter.every(value=>value==='scaleY(0.65)'));
+      }
+      await page.evaluate(()=>window.studio.router.navigate('/about/'));await settle(page);
+      assert.equal(await page.evaluate(()=>window.studio.score.listeners.size),1);
+      await page.evaluate(()=>window.studio.router.navigate('/radio/'));await settle(page);
+      assert.equal(await page.evaluate(()=>window.studio.score.listeners.size),2);
+      assert.equal(await page.evaluate(()=>window.studio.score.sources.every((source,i)=>source===window.auditLateSources[i])),true);
+      await page.locator('.sound-toggle').click();const paused=await page.evaluate(()=>window.studio.score.time);
+      await page.waitForTimeout(150);assert.ok(Math.abs(await page.evaluate(()=>window.studio.score.time)-paused)<.025);
+      await page.locator('.sound-toggle').click();await page.waitForFunction(()=>window.studio.score.playing);
+      assert.ok(await page.evaluate(()=>window.studio.score.time)>=paused-.025);
+      assert.deepEqual(log.errors,[]);results.push({...config,...evidence});await context.close();
+    }
+    return results;
+  });
   await verify('blocked storage, reduced motion, keyboard navigation',async()=>{
     const context=await browser.newContext({viewport:{width:1280,height:900},reducedMotion:'reduce'});
     await context.addInitScript(()=>{for(const key of ['localStorage','sessionStorage'])Object.defineProperty(window,key,{get(){throw new DOMException('Blocked','SecurityError');}});});

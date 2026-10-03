@@ -1,3 +1,5 @@
+import { BPM } from '../audio/composition.js';
+
 export const CHAPTERS = [
   { id: 'home', number: '00', path: '/', label: '房间', title: 'A room for\ncurious minds.', subtitle: '一点好奇心，能走多远？', note: '深夜工作室 · 欢迎随便逛逛', color: '#dcaa65' },
   { id: 'lab', number: '01', path: '/lab/', label: '实验室', title: 'Good ideas\nmake a mess.', subtitle: '让好奇心，发生一点反应。', note: '九个实验 · 无限种意外', color: '#70dfbf' },
@@ -42,13 +44,13 @@ export function routeFor(pathname, doc = null) {
   return route;
 }
 
-export function beatState(time, bpm = 112) {
+export function beatState(time, bpm = BPM) {
   const beat = Math.max(0, time) * bpm / 60;
   return { beat, bar: Math.floor(beat / 4), phase: beat % 1,
     pulse: Math.exp(-(beat % 1) * 9), phrase: Math.floor(beat / 16) % 4 };
 }
 
-export function nextBeatDelay(time, subdivision = 0.5, bpm = 112) {
+export function nextBeatDelay(time, subdivision = 0.5, bpm = BPM) {
   const beat = time * bpm / 60;
   return ((Math.ceil((beat + 0.015) / subdivision) * subdivision - beat) * 60 / bpm);
 }

@@ -4,6 +4,7 @@ import { CHAPTERS, routeFor, nextBeatDelay, readSetting } from './domain.js';
 import { createChrome, hero } from './chrome.js';
 import { pageContent, enhanceContent } from './content.js';
 import { Router } from './router.js';
+import { BPM } from '../audio/composition.js';
 
 const original=document.cloneNode(true);
 const score=new Score();
@@ -17,7 +18,7 @@ const live=document.createElement('div');live.className='studio-toast';live.setA
 const tooltip=document.createElement('div');tooltip.className='object-label';tooltip.setAttribute('aria-hidden','true');tooltip.hidden=true;
 const preview=document.createElement('aside');preview.className='object-preview';preview.hidden=true;
 const curtain=document.createElement('div');curtain.className='portal-layer';curtain.setAttribute('aria-hidden','true');
-curtain.innerHTML='<div class="portal-surface"><span class="portal-label">FOLLOW YOUR CURIOSITY.</span><span class="portal-symbol">✳</span></div>';
+curtain.innerHTML='<div class="portal-surface"><span class="portal-label">FOLLOW YOUR CURIOSITY.</span><span class="portal-heading"></span><span class="portal-symbol">✳</span></div>';
 const skip=document.createElement('a');skip.className='skip-link';skip.href='#content';skip.textContent='跳到内容';
 let toastTimer;
 function announce(message,href=null){
@@ -47,7 +48,10 @@ function objectFocus(id){
   preview.querySelector('button').addEventListener('click',()=>unfocus(),{once:true});
 }
 function unfocus(){world?.focus(null);preview.hidden=true;document.body.classList.remove('room-focused');}
-try{world=new World(stage,score,{status:sceneStatus,onHover:objectHover,onPick:objectFocus});}
+try{world=new World(stage,score,{status:sceneStatus,onHover:objectHover,onPick:objectFocus,onPortal:point=>{
+  curtain.style.setProperty('--portal-x',`${Math.max(.03,Math.min(.97,point.x))*100}%`);
+  curtain.style.setProperty('--portal-y',`${Math.max(.03,Math.min(.97,point.y))*100}%`);
+}});}
 catch(error){console.error(error);document.body.classList.add('no-webgl');sceneStatus(-1,'当前设备暂时无法显示 3D，文字内容和导航仍可使用。',error);}
 
 function stylesheet(href){
@@ -74,7 +78,7 @@ async function mount(doc,url){
   if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
     const delay=score.playing?nextBeatDelay(score.time)*1000:80;
     section.querySelectorAll('.hero-word').forEach((word,i)=>{
-      const animation=word.animate([{transform:'translateY(108%) rotate(2deg)',opacity:0},{transform:'translateY(0) rotate(0)',opacity:1}],{duration:780,delay:delay+i*(60000/112/4),easing:'cubic-bezier(.18,.75,.2,1)',fill:'both'});
+      const animation=word.animate([{transform:'translateY(108%) rotate(2deg)',opacity:0},{transform:'translateY(0) rotate(0)',opacity:1}],{duration:score.playing?90000/BPM:780,delay:delay+i*(60000/BPM/4),easing:'cubic-bezier(.18,.75,.2,1)',fill:'both'});
       contentEvents.signal.addEventListener('abort',()=>animation.cancel(),{once:true});
     });
   }
@@ -91,7 +95,11 @@ async function loadMath(main){
     if(main.isConnected&&window.renderMathInElement)window.renderMathInElement(main.querySelector('.post-content'),{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]});
   }catch{announce('公式渲染暂时未能加载，原始公式仍保留在文章中。');}
 }
-router=new Router({score,mount,announce,transition:progress=>{
+router=new Router({score,mount,announce,onIntent:url=>{
+  const destination=routeFor(url.pathname);
+  curtain.querySelector('.portal-label').textContent=`${destination.number} / ${destination.label}`;
+  curtain.querySelector('.portal-heading').textContent=({home:'灯还亮着。',lab:'有点乱，有点意思。',blog:'给思路，找张纸。',radio:'好奇心，调到下一拍。',projects:'念头，开始通电。',about:'代码之外，还有本人。',skin:'今天，换个色温。'})[destination.id];
+},transition:progress=>{
   curtain.style.setProperty('--portal',String(Math.max(0,(progress-.48)/.52)));
   world?.transitionAt(progress);view.style.setProperty('--page-shift',String(progress));
 }});

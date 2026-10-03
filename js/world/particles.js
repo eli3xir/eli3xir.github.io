@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { randomSequence } from '../audio/synth.js';
+import { BPM } from '../audio/composition.js';
 
 export function createParticles(count = 2600) {
   const geometry = new THREE.BufferGeometry();
@@ -10,9 +11,9 @@ export function createParticles(count = 2600) {
   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   geometry.setAttribute('aSeed', new THREE.BufferAttribute(seed, 4));
   const material = new THREE.ShaderMaterial({
-    uniforms: { uTime: { value: 0 }, uBeat: { value: 0 }, uMode: { value: 0 }, uGather: { value: 0 },
+    uniforms: { uTime: { value: 0 }, uBeat: { value: 0 }, uBpm: { value:BPM }, uMode: { value: 0 }, uGather: { value: 0 },
       uColor: { value: new THREE.Color(0xd4b47b) }, uPortal: { value: new THREE.Vector3(0,.67,1.6) }, uSize: { value: 1 }, uEnergy: { value: .6 } },
-    vertexShader: `attribute vec4 aSeed; uniform float uTime,uBeat,uMode,uGather,uSize,uEnergy;uniform vec3 uPortal;
+    vertexShader: `attribute vec4 aSeed; uniform float uTime,uBeat,uBpm,uMode,uGather,uSize,uEnergy;uniform vec3 uPortal;
       varying float vAlpha; varying float vWarm;
       void main(){ float a=aSeed.x*6.283185; float t=uTime*.12; vec3 p;
         // One persistent set of seeds: dust -> reaction -> pages -> waves -> signals.
@@ -27,11 +28,11 @@ export function createParticles(count = 2600) {
           p=vec3(side*x,(row/21.-.5)*2.2,-.46+sin(x/1.8*3.14159)*.27);
           p.y+=sin(t*2.+x*3.)*.018;p.x+=side*sin(t)*.02; }
         else if(uMode<3.5){ float ring=floor(aSeed.y*5.);
-          float wave=sin(a*8.-uTime*112./60.*3.14159);
+          float wave=sin(a*8.-uTime*uBpm/60.*3.14159);
           float r=1.1+ring*.2+wave*(.025+uBeat*.07);
           p=vec3(cos(a)*r,sin(a)*r*.64,(aSeed.z-.5)*.08+wave*.07); }
         else if(uMode<4.5){ float lane=floor(aSeed.x*5.);
-          float f=fract(aSeed.y+uTime*.32);float x=(lane-2.)*.57;
+          float f=fract(aSeed.y+uTime*uBpm/240.);float x=(lane-2.)*.57;
           float h=lane<.5?.65:lane<1.5?1.15:lane<2.5?1.7:lane<3.5?1.05:.65;
           if(aSeed.z<.55){p=vec3(mix(x,0.,f),-.86+sin(f*3.14159)*.04,.3+f*.8);}
           else{p=vec3(x,-.9+f*(h+.08),(aSeed.w-.5)*.07);}
