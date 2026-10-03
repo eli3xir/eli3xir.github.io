@@ -14,5 +14,5 @@ description:
 
 OpenEuler 下载：[openEuler-20.03-LTS-x86_64-dvd.iso](https://mirrors.huaweicloud.com/openeuler/openEuler-20.03-LTS/ISO/x86_64/openEuler-20.03-LTS-x86_64-dvd.iso)
 
-服务器快速下载：[点击下载](/download/openEuler-20.03-LTS-x86_64-dvd.iso))
+服务器快速下载：[点击下载](https://repo.openeuler.org/openEuler-20.03-LTS/ISO/x86_64/openEuler-20.03-LTS-x86_64-dvd.iso))
 

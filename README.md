@@ -1,65 +1,58 @@
 # eli3xir.github.io
 
-我的个人作品集主页，由 [GitHub Pages](https://pages.github.com/) 托管。
+个人网站：[eli3xir.github.io](https://eli3xir.github.io)。GitHub Pages 静态部署。
 
-在线地址：<https://eli3xir.github.io>
+## 当前体验
 
-## 技术栈
+房间物件通向六个内容世界。全站共 55 个 HTML 页面：房间、6 个板块、39 篇文章、9 个交互实验。共享的 Three.js 场景、角色 Mote 和原创配乐在站内切页时连续运行。
 
-纯静态站，无构建步骤，所有依赖已本地化到 `vendor/`：
+- Three.js 0.185.1、本地 GLB、Cycles lightmap、程序化模型、GPU 粒子、接触阴影与光晕。
+- Cormorant Garamond / Space Grotesk 本地字体；中文使用设备字体。
+- 原创 `After Hours`：112 BPM、四声部、逐采样生成 PCM；默认静音，访客手势开启。
+- 文章搜索、标签、目录、锚点与代码复制；本地 KaTeX 公式渲染。
+- 五种房间色调、移动导航、画质控制、减少动态效果及 WebGL / 加载失败降级。
 
-- **Three.js** `0.185.1` — WebGL 背景（全屏 fbm 噪声 shader，鼠标/滚动驱动）
-- **主题引擎** — 春夏秋冬四季主题（整套配色+底色切换）+ 中国传统节日自动限定（春节/元宵/端午/中秋）+ 季节粒子（花瓣/萤火/落叶/雪/烟花/灯笼/桂花）
-- **GSAP** `3.15.0` + ScrollTrigger — 滚动叙事、文字切分入场、卡片倾斜
-- **Lenis** `1.3.25` — 惯性平滑滚动
-- **APlayer + Meting**（CDN）— 左下角迷你音乐播放器（网易云歌单）
-- 点击粒子特效、自定义光标、文章页浮动目录（TOC）
+既有文章内容保留。一处失效的 openEuler ISO 本地链接改为官方仓库地址。旧文章的外部图床仍可能失效，界面保留图片说明与来源链接。
 
 ## 本地预览
 
-```bash
-python -m http.server 8000
-# 访问 http://localhost:8000
+```sh
+python -m http.server 8765 --bind 127.0.0.1
 ```
 
-## 文件结构
+打开 `http://127.0.0.1:8765/`。页面使用模块与绝对路径，请通过 HTTP 服务访问。
 
-```
-├── index.html          # 单页结构：Hero / 关于 / 技能 / 项目 / 文章 / 联系
-├── css/style.css       # 主页暗色主题样式
-├── css/blog.css        # 博客页样式
-├── js/main.js          # shader 背景 + 交互逻辑（ES Module）
-├── js/blog.js          # 博客列表搜索/标签过滤
-├── blog/               # 生成的博客静态页（文章列表 + 39 篇文章）
-├── tools/
-│   ├── posts/          # Markdown 源文件（迁移自原 Hexo 博客）
-│   └── build-blog.js   # 静态博客构建脚本（markdown-it + highlight.js）
-└── vendor/             # three / gsap / lenis 本地化依赖
-```
+## 开发与验证
 
-## 博客构建
+要求 Node.js 22 或以上。
 
-不用任何博客框架，只有一个 ~150 行的 Node 脚本：
-
-```bash
-cd tools && npm install   # 仅首次
-node build-blog.js        # 读取 tools/posts/*.md → 生成 blog/*.html
+```sh
+npm install
+npm --prefix tools install
+npm run build:blog
+npm test
+npm run validate
+npx playwright-core install chromium
+npm run test:browser
+npm run test:performance
 ```
 
-文章含数学公式时自动注入 KaTeX（CDN）；代码块用 highlight.js 构建期高亮。
+浏览器检查自带临时 HTTP 服务，输出放在忽略的 `tools/test-results/`。可以通过 `BROWSER_EXECUTABLE` 指定已有 Chromium，通过 `BROWSER_ANGLE=d3d11` 选择 Windows Direct3D 后端。
 
-## 部署
+博客源文件位于 `tools/posts/`。`build:blog` 会生成 39 篇文章和列表页，保持现有路由。`tools/integrate-experience.cjs` 用于给既有内容 HTML 接入体验层，重复运行保持实验脚本类型及入口一致。
 
-仓库名为 `<用户名>.github.io`，推送到 `main` 分支后 GitHub Pages 自动发布：
+## 目录
 
-```bash
-git add -A
-git commit -m "更新内容"
-git push
-```
+| 路径 | 职责 |
+| --- | --- |
+| `js/experience/` | 路由、页面内容、导航、输入与无障碍 |
+| `js/world/` | 房间、模型、角色、光照、粒子与 GPU 资源释放 |
+| `js/audio/` | 逐采样音色、编曲、生成线程与播放时钟 |
+| `assets/` | 房间、光照图、字体、既有文章图片与实验预览 |
+| `vendor/` | 本地依赖及许可 |
+| `tools/` | 博客构建、验证、浏览器审计及回归检查 |
+| `docs/` | Wiki、实现/验收规格与运行 harness |
 
-## 性能与无障碍
+## 交付与迭代
 
-- 渲染分辨率上限 `devicePixelRatio ≤ 2`，后台标签页自动暂停渲染
-- `prefers-reduced-motion` 下关闭动画、平滑滚动与渲染循环
-- 自定义光标仅在 `pointer: fine` 设备启用
+`main` 分支由 GitHub Pages 发布。推送前执行内容、语法与浏览器验证；上线后检查部署版本和关键交互。当前艺术效果仍处于持续迭代，工程测试通过不等于视觉验收完成。具体记录见 [验证记录](docs/wiki/verification.md)。

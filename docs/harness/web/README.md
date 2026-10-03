@@ -1,15 +1,31 @@
 # 网站运行与测试
 
-运行环境：Windows / Node.js / Python 3。目标为 GitHub Pages 静态托管。
+运行环境：Node.js 22+，本地预览可用 Python 3。目标为 GitHub Pages 静态托管。
 
-## 本地服务
+## 命令
 
-在仓库根目录执行 `python -m http.server 8765 --bind 127.0.0.1`，访问 `http://127.0.0.1:8765/`。站点使用绝对路径，不能通过 `file://` 验证模块与导航。
+仓库根目录运行 `npm install`，再执行 `npm --prefix tools install` 安装博客生成依赖。
 
-## 验证证据
+| 命令 | 验证范围 |
+| --- | --- |
+| `npm run build:blog` | 从 Markdown 重建 39 篇文章和列表；不递归删除博客目录 |
+| `npm test` | 节拍、路由、拒绝存储、采样、接入脚本重复运行 |
+| `npm run validate` | 55 页入口、import map、本地文件、脚本类型/语法及正文保留 |
+| `npm run test:browser` | 全量连续/直接访问和九类行为；自动创建本地服务 |
+| `npm run test:performance` | 指定 GPU 下的桌面与手机视口帧间隔；注明模拟限制 |
 
-桌面、手机、减少动态效果和加载失败都需要运行验证。完整路由清单以 HTML 文件扫描为准。截图及临时测量输出放到 Git 忽略的 `temp-docs/`；稳定的验证命令与最终结果在实施完成后补充。
+首次浏览器检查前执行 `npx playwright-core install chromium`。已安装的浏览器可通过环境变量 `BROWSER_EXECUTABLE` 指定。Windows 可以用 `BROWSER_ANGLE=d3d11`；报告实际渲染器。
 
-## 当前网络情况
+手动预览：`python -m http.server 8765 --bind 127.0.0.1`，访问 `http://127.0.0.1:8765/`。绝对路径、模块与导航要求 HTTP 服务。
 
-2026-10-03：首次 Git fetch 使用的旧代理不可连接；覆盖命令级代理后连接被重置。curl 可以访问 npm registry。尚不能据此认定推送成功，后续须实际验证远端提交。
+## 输出与诊断
+
+检查输出在忽略目录 `tools/test-results/`；截图研究与临时脚本在 `temp-docs/`。稳定结果写入 [验证记录](../../wiki/verification.md)。`window.studio.diagnostics()` 提供当前画面调用、几何和纹理统计。`AUDIT_QUICK=1` 只测七个入口；完整验收不设置它。`AUDIT_SCREENSHOTS=0` 可只跑行为。
+
+单个行为复查可用 `AUDIT_CASE` 指定场景名称的片段，例如 `reduced-motion experiment`。输出的 `scope` 明确区分完整、入口和单场景检查。
+
+失效的旧外部图床独立记入 `knownExternalFailures`；新的站内资源失败仍使检查失败。PNG 截图和帧间隔不能自动决定艺术效果是否合格。
+
+## 推送与发布
+
+2026-10-03 的环境中仓库旧代理为 7890，实际环境代理为 7897。使用命令级覆盖 `git -c http.proxy=http://127.0.0.1:7897 push`；不修改全局代理。文档提交已推送至 `feat/cinematic-atlas`。后续代码发布以远端提交和 GitHub Pages 实际访问核对，不能只依据本地提交声明上线。

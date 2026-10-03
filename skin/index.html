@@ -27,6 +27,8 @@
     border: 1px solid #6b5335; padding: 8px 20px; border-radius: 8px; }
   .back:hover { background: rgba(60, 45, 28, .9); }
 </style>
+  <link rel="stylesheet" href="/css/experience.css" data-experience-style>
+  <script type="importmap">{"imports":{"three":"/vendor/three/three.module.min.js","three/addons/":"/vendor/three/addons/","pixi.js":"/vendor/pixi/pixi.min.mjs"}}</script>
 </head>
 <body>
 <div class="wrap">
@@ -51,7 +53,7 @@ const SKINS = {
 };
 const grid = document.getElementById('grid');
 const toast = document.getElementById('toast');
-const cur = localStorage.getItem('room-skin') || 'default';
+const cur = (() => { try { return localStorage.getItem('room-skin') || 'default'; } catch { return 'default'; } })();
 for (const [id, s] of Object.entries(SKINS)) {
   const card = document.createElement('div');
   card.className = 'card' + (id === cur ? ' active' : '');
@@ -60,7 +62,7 @@ for (const [id, s] of Object.entries(SKINS)) {
     <div class="name">${s.name}</div>
     <div class="desc">${s.desc}</div>`;
   card.onclick = () => {
-    localStorage.setItem('room-skin', id);
+    try { localStorage.setItem('room-skin', id); } catch { /* selection remains usable for this session */ }
     document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
     card.classList.add('active');
     toast.textContent = `已应用「${s.name}」，回到房间查看效果`;
@@ -70,5 +72,6 @@ for (const [id, s] of Object.entries(SKINS)) {
   grid.appendChild(card);
 }
 </script>
+  <script type="module" src="/js/experience/entry.js"></script>
 </body>
 </html>

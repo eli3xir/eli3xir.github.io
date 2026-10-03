@@ -1,0 +1,84 @@
+import { nextBeatDelay } from './domain.js';
+
+export class Router {
+  constructor({mount,transition,score,announce}) {
+    this.mount=mount;this.transition=transition;this.score=score;this.announce=announce;
+    this.cache=new Map();this.busy=false;this.pending=null;this.animation=null;
+    this.currentURL=new URL(location.href);
+    addEventListener('click',e=>this.click(e));
+    addEventListener('popstate',()=>this.navigate(location.href,{history:false}));
+    addEventListener('pagehide',()=>score.save());
+    addEventListener('pageshow',()=>{document.body.classList.remove('is-transitioning');});
+  }
+
+  click(event) {
+    const link=event.target.closest('a[href]');
+    if(!link||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||link.target||link.hasAttribute('download'))return;
+    const url=new URL(link.href,location.href);
+    if(url.origin!==location.origin||url.protocol!=='http:'&&url.protocol!=='https:')return;
+    if(url.pathname===location.pathname&&url.search===location.search&&url.hash){
+      const target=document.getElementById(decodeURIComponent(url.hash.slice(1)));
+      if(target){event.preventDefault();history.replaceState(null,'',url);this.currentURL=url;target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
+      return;
+    }
+    if(!/\/$|\.html$/.test(url.pathname)&&url.pathname!=='/')return;
+    event.preventDefault();this.navigate(url.href);
+  }
+
+  async load(url) {
+    const key=url.pathname+url.search;
+    if(this.cache.has(key))return this.cache.get(key);
+    const response=await fetch(url.href,{signal:AbortSignal.timeout(12000)});
+    if(!response.ok)throw new Error(`HTTP ${response.status}`);
+    const doc=new DOMParser().parseFromString(await response.text(),'text/html');
+    if(!doc.querySelector('main,.wrap,.demo-hud'))throw new Error('目的地缺少页面内容');
+    this.cache.set(key,doc);return doc;
+  }
+
+  async animate(from,to,duration) {
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches){this.transition(to);return;}
+    await new Promise(resolve=>{
+      const start=performance.now();
+      const frame=now=>{
+        const p=Math.min(1,(now-start)/duration);
+        const eased=p<.5?4*p*p*p:1-(-2*p+2)**3/2;
+        this.transition(from+(to-from)*eased);
+        if(p<1)this.animation=requestAnimationFrame(frame);else resolve();
+      };this.animation=requestAnimationFrame(frame);
+    });
+  }
+
+  async navigate(href,{history:push=true}={}) {
+    const url=new URL(href,location.href);
+    if(this.busy){this.pending={href:url.href,options:{history:push}};return;}
+    if(url.href===this.currentURL.href)return;
+    this.busy=true;document.body.classList.add('is-transitioning');
+    try{
+      // Attach both handlers immediately: a failed fetch can precede the cover animation.
+      const loading=this.load(url).then(doc=>({doc}),error=>({error}));
+      const delay=nextBeatDelay(this.score.time);
+      if(this.score.playing)await new Promise(resolve=>setTimeout(resolve,delay*1000));
+      this.score.cue('reveal');
+      await this.animate(0,1,this.score.playing?60000/112:430);
+      const result=await loading;if(result.error)throw result.error;
+      const doc=result.doc;
+      if(this.score.playing)await new Promise(resolve=>setTimeout(resolve,nextBeatDelay(this.score.time,1)*1000));
+      await this.mount(doc,url);
+      if(push)history.pushState({studio:true},'',url);
+      this.currentURL=url;
+      scrollTo(0,0);
+      this.score.cue('reveal');
+      await this.animate(1,0,this.score.playing?60000/112:610);
+      const h1=document.querySelector('.hero-title');h1?.setAttribute('tabindex','-1');h1?.focus({preventScroll:true});
+      if(url.hash)document.getElementById(decodeURIComponent(url.hash.slice(1)))?.scrollIntoView();
+    }catch(error){
+      if(!push)history.replaceState({studio:true},'',this.currentURL);
+      this.announce(`暂时无法进入这个页面：${error.message}。可以重试或直接打开。`,url.href);
+      // The current content stays usable when a destination cannot be fetched.
+      await this.animate(1,0,220);
+    }finally{
+      this.busy=false;document.body.classList.remove('is-transitioning');
+      if(this.pending){const pending=this.pending;this.pending=null;this.navigate(pending.href,pending.options);}
+    }
+  }
+}

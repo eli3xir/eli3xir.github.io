@@ -33,3 +33,11 @@
 | [MDN AudioWorkletProcessor.process](https://developer.mozilla.org/en-US/docs/Web/API/AudioWorkletProcessor/process) | 对比实时逐采样合成与离线缓冲生成的工作方式 |
 
 本项目新几何、动画和配乐原创实现。采用外部代码或资产时必须记录来源、版本、许可及实际使用范围。
+
+## 实际查看与采用
+
+玻璃金箔马赛克视频的公开下载副本时长 80.04 秒。使用 Blender 4.5.12 LTS 解码观察第 8、30、62 秒：同一组块体组成海面与太阳，局部破裂，随后整体卷曲。这提供了持续元素、材质和变形承载叙事的参考；下载副本与内容观察不能直接证明原帖的模型归属或生成方式。视频与参考帧仅存于临时研究目录，没有作为本站资产发布。
+
+Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐字节一致；采用需要的 addon 闭包，MIT 许可随代码本地保留。KaTeX 0.16.22 来自官方 npm 包，MIT 许可及字体本地保留。Cormorant Garamond 和 Space Grotesk 从 Google Fonts 官方仓库取得，SIL OFL 文本随字体保留。既有 PixiJS 依赖用于原实验，未改写为另一套玩法。
+
+本站没有发布第三方参考视频、音频、下载的新外部模型或 AI 图片。新的模型与声音来自本仓库原创代码，房间使用既有 model-studio 资产。

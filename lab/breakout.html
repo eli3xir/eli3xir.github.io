@@ -5,11 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>霓虹打砖块 · 创意实验室</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a14'/%3E%3Ctext x='16' y='23' font-size='18' text-anchor='middle'%3E🧱%3C/text%3E%3C/svg%3E">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/pages.css">
-  <script type="importmap">
-    { "imports": { "pixi.js": "/vendor/pixi/pixi.min.mjs" } }
-  </script>
+  <link rel="stylesheet" href="/css/experience.css" data-experience-style>
+  <script type="importmap">{"imports":{"three":"/vendor/three/three.module.min.js","three/addons/":"/vendor/three/addons/","pixi.js":"/vendor/pixi/pixi.min.mjs"}}</script>
 </head>
 <body class="demo-body">
   <div class="demo-hud">
@@ -17,8 +15,8 @@
     <p>鼠标移动接球 · PixiJS 8 渲染 · 击碎有粒子烟花</p>
   </div>
   <a class="demo-back" href="/lab/">← 返回实验室</a>
-  <script type="module" src="/js/lab-breakout.js"></script>
-  <script src="/js/player.js"></script>
-  <script src="../js/back-to-room.js"></script>
+  <script type="application/x-lab" data-src="/js/lab-breakout.js" data-module="true"></script>
+  <script type="module" src="/js/experience/entry.js"></script>
+  <script src="/js/experience/lab-host.js"></script>
 </body>
 </html>
