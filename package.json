@@ -11,7 +11,8 @@
     "test:performance": "node tools/performance-audit.mjs",
     "test:audio": "node tools/audio-audit.mjs",
     "test:loading": "node tools/room-loading-audit.mjs",
-    "test:lightmaps": "node tools/lightmap-audit.mjs"
+    "test:lightmaps": "node tools/lightmap-audit.mjs",
+    "test:reading": "node tools/reading-audit.mjs"
   },
   "engines": {
     "node": ">=22"

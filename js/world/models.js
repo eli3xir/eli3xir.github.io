@@ -1,6 +1,7 @@
 import * as THREE from 'three';
-import { brass, ink, paper, glass, mesh, ring, labelTexture, liquidMaterial } from './materials.js';
+import { brass, ink, paper, glass, mesh, ring, liquidMaterial } from './materials.js';
 import { createExperiment } from './experiments.js';
+import { createBook } from './book.js';
 
 function plinth(root, radius = 1) {
   mesh(new THREE.CylinderGeometry(radius, radius * 1.04, .14, 96), ink(), root, [0, -1.16, 0]);
@@ -32,42 +33,6 @@ function potion() {
     cap.position.y = 1.27 + Math.sin(t * .7) * .05+reaction*.24;
     cap.rotation.z=Math.sin((t-touched)*8)*reaction*.18;
     orbit.rotation.y = t * .12; vessel.rotation.y = Math.sin(t * .2) * .04;
-  } };
-}
-
-function book(title) {
-  const root = new THREE.Group();
-  const pivot = new THREE.Group(); root.add(pivot);
-  pivot.rotation.set(.04, -.3, -.12);
-  const textures = [labelTexture('A curious mind.','THE CABINET / ELI3XIR'),labelTexture(title, 'FIELD NOTES / ELI3XIR')];
-  for (const sign of [-1, 1]) {
-    const cover = mesh(new THREE.BoxGeometry(1.43, 1.94, .095), ink(), pivot, [sign*.72,0,-.18]);
-    cover.rotation.y = sign * -.13;
-    for (let page = 0; page < 11; page++) {
-      const geometry = new THREE.PlaneGeometry(1.36, 1.88, 32, 12);
-      const pos = geometry.attributes.position;
-      for (let i = 0; i < pos.count; i++) {
-        const x = pos.getX(i) + .68;
-        pos.setXYZ(i, sign * x, pos.getY(i), Math.sin(x / 1.36 * Math.PI) * .11 + x * .08 + page * .007);
-      }
-      geometry.computeVertexNormals();
-      if(sign<0){const uv=geometry.attributes.uv;for(let i=0;i<uv.count;i++)uv.setX(i,1-uv.getX(i));}
-      const material = page === 10 ? new THREE.MeshStandardMaterial({ map: textures[sign<0?0:1], roughness: .7, side: THREE.DoubleSide }) : paper();
-      mesh(geometry, material, pivot);
-    }
-    const stitch = mesh(new THREE.CylinderGeometry(.015, .015, 1.86, 12), brass(), pivot, [sign * .025, 0, -.08]);
-    stitch.rotation.z = 0;
-  }
-  const inkOrb = mesh(new THREE.SphereGeometry(.19, 32, 24), liquidMaterial('#d9b56b'), root, [0, .5, .7]);
-  const flap=new THREE.Group();pivot.add(flap);flap.position.z=.09;
-  const leaf=mesh(new THREE.PlaneGeometry(1.34,1.86,28,10),paper(),flap,[.67,0,0]);leaf.visible=false;
-  let touched=-100,lastTime=0;
-  return { root, actorPosition: [1.4,.9,.15],actorMobilePosition:[1.05,1.15,.15],interact(){touched=lastTime;},update(t, beat, scroll) {
-    lastTime=t;const age=t-touched;leaf.visible=age<1.2;flap.rotation.y=-Math.PI*Math.min(1,age/1.2);
-    if(leaf.visible){const pos=leaf.geometry.attributes.position;for(let i=0;i<pos.count;i++)pos.setZ(i,Math.sin((pos.getX(i)+.67)/1.34*Math.PI)*Math.sin(age/1.2*Math.PI)*.35);pos.needsUpdate=true;leaf.geometry.computeVertexNormals();}
-    pivot.rotation.y = -.3 + Math.sin(t * .3) * .07 + scroll * .16;
-    inkOrb.position.y = .45 + Math.sin(t * 1.1) * .13;
-    inkOrb.material.uniforms.uTime.value = t; inkOrb.material.uniforms.uBeat.value = beat.pulse;
   } };
 }
 
@@ -141,5 +106,5 @@ function skin() {
 
 export function createModel(route) {
   if(route.experiment)return createExperiment(route.experimentId);
-  return ({ lab:potion, blog:()=>book(route.contentTitle), radio, projects, about, skin }[route.id] || potion)();
+  return ({ lab:potion, blog:()=>createBook(route.contentTitle,route.readingEntries), radio, projects, about, skin }[route.id] || potion)();
 }

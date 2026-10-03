@@ -5,6 +5,7 @@ import { createChrome, hero } from './chrome.js';
 import { pageContent, enhanceContent } from './content.js';
 import { Router } from './router.js';
 import { BPM } from '../audio/composition.js';
+import { readingEntries, bindReading } from './reading.js';
 
 const original=document.cloneNode(true);
 const score=new Score();
@@ -61,7 +62,7 @@ function stylesheet(href){
 }
 async function mount(doc,url){
   contentEvents?.abort();contentEvents=new AbortController();
-  route=routeFor(url.pathname,doc);document.body.dataset.chapter=route.id;
+  route=routeFor(url.pathname,doc);route.readingEntries=readingEntries(doc,route);document.body.dataset.chapter=route.id;
   document.body.classList.toggle('article-view',route.article);document.body.classList.toggle('experiment-view',route.experiment);
   document.body.classList.remove('room-focused');preview.hidden=true;tooltip.hidden=true;
   document.title=doc.title||`${route.label} · eli3xir`;
@@ -73,6 +74,7 @@ async function mount(doc,url){
   if(route.id==='home'){section.querySelector('.chapter-dock').id='home-navigation';section.setAttribute('role','main');skip.href='#home-navigation';}
   else{skip.href='#content';const footer=document.createElement('footer');footer.className='studio-footer';footer.innerHTML='<span>eli3xir / A CABINET OF CURIOSITIES</span><span>© 2026 · KEEP WONDERING.</span>';view.append(footer);}
   world?.show(route);world?.applySkin(readSetting('room-skin','default'));score.scene(route.id);chrome.update(route);
+  bindReading(section,route.readingEntries,{world,signal:contentEvents.signal});
   enhanceContent(main,route,{signal:contentEvents.signal,score,world,announce});
   section.querySelector('[data-explore]')?.addEventListener('click',()=>{if(world?.model.loaded){world.focus('lab');objectFocus('lab');score.cue('hover');}else announce('移动鼠标或轻轻拖动，点击桌上与墙上的物件。也可以使用下方入口。');},{signal:contentEvents.signal});
   if(!matchMedia('(prefers-reduced-motion: reduce)').matches){

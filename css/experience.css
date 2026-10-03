@@ -45,6 +45,13 @@ body[data-skin="brick"]{--studio-gold:#c78870}body[data-skin="forest"]{--studio-
 .explore-button{display:inline-flex;align-items:center;justify-content:space-between;gap:46px;font-size:11px;letter-spacing:.04em;color:#ece5d3;background:none;border:0;border-bottom:1px solid #7d806a;padding:11px 0;margin-top:24px;pointer-events:auto;transition:color .3s}
 .explore-button span{font-size:20px;line-height:1;transition:transform .3s}
 .explore-button:hover span{transform:translate(3px,-3px)}
+.reading-choice{max-width:420px;pointer-events:auto}
+.reading-position{font:9px/1.5 monospace;color:#b4bea9;letter-spacing:.07em;margin:0 0 9px}
+.reading-title{display:block;color:#ece5d3;font-size:15px;line-height:1.7;text-wrap:pretty}
+.reading-title:hover{color:#dfbc7a}.reading-title:after{content:' ↗';color:#dfbc7a;white-space:nowrap}
+.reading-actions{display:flex;align-items:center;gap:24px;margin-top:14px;font-size:10px;color:#b4bea9}
+.reading-actions button{font:inherit;color:#ece5d3;background:none;border:0;border-bottom:1px solid #7d806a;padding:8px 0;cursor:pointer}
+.reading-actions span{margin-left:14px}.reading-actions a{padding:8px 0}
 .world-caption{position:absolute;right:9%;top:77%;font-size:8px;letter-spacing:.16em;color:#9da38d;display:flex;align-items:center;gap:16px}
 .world-caption b{font-weight:400;color:#cec7ac}
 .caption-line{width:40px;height:1px;background:#79836a}

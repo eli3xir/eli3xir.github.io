@@ -112,7 +112,7 @@ export class World {
   }
 
   show(route) {
-    if(this.model){this.scene.remove(this.model.root);if(!this.model.persistent)disposeGroup(this.model.root);}
+    if(this.model){this.model.dispose?.();this.scene.remove(this.model.root);if(!this.model.persistent)disposeGroup(this.model.root);}
     this.route=route;this.focused=null;this.focusJourney=null;this.hovered=null;this.scroll=0;
     this.model=route.id==='home'?createRoom((...args)=>{if(this.route?.id==='home')this.status(...args);}):createModel(route);
     this.model.focus?.(null);
@@ -189,12 +189,24 @@ export class World {
     const hero=document.querySelector('.world-hero')?.getBoundingClientRect();
     if(!hero||event.clientY<hero.top||event.clientY>hero.bottom)return;
     if(event.target.closest('a,button,input,select,textarea')||event.clientY>innerHeight)return;
-    if(this.route?.id!=='home'){this.actor.react();this.model?.interact?.();this.burst=1;this.score.cue('hover');return;}
     this.targetPointer.set(event.clientX/innerWidth*2-1,-event.clientY/innerHeight*2+1);
     this.ray.setFromCamera(this.targetPointer,this.camera);
+    if(this.route?.id!=='home'){
+      if(this.model?.hitTest&&!this.model.hitTest(this.ray)){this.actor.react();return;}
+      this.interact();return;
+    }
     const id=this.model.pick?.(this.ray);
     if(id){this.focus(id);this.onPick(id);this.score.cue('hover');}
     else this.actor.react();
+  }
+
+  interact(){
+    const feedback=(delay=0)=>{this.actor.react();this.burst=1;this.score.cue('hover',delay);this.moving=1;};
+    if(this.model?.next){
+      this.model.next({now:performance.now()/1000,delay:this.score.audible&&!this.reduced.matches?nextBeatDelay(this.score.time):0,duration:120/BPM,reduced:this.reduced.matches,onStart:feedback});
+      this.moving=1;return;
+    }
+    this.model?.interact?.();feedback();
   }
 
   stop(){if(!this.running)return;this.running=false;this.renderer.setAnimationLoop(null);}
@@ -222,7 +234,7 @@ export class World {
     wanted.z*=1-this.transition*.11;
     this.camera.position.lerp(wanted,damping);this.target.lerp(this.desiredTarget,damping);this.camera.lookAt(this.target);
     if(this.model){
-      this.model.update(t,rhythm,this.scroll);
+      this.model.update(t,rhythm,this.scroll,now/1000,reduced);
       if(!this.model.persistent){
         this.model.root.rotation.y=Math.sin(t*.12)*.055+this.pointer.x*.06+this.transition*.25;
         this.model.root.position.y=this.compact?-.3:-this.scroll*.42;

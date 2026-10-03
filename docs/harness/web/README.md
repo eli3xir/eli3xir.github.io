@@ -30,6 +30,8 @@
 
 `compact scenes` 检查短屏、手机和平板的实际模型投影、文字间距、滚动与尺寸改变；`late audio activation` 包含真实 AudioContext 外部暂停与手势恢复，核对时钟冻结、按钮状态及持续音轨身份。`HDR room maps` 核对全部 122 张光照图的实际尺寸、UV 通道与亮度倍率。手机尺寸模拟仍需真实设备补充验收。
 
+`npm run test:reading` 检查两种视口的真实文章翻阅：按钮/键盘与模型命中、空白区域、连点连续性、暂停时钟、减少动态效果、45 次翻阅的纹理数量、原文进入与跨板块返回。输出 `tools/test-results/reading-audit.json` 及初始/翻页中截图；可设置 `BASE_URL` 检查部署版本。
+
 `room focus carries` 检查同一角色与相机的连续物件探索，包括途中改选、启用配乐、系统暂停音频和减少动态效果。`portal follows` 同时核对角色发光点、粒子、纸幕圆心与揭示结束的姿态连续性。
 
 `room stays hidden` 暂缓光照图响应，核对模型不提前显现；随后释放请求并检查房间就绪，再模拟单张光照图失败，确认仍可进入房间。
