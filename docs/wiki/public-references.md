@@ -34,6 +34,8 @@
 | [MDN AudioWorkletProcessor.process](https://developer.mozilla.org/en-US/docs/Web/API/AudioWorkletProcessor/process) | 对比实时逐采样合成与离线缓冲生成的工作方式 |
 | [MDN OfflineAudioContext](https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext) / [Web Audio 规范](https://webaudio.github.io/web-audio-api/) | 在浏览器实际渲染完整配乐与重叠提示音，检查有限值、峰值及削波 |
 | [Blender 4.5 Render Baking](https://docs.blender.org/manual/en/4.5/render/cycles/baking.html) / [Denoise](https://docs.blender.org/manual/en/4.5/compositing/types/filter/denoise.html) | 既有 UV 的漫反射光照烘焙，法线引导 HDR 去噪与显示颜色分离；网页正文已下载核对 |
+| [W3C 对比度最低要求](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html) | 普通文字 4.5:1、大字 3:1；用于后续动态背景上的实际文字检查，当前不是全站符合性声明 |
+| [Three.js PMREMGenerator](https://threejs.org/docs/pages/PMREMGenerator.html) | 核对从场景和指定位置生成反射环境的 API，并对照本地 0.185.1 实现；实际房间反射仍待候选画面对照 |
 
 本项目新几何、动画和配乐原创实现。采用外部代码或资产时必须记录来源、版本、许可及实际使用范围。
 

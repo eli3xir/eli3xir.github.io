@@ -76,9 +76,9 @@ async function mount(doc,url){
   enhanceContent(main,route,{signal:contentEvents.signal,score,world,announce});
   section.querySelector('[data-explore]')?.addEventListener('click',()=>{if(world?.model.loaded){world.focus('lab');objectFocus('lab');score.cue('hover');}else announce('移动鼠标或轻轻拖动，点击桌上与墙上的物件。也可以使用下方入口。');},{signal:contentEvents.signal});
   if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
-    const delay=score.playing?nextBeatDelay(score.time)*1000:80;
+    const delay=score.audible?nextBeatDelay(score.time)*1000:80;
     section.querySelectorAll('.hero-word').forEach((word,i)=>{
-      const animation=word.animate([{transform:'translateY(108%) rotate(2deg)',opacity:0},{transform:'translateY(0) rotate(0)',opacity:1}],{duration:score.playing?90000/BPM:780,delay:delay+i*(60000/BPM/4),easing:'cubic-bezier(.18,.75,.2,1)',fill:'both'});
+      const animation=word.animate([{transform:'translateY(108%) rotate(2deg)',opacity:0},{transform:'translateY(0) rotate(0)',opacity:1}],{duration:score.audible?90000/BPM:780,delay:delay+i*(60000/BPM/4),easing:'cubic-bezier(.18,.75,.2,1)',fill:'both'});
       contentEvents.signal.addEventListener('abort',()=>animation.cancel(),{once:true});
     });
   }

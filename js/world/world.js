@@ -12,6 +12,7 @@ import { createCharacter } from './character.js';
 import { disposeGroup } from './materials.js';
 import { FilmShader } from './film.js';
 import { createStage } from './stage.js';
+import { composeHero } from './composition.js';
 import { readSetting } from '../experience/domain.js';
 
 export class World {
@@ -58,12 +59,13 @@ export class World {
     this.actor.root.rotation.y=0;
     this.moving=0;this.scroll=0;this.transition=0;this.last=performance.now();this.frames=[];this.renderedFrames=0;
     this.events=new AbortController();
+    this.heroObserver=new ResizeObserver(()=>{if(this.model&&!this.focused)this.resize();});
     const options={signal:this.events.signal};
     addEventListener('resize',()=>this.resize(),options);
     addEventListener('pointermove',e=>this.move(e),{...options,passive:true});
     addEventListener('pointerdown',e=>{if(!e.target.closest('a,button,input,select,textarea'))this.down=[e.clientX,e.clientY];},options);
     addEventListener('pointerup',e=>this.pick(e),options);
-    addEventListener('scroll',()=>{this.scroll=Math.min(1,scrollY/innerHeight);this.moving=1;this.updateVisibility();},{...options,passive:true});
+    addEventListener('scroll',()=>{this.scroll=Math.min(1,scrollY/innerHeight);if(this.compact)this.offsetCamera();this.moving=1;this.updateVisibility();},{...options,passive:true});
     document.addEventListener('visibilitychange',()=>{
       this.last=performance.now();
       this.updateVisibility();
@@ -80,13 +82,18 @@ export class World {
     this.camera.aspect=innerWidth/innerHeight;
     this.bloom.enabled=quality!=='low'&&!this.reduced.matches;
     this.key.castShadow=quality!=='low'&&this.route?.id!=='home';
-    this.offsetCamera();this.camera.updateProjectionMatrix();this.setRig();this.moving=1;this.updateVisibility();
+    this.setRig();
+    if(this.model){this.camera.position.copy(this.desiredCamera);this.camera.lookAt(this.desiredTarget);composeHero(this);}
+    this.offsetCamera();this.camera.updateProjectionMatrix();this.moving=1;this.updateVisibility();
   }
 
   offsetCamera() {
+    this.camera.aspect=innerWidth/innerHeight;
     this.camera.clearViewOffset();
     if(this.focused)return;
-    this.camera.setViewOffset(innerWidth,innerHeight,innerWidth<700?0:-innerWidth*.2,innerWidth<700?-innerHeight*.12:0,innerWidth,innerHeight);
+    const compact=this.compact??innerWidth<=850;
+    const height=compact?this.heroHeight||innerHeight:innerHeight;
+    this.camera.setViewOffset(innerWidth,height,compact?0:-innerWidth*.2,compact?(this.heroOffset||0)+scrollY:0,innerWidth,innerHeight);
   }
 
   setRig() {
@@ -121,7 +128,9 @@ export class World {
     this.offsetCamera();this.setRig();
     // Swap at the covered midpoint; the reveal starts with a composed camera.
     this.camera.position.copy(this.desiredCamera);this.target.copy(this.desiredTarget);
-    this.camera.lookAt(this.target);this.moving=1;
+    this.camera.lookAt(this.target);composeHero(this);this.offsetCamera();this.moving=1;
+    this.heroObserver.disconnect();
+    const copy=document.querySelector('.hero-copy');if(copy)this.heroObserver.observe(copy);
     this.renderer.domElement.dataset.chapter=route.id;
     this.container.dataset.ready='true';
   }
@@ -171,7 +180,7 @@ export class World {
   }
 
   frame(now) {
-    const dt=Math.min((now-this.last)/1000,.06);this.last=now;
+    const dt=Math.max(0,Math.min((now-this.last)/1000,.06));this.last=now;
     const reduced=this.reduced.matches;
     if(reduced&&this.moving<.01&&this.transition===0)return;
     this.moving*=.92;
@@ -192,14 +201,13 @@ export class World {
       this.model.update(t,rhythm,this.scroll);
       if(!this.model.persistent){
         this.model.root.rotation.y=Math.sin(t*.12)*.055+this.pointer.x*.06+this.transition*.25;
-        const mobile=innerWidth<700;
-        this.model.root.position.y=-this.scroll*.42-(mobile?.3:0);
-        this.model.root.scale.setScalar((this.model.displayScale||1)*(mobile?.72:1)*(1-this.transition*.08));
+        this.model.root.position.y=this.compact?-.3:-this.scroll*.42;
+        this.model.root.scale.setScalar((this.model.displayScale||1)*(this.layoutScale||1)*(1-this.transition*.08));
       }
     }
     this.actor.update(t,rhythm,this.pointer,this.route?.id==='about',dt);
-    const actorPos=this.route?.id==='home'&&this.focused?ROOM_VIEWS[this.focused].target.map((value,i)=>value+(i===1?.4:i===2?-.18:0)):(this.model?.actorPosition||[0,0,0]);
-    const actorScale=innerWidth<700&&this.route?.id!=='home'?.72:1;
+    const actorPos=this.route?.id==='home'&&this.focused?ROOM_VIEWS[this.focused].target.map((value,i)=>value+(i===1?.4:i===2?-.18:0)):((this.compact&&this.model?.actorMobilePosition)||this.model?.actorPosition||[0,0,0]);
+    const actorScale=this.layoutScale||1;
     const journey=this.transition*this.transition*(3-2*this.transition);
     const idleScale=(this.model?.actorScale||1)*(this.route?.id==='home'&&this.focused?.5:1);
     this.actor.root.scale.setScalar(THREE.MathUtils.lerp(idleScale,1,journey)*actorScale);

@@ -25,13 +25,13 @@ export function createChrome(score, callbacks) {
   const motion=matchMedia('(prefers-reduced-motion: reduce)');
   function syncMeter(){
     cancelAnimationFrame(meterFrame);
-    if(!score.playing||document.hidden||motion.matches){
-      bars.forEach(bar=>{bar.style.transform=score.playing?'scaleY(.65)':'';});return;
+    if(!score.audible||document.hidden||motion.matches){
+      bars.forEach(bar=>{bar.style.transform=score.audible?'scaleY(.65)':'';});return;
     }
     const tick=()=>{
       const rhythm=score.rhythm;
       bars.forEach((bar,i)=>{bar.style.transform=`scaleY(${.35+.65*Math.exp(-((rhythm.beat+i*.25)%1)*5)})`;});
-      if(score.playing&&!document.hidden)meterFrame=requestAnimationFrame(tick);
+      if(score.audible&&!document.hidden)meterFrame=requestAnimationFrame(tick);
     };tick();
   }
   document.addEventListener('visibilitychange',syncMeter);
@@ -42,8 +42,8 @@ export function createChrome(score, callbacks) {
     finally{button.disabled=false;}
   });
   score.subscribe(state=>{
-    button.setAttribute('aria-pressed',String(state.playing));dock.classList.toggle('playing',state.playing);
-    dock.querySelector('.sound-label').textContent=state.generating?'正在唤醒声音…':state.playing?'声音已开启':'开启声音';
+    button.setAttribute('aria-pressed',String(state.audible));dock.classList.toggle('playing',state.audible);
+    dock.querySelector('.sound-label').textContent=state.generating?'正在唤醒声音…':state.audible?'声音已开启':state.playing?'继续声音':'开启声音';
     syncMeter();
   });
   const corner=document.createElement('a');corner.className='room-link';corner.href='/';corner.innerHTML='<span aria-hidden="true">↖</span> 回到房间';

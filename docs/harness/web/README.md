@@ -25,6 +25,8 @@
 
 单个行为复查可用 `AUDIT_CASE` 指定场景名称的片段，例如 `reduced-motion experiment`。输出的 `scope` 明确区分完整、入口和单场景检查。
 
+`compact scenes` 检查短屏、手机和平板的实际模型投影、文字间距、滚动与尺寸改变；`late audio activation` 包含真实 AudioContext 外部暂停与手势恢复，核对时钟冻结、按钮状态及持续音轨身份。`HDR room maps` 核对全部 122 张光照图的实际尺寸、UV 通道与亮度倍率。手机尺寸模拟仍需真实设备补充验收。
+
 `test:audio` 同时检查 32 kHz 与 24 kHz、默认和最大音量。报告合成时间、PCM 字节数、整体/乐章 RMS 与峰值；信号通过不能替代音乐听感评审，也不能用桌面合成时间推断真实手机性能。
 
 失效的旧外部图床独立记入 `knownExternalFailures`；新的站内资源失败仍使检查失败。PNG 截图和帧间隔不能自动决定艺术效果是否合格。

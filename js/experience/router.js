@@ -60,18 +60,18 @@ export class Router {
       // Attach both handlers immediately: a failed fetch can precede the cover animation.
       const loading=this.load(url).then(doc=>({doc}),error=>({error}));
       const delay=nextBeatDelay(this.score.time);
-      if(this.score.playing)await new Promise(resolve=>setTimeout(resolve,delay*1000));
+      if(this.score.audible)await new Promise(resolve=>setTimeout(resolve,delay*1000));
       this.score.cue('reveal');
-      await this.animate(0,1,this.score.playing?60000/BPM:430);
+      await this.animate(0,1,this.score.audible?60000/BPM:430);
       const result=await loading;if(result.error)throw result.error;
       const doc=result.doc;
-      if(this.score.playing)await new Promise(resolve=>setTimeout(resolve,nextBeatDelay(this.score.time,1)*1000));
+      if(this.score.audible)await new Promise(resolve=>setTimeout(resolve,nextBeatDelay(this.score.time,1)*1000));
       await this.mount(doc,url);
       if(push)history.pushState({studio:true},'',url);
       this.currentURL=url;
       scrollTo(0,0);
       this.score.cue('reveal');
-      await this.animate(1,0,this.score.playing?120000/BPM:760);
+      await this.animate(1,0,this.score.audible?120000/BPM:760);
       const h1=document.querySelector('.hero-title');h1?.setAttribute('tabindex','-1');h1?.focus({preventScroll:true});
       if(url.hash)document.getElementById(decodeURIComponent(url.hash.slice(1)))?.scrollIntoView();
     }catch(error){

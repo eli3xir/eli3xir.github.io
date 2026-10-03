@@ -176,7 +176,8 @@ body[data-skin="brick"]{--studio-gold:#c78870}body[data-skin="forest"]{--studio-
 @media(max-width:1250px){.hero-title{font-size:clamp(60px,6.5vw,90px)}.studio-toc{display:none}[data-experience] #content .lab-thumb{height:210px}.skin-grid{grid-template-columns:repeat(3,1fr)}.post-tags{display:none!important}[data-experience] #content .post-item>a{grid-template-columns:100px 1fr}}
 @media(max-width:850px){
   .studio-header{padding:25px 6vw}.studio-nav{gap:18px}.studio-nav a{font-size:10px}
-  .hero-copy{left:7vw;max-width:450px}.hero-title{font-size:60px}
+  .hero-copy{top:135px;left:7vw;max-width:450px}.hero-title{font-size:60px}
+  .world-caption{top:auto;bottom:95px}
   [data-experience] #content .lab-grid{grid-template-columns:repeat(2,1fr);gap:35px 22px}
   .hero-bottom{font-size:7px}.sound-dock{left:6vw}.room-link{right:6vw}
   .chapter-dock{left:7vw;right:7vw}.chapter-dock a{font-size:10px;gap:7px}

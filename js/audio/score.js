@@ -20,8 +20,11 @@ export class Score {
 
   subscribe(fn) { this.listeners.add(fn); fn(this); return () => this.listeners.delete(fn); }
   notify() { this.listeners.forEach(fn => fn(this)); }
+  get audible() { return this.playing && this.context?.state === 'running'; }
   get time() {
-    if(this.playing && this.context?.state === 'running')return Math.max(0,this.context.currentTime-this.zero);
+    // Browser interruptions freeze currentTime. Keep that same clock until the
+    // visitor explicitly pauses, rather than returning an old session offset.
+    if(this.playing && this.context)return Math.max(0,this.context.currentTime-this.zero);
     if(this.sources.length)return this.offset;
     return this.offset + performance.now() / 1000 - this.started;
   }
@@ -49,9 +52,12 @@ export class Score {
   }
 
   async changePlayback() {
-    if (this.playing) { await this.pause(); return; }
+    if (this.audible) { await this.pause(); return; }
     // Create and resume the context within the initiating user gesture.
-    this.context ||= new (window.AudioContext || window.webkitAudioContext)();
+    if (!this.context) {
+      this.context = new (window.AudioContext || window.webkitAudioContext)();
+      this.context.addEventListener('statechange',()=>this.notify());
+    }
     await this.context.resume();
     if (this.sources.length) { this.playing = true; this.started = performance.now() / 1000; this.notify(); return; }
     const data = await this.prepare();

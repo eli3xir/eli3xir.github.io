@@ -53,11 +53,11 @@ export function enhanceContent(main,route,{signal,score,world,announce}) {
     scoreButton.addEventListener('click',async()=>{try{await score.toggle();}catch(e){announce(e.message);}},options);
     const timeline=()=>{
       const rhythm=score.rhythm;
-      main.querySelector('.score-now').textContent=score.playing?`${rhythm.title} / 第 ${Math.floor(rhythm.cycleBar)+1} 小节`:'四个乐章 / 一段好奇心的旅程';
+      main.querySelector('.score-now').textContent=score.playing?`${score.audible?'':'等待继续 · '}${rhythm.title} / 第 ${Math.floor(rhythm.cycleBar)+1} 小节`:'四个乐章 / 一段好奇心的旅程';
       main.querySelector('.score-track i').style.width=`${score.playing?rhythm.cycleBar/BARS*100:0}%`;
       main.querySelectorAll('[data-movement]').forEach(item=>item.classList.toggle('active',score.playing&&item.dataset.movement===rhythm.movement));
     };
-    const unsubscribe=score.subscribe(state=>{scoreButton.textContent=state.generating?'正在唤醒声音…':state.playing?'暂停试听 ↗':'试听原创配乐 ↗';scoreButton.disabled=state.generating;timeline();});
+    const unsubscribe=score.subscribe(state=>{scoreButton.textContent=state.generating?'正在唤醒声音…':state.audible?'暂停试听 ↗':state.playing?'继续试听 ↗':'试听原创配乐 ↗';scoreButton.setAttribute('aria-pressed',String(state.audible));scoreButton.disabled=state.generating;timeline();});
     const timer=setInterval(timeline,150);
     signal.addEventListener('abort',()=>{unsubscribe();clearInterval(timer);},{once:true});
   }

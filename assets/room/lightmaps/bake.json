@@ -2,8 +2,10 @@
   "source": "model-studio/room/room.blend",
   "sourceSha256": "bacd3b7a8c56c28bb30764f91cc58e17f80c71feae8d73207b4be2a5ba02d883",
   "glbSha256": "e84a92fb7cf455014446c81237aec2157e32e3a906e711d5f9c26849c96e82cc",
+  "blender": "4.5.12 LTS",
   "samples": 512,
   "backend": "OPTIX",
+  "webMaxSize": 1024,
   "textures": [
     {
       "name": "wall_back",
@@ -94,10 +96,648 @@
       "scale": 1.1565157175064087,
       "seconds": 17.734000000054948,
       "bytes": 95967
+    },
+    {
+      "name": "labbench_leg",
+      "scale": 1.2753885984420776,
+      "seconds": 5.452999999979511,
+      "bytes": 21077
+    },
+    {
+      "name": "labbench_leg.001",
+      "scale": 1.007677435874939,
+      "seconds": 4.827999999979511,
+      "bytes": 21723
+    },
+    {
+      "name": "labbench_leg.002",
+      "scale": 1.4621832370758057,
+      "seconds": 5.079000000027008,
+      "bytes": 19695
+    },
+    {
+      "name": "labbench_leg.003",
+      "scale": 1.3233386278152466,
+      "seconds": 4.875,
+      "bytes": 19118
+    },
+    {
+      "name": "leaf0",
+      "scale": 11.188602447509766,
+      "seconds": 3.202999999979511,
+      "bytes": 13835
+    },
+    {
+      "name": "leaf1",
+      "scale": 9.452422142028809,
+      "seconds": 3.047000000020489,
+      "bytes": 12949
+    },
+    {
+      "name": "leaf2",
+      "scale": 8.613922119140625,
+      "seconds": 3.125,
+      "bytes": 12448
+    },
+    {
+      "name": "leaf3",
+      "scale": 8.861658096313477,
+      "seconds": 3.26500000001397,
+      "bytes": 13145
+    },
+    {
+      "name": "leaf4",
+      "scale": 9.974801063537598,
+      "seconds": 3.265999999945052,
+      "bytes": 14048
+    },
+    {
+      "name": "leaf5",
+      "scale": 10.331501960754395,
+      "seconds": 3.469000000040978,
+      "bytes": 13869
+    },
+    {
+      "name": "Mesh_0",
+      "scale": 18.686323165893555,
+      "seconds": 3.202999999979511,
+      "bytes": 18000
+    },
+    {
+      "name": "Mesh_0.002",
+      "scale": 1,
+      "seconds": 1.172000000020489,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_0.003",
+      "scale": 1,
+      "seconds": 1.1709999999729916,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_0.004",
+      "scale": 5.955184459686279,
+      "seconds": 2.8910000000614673,
+      "bytes": 55104
+    },
+    {
+      "name": "Mesh_1.001",
+      "scale": 1.5975967645645142,
+      "seconds": 3.452999999979511,
+      "bytes": 51867
+    },
+    {
+      "name": "Mesh_1.002",
+      "scale": 1,
+      "seconds": 1.172000000020489,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_1.003",
+      "scale": 1,
+      "seconds": 1.140999999945052,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_1.004",
+      "scale": 7.277209281921387,
+      "seconds": 2.7820000000065193,
+      "bytes": 58162
+    },
+    {
+      "name": "Mesh_10.001",
+      "scale": 10.853885650634766,
+      "seconds": 3.155999999959022,
+      "bytes": 72169
+    },
+    {
+      "name": "Mesh_10.002",
+      "scale": 1,
+      "seconds": 1.0940000000409782,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_10.003",
+      "scale": 1,
+      "seconds": 1.140999999945052,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_10.004",
+      "scale": 1,
+      "seconds": 1.1400000000139698,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_11",
+      "scale": 14.447997093200684,
+      "seconds": 3.60999999998603,
+      "bytes": 10654
+    },
+    {
+      "name": "Mesh_11.001",
+      "scale": 1,
+      "seconds": 1.672000000020489,
+      "bytes": 4737
+    },
+    {
+      "name": "Mesh_11.342",
+      "scale": 1,
+      "seconds": 1.202999999979511,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_12.001",
+      "scale": 7.9584736824035645,
+      "seconds": 2.8290000000270084,
+      "bytes": 15826
+    },
+    {
+      "name": "Mesh_12.002",
+      "scale": 1,
+      "seconds": 1.1559999999590218,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_13",
+      "scale": 12.92361831665039,
+      "seconds": 3.594000000040978,
+      "bytes": 10807
+    },
+    {
+      "name": "Mesh_13.001",
+      "scale": 6.810616493225098,
+      "seconds": 2.51500000001397,
+      "bytes": 8154
+    },
+    {
+      "name": "Mesh_13.002",
+      "scale": 1,
+      "seconds": 1.422000000020489,
+      "bytes": 4737
+    },
+    {
+      "name": "Mesh_14.001",
+      "scale": 1,
+      "seconds": 1.2339999999385327,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_14.002",
+      "scale": 1,
+      "seconds": 1.172000000020489,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_15",
+      "scale": 61.870582580566406,
+      "seconds": 3.2969999999040738,
+      "bytes": 14860
+    },
+    {
+      "name": "Mesh_15.001",
+      "scale": 8.414067268371582,
+      "seconds": 3.281000000075437,
+      "bytes": 57069
+    },
+    {
+      "name": "Mesh_15.002",
+      "scale": 1,
+      "seconds": 1.1559999999590218,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_16",
+      "scale": 1,
+      "seconds": 1.1570000000065193,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_16.001",
+      "scale": 1,
+      "seconds": 1.327999999979511,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_16.002",
+      "scale": 1,
+      "seconds": 1.172000000020489,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_17",
+      "scale": 464.36370849609375,
+      "seconds": 3,
+      "bytes": 8116
+    },
+    {
+      "name": "Mesh_17.001",
+      "scale": 8.385063171386719,
+      "seconds": 2.25,
+      "bytes": 21881
+    },
+    {
+      "name": "Mesh_17.002",
+      "scale": 4.805746078491211,
+      "seconds": 2.952999999979511,
+      "bytes": 15974
+    },
+    {
+      "name": "Mesh_18",
+      "scale": 1,
+      "seconds": 1.125,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_18.001",
+      "scale": 1,
+      "seconds": 1.3440000000409782,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_19",
+      "scale": 5.9220781326293945,
+      "seconds": 3.327999999979511,
+      "bytes": 11710
+    },
+    {
+      "name": "Mesh_2",
+      "scale": 41.3487434387207,
+      "seconds": 3.530999999959022,
+      "bytes": 16687
+    },
+    {
+      "name": "Mesh_2.001",
+      "scale": 1.3751095533370972,
+      "seconds": 3.35999999998603,
+      "bytes": 53188
+    },
+    {
+      "name": "Mesh_2.002",
+      "scale": 1,
+      "seconds": 1.2810000000754371,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_2.003",
+      "scale": 1,
+      "seconds": 1.2650000000139698,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_2.004",
+      "scale": 1,
+      "seconds": 1.172000000020489,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_20",
+      "scale": 6.217125415802002,
+      "seconds": 3.265999999945052,
+      "bytes": 14483
+    },
+    {
+      "name": "Mesh_21",
+      "scale": 1,
+      "seconds": 1.3440000000409782,
+      "bytes": 1670
+    },
+    {
+      "name": "Mesh_3.001",
+      "scale": 2.1037039756774902,
+      "seconds": 2.875,
+      "bytes": 48589
+    },
+    {
+      "name": "Mesh_3.002",
+      "scale": 19.416208267211914,
+      "seconds": 1.8429999999934807,
+      "bytes": 6762
+    },
+    {
+      "name": "Mesh_3.003",
+      "scale": 12.762744903564453,
+      "seconds": 1.8119999999180436,
+      "bytes": 7077
+    },
+    {
+      "name": "Mesh_3.004",
+      "scale": 1,
+      "seconds": 1.1880000000819564,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_4",
+      "scale": 62.27154541015625,
+      "seconds": 3.530999999959022,
+      "bytes": 14669
+    },
+    {
+      "name": "Mesh_4.001",
+      "scale": 1,
+      "seconds": 1.140999999945052,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_4.002",
+      "scale": 1,
+      "seconds": 1.125,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_4.003",
+      "scale": 1,
+      "seconds": 1.172000000020489,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_4.004",
+      "scale": 1,
+      "seconds": 1.172000000020489,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_5.001",
+      "scale": 2.5366063117980957,
+      "seconds": 2.844000000040978,
+      "bytes": 46291
+    },
+    {
+      "name": "Mesh_5.004",
+      "scale": 1,
+      "seconds": 1.25,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_6",
+      "scale": 19.50179100036621,
+      "seconds": 3.640999999945052,
+      "bytes": 59666
+    },
+    {
+      "name": "Mesh_6.001",
+      "scale": 1,
+      "seconds": 1.1709999999729916,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_6.002",
+      "scale": 1,
+      "seconds": 1.125,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_6.003",
+      "scale": 1,
+      "seconds": 1.125,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_6.004",
+      "scale": 5.125967025756836,
+      "seconds": 1.577999999979511,
+      "bytes": 11338
+    },
+    {
+      "name": "Mesh_7",
+      "scale": 13.557039260864258,
+      "seconds": 4.375,
+      "bytes": 48969
+    },
+    {
+      "name": "Mesh_7.001",
+      "scale": 1.8473454713821411,
+      "seconds": 2.577999999979511,
+      "bytes": 38626
+    },
+    {
+      "name": "Mesh_7.342",
+      "scale": 4.809185981750488,
+      "seconds": 1.4070000000065193,
+      "bytes": 7568
+    },
+    {
+      "name": "Mesh_8",
+      "scale": 21.568344116210938,
+      "seconds": 3.51500000001397,
+      "bytes": 7538
+    },
+    {
+      "name": "Mesh_8.001",
+      "scale": 12.33759880065918,
+      "seconds": 3.25,
+      "bytes": 8688
+    },
+    {
+      "name": "Mesh_8.002",
+      "scale": 1,
+      "seconds": 1.125,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_8.003",
+      "scale": 1,
+      "seconds": 1.1400000000139698,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_8.004",
+      "scale": 1,
+      "seconds": 1.1410000000614673,
+      "bytes": 1665
+    },
+    {
+      "name": "Mesh_8.005",
+      "scale": 7.027495384216309,
+      "seconds": 3.140999999945052,
+      "bytes": 13049
+    },
+    {
+      "name": "Mesh_9",
+      "scale": 16.801918029785156,
+      "seconds": 3.5,
+      "bytes": 10377
+    },
+    {
+      "name": "Mesh_9.004",
+      "scale": 1,
+      "seconds": 1.1560000000754371,
+      "bytes": 1665
+    },
+    {
+      "name": "note0",
+      "scale": 1.0071972608566284,
+      "seconds": 3.905999999959022,
+      "bytes": 6778
+    },
+    {
+      "name": "note1",
+      "scale": 1.2156909704208374,
+      "seconds": 3.577999999979511,
+      "bytes": 7472
+    },
+    {
+      "name": "note2",
+      "scale": 1.2163017988204956,
+      "seconds": 3.437999999965541,
+      "bytes": 7126
+    },
+    {
+      "name": "note3",
+      "scale": 1.322457194328308,
+      "seconds": 3.85999999998603,
+      "bytes": 7313
+    },
+    {
+      "name": "note4",
+      "scale": 1.7981113195419312,
+      "seconds": 3.719000000040978,
+      "bytes": 7121
+    },
+    {
+      "name": "note5",
+      "scale": 2.002692937850952,
+      "seconds": 3.437999999965541,
+      "bytes": 7345
+    },
+    {
+      "name": "note6",
+      "scale": 2.174636125564575,
+      "seconds": 3.7179999999934807,
+      "bytes": 6861
+    },
+    {
+      "name": "note7",
+      "scale": 1.0129221677780151,
+      "seconds": 3.8130000000819564,
+      "bytes": 7400
+    },
+    {
+      "name": "note8",
+      "scale": 1.1454150676727295,
+      "seconds": 3.375,
+      "bytes": 7202
+    },
+    {
+      "name": "note9",
+      "scale": 1.9002442359924316,
+      "seconds": 3.780999999959022,
+      "bytes": 7008
+    },
+    {
+      "name": "painting_frame",
+      "scale": 4.04934024810791,
+      "seconds": 11.78200000000652,
+      "bytes": 56936
+    },
+    {
+      "name": "photo_card",
+      "scale": 1.3721351623535156,
+      "seconds": 7.281000000075437,
+      "bytes": 22576
+    },
+    {
+      "name": "photo_img",
+      "scale": 1.455736756324768,
+      "seconds": 2.75,
+      "bytes": 6509
+    },
+    {
+      "name": "pin0",
+      "scale": 1.5644810199737549,
+      "seconds": 2.9209999999729916,
+      "bytes": 10831
+    },
+    {
+      "name": "pin1",
+      "scale": 1.520671010017395,
+      "seconds": 2.875,
+      "bytes": 11931
+    },
+    {
+      "name": "pin2",
+      "scale": 1.384138822555542,
+      "seconds": 2.937000000034459,
+      "bytes": 10596
+    },
+    {
+      "name": "pin3",
+      "scale": 1.7071986198425293,
+      "seconds": 3.01500000001397,
+      "bytes": 12034
+    },
+    {
+      "name": "pin4",
+      "scale": 2.058842658996582,
+      "seconds": 3.0160000000614673,
+      "bytes": 10992
+    },
+    {
+      "name": "pin5",
+      "scale": 2.4095115661621094,
+      "seconds": 2.968999999924563,
+      "bytes": 11427
+    },
+    {
+      "name": "pin6",
+      "scale": 2.8471546173095703,
+      "seconds": 3.062000000034459,
+      "bytes": 12126
+    },
+    {
+      "name": "pin7",
+      "scale": 1.3387900590896606,
+      "seconds": 2.98499999998603,
+      "bytes": 12023
+    },
+    {
+      "name": "pin8",
+      "scale": 1.342553973197937,
+      "seconds": 2.922000000020489,
+      "bytes": 11851
+    },
+    {
+      "name": "pin9",
+      "scale": 2.4907350540161133,
+      "seconds": 2.922000000020489,
+      "bytes": 12276
+    },
+    {
+      "name": "pin_photo",
+      "scale": 1.3790730237960815,
+      "seconds": 2.922000000020489,
+      "bytes": 11177
+    },
+    {
+      "name": "plant_pot",
+      "scale": 6.954687595367432,
+      "seconds": 3.780999999959022,
+      "bytes": 9201
+    },
+    {
+      "name": "shelf_bottle1",
+      "scale": 1,
+      "seconds": 3.187999999965541,
+      "bytes": 6991
+    },
+    {
+      "name": "shelf_bottle2",
+      "scale": 1,
+      "seconds": 3.297000000020489,
+      "bytes": 9185
+    },
+    {
+      "name": "sticky_board",
+      "scale": 2.4417543411254883,
+      "seconds": 21.609000000054948,
+      "bytes": 56459
+    },
+    {
+      "name": "sticky_frame",
+      "scale": 2.85115909576416,
+      "seconds": 8.608999999938533,
+      "bytes": 48353
     }
-  ],
-  "blender": "4.5.12 LTS",
-  "webMaxSize": 1024,
-  "originalBytes": 1787737,
-  "publishedBytes": 843903
+  ]
 }

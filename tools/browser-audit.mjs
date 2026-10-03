@@ -200,7 +200,7 @@ try{
   });
   await verify('portal follows the actual beacon on desktop, mobile, and focused room views',async()=>{
     const results=[];
-    for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
+    for(const viewport of [{width:1440,height:1000},{width:390,height:844},{width:320,height:568},{width:768,height:1024}]){
       const context=await browser.newContext({viewport});const page=await context.newPage();const log=observe(page);
       await page.goto(server.base+'/about/');await ready(page);
       for(const focus of [null,'lab']){
@@ -246,7 +246,7 @@ try{
         window.auditHDRTextures=result.map(map=>map.file);
         return result;
       });
-      assert.equal(maps.length,15);
+      assert.equal(maps.length,122);
       for(const map of maps){assert.ok(Number.isFinite(map.intensity)&&map.intensity>0);assert.ok(Math.abs(map.intensity-map.expected)<1e-6);
         assert.equal(map.width,map.expectedSize);assert.equal(map.height,map.expectedSize);assert.ok(map.width<=1024);assert.equal(map.channel,1);}
       for(const skin of ['default','brick','forest','ocean','cream']){
@@ -261,6 +261,41 @@ try{
       assert.deepEqual(log.errors,[]);results.push({width,maps});await context.close();
     }
     return results;
+  });
+  await verify('compact scenes clear the text and follow scrolling through viewport changes',async()=>{
+    const results=[];
+    const context=await browser.newContext();const page=await context.newPage(),log=observe(page);
+    await page.goto(server.base+'/about/');await ready(page);await settle(page);
+    await page.evaluate(()=>{window.auditLayoutRenderer=window.studio.world.renderer;Object.defineProperty(window.studio.score,'time',{get:()=>4});});
+    for(const viewport of [{width:320,height:568},{width:390,height:844},{width:768,height:1024}]){
+      await page.setViewportSize(viewport);
+      for(const route of ['/lab/','/blog/','/radio/','/projects/','/about/','/skin/','/lab/fluid.html','/blog/65374.html']){
+        await page.evaluate(route=>window.studio.router.navigate(route),route);await settle(page);
+        const layout=await page.evaluate(async()=>{
+          const {Box3,Vector3}=await import('three'),w=window.studio.world;
+          const box=new Box3().setFromObject(w.model.root).union(new Box3().setFromObject(w.actor.root));
+          let top=Infinity;
+          for(const x of [box.min.x,box.max.x])for(const y of [box.min.y,box.max.y])for(const z of [box.min.z,box.max.z]){
+            const point=new Vector3(x,y,z).project(w.camera);top=Math.min(top,(1-point.y)*innerHeight/2);
+          }
+          return{top,copyBottom:document.querySelector('.hero-copy').getBoundingClientRect().bottom,
+            sameRenderer:w.renderer===window.auditLayoutRenderer,overflow:document.documentElement.scrollWidth>innerWidth+2,
+            scale:w.layoutScale,aspect:w.camera.aspect,negativeFrame:w.frames.some(dt=>dt<0)};
+        });
+        assert.ok(layout.top>layout.copyBottom+5,JSON.stringify({viewport,route,...layout}));
+        assert.equal(layout.sameRenderer,true);assert.equal(layout.overflow,false);assert.equal(layout.negativeFrame,false);
+        assert.ok(layout.scale>0&&layout.scale<=.72);results.push({viewport,route,...layout});
+      }
+    }
+    await page.evaluate(()=>window.studio.router.navigate('/about/'));await settle(page);
+    await page.setViewportSize({width:320,height:568});await page.waitForTimeout(100);
+    const point=()=>page.evaluate(()=>window.studio.world.portalPosition().y*innerHeight);
+    const before=await point();await page.evaluate(()=>scrollTo(0,230));await page.waitForTimeout(100);
+    assert.ok(Math.abs(before-await point()-230)<2);
+    await page.setViewportSize({width:1440,height:1000});await page.evaluate(()=>scrollTo(0,0));await page.waitForTimeout(100);
+    assert.equal(await page.evaluate(()=>window.studio.world.compact),false);
+    assert.ok(Math.abs(await page.evaluate(()=>window.studio.world.camera.aspect)-1.44)<1e-6);
+    assert.deepEqual(log.errors,[]);await context.close();return results;
   });
   await verify('late audio activation preserves the shared clock and releases PCM copies',async()=>{
     const results=[];
@@ -298,6 +333,18 @@ try{
       await page.evaluate(()=>window.studio.router.navigate('/radio/'));await settle(page);
       assert.equal(await page.evaluate(()=>window.studio.score.listeners.size),2);
       assert.equal(await page.evaluate(()=>window.studio.score.sources.every((source,i)=>source===window.auditLateSources[i])),true);
+      const beforeInterruption=await page.evaluate(()=>window.studio.score.time);
+      await page.evaluate(()=>window.studio.score.context.suspend());
+      await page.waitForFunction(()=>document.querySelector('.sound-label').textContent==='继续声音');
+      const frozen=await page.evaluate(()=>window.studio.score.time);
+      assert.ok(frozen>=beforeInterruption-.05);
+      assert.equal(await page.locator('.sound-toggle').getAttribute('aria-pressed'),'false');
+      assert.ok((await page.locator('[data-score-toggle]').textContent()).includes('继续试听'));
+      await page.waitForTimeout(150);assert.ok(Math.abs(await page.evaluate(()=>window.studio.score.time)-frozen)<.025);
+      await page.locator('.sound-toggle').click();await page.waitForFunction(()=>window.studio.score.audible);
+      assert.ok(await page.evaluate(()=>window.studio.score.time)>=frozen-.025);
+      assert.equal(await page.evaluate(()=>window.studio.score.sources.every((source,i)=>source===window.auditLateSources[i])),true);
+      evidence.interruption={before:beforeInterruption,frozen,resumed:await page.evaluate(()=>window.studio.score.time)};
       await page.locator('.sound-toggle').click();const paused=await page.evaluate(()=>window.studio.score.time);
       await page.waitForTimeout(150);assert.ok(Math.abs(await page.evaluate(()=>window.studio.score.time)-paused)<.025);
       await page.locator('.sound-toggle').click();await page.waitForFunction(()=>window.studio.score.playing);

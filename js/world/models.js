@@ -62,7 +62,7 @@ function book(title) {
   const flap=new THREE.Group();pivot.add(flap);flap.position.z=.09;
   const leaf=mesh(new THREE.PlaneGeometry(1.34,1.86,28,10),paper(),flap,[.67,0,0]);leaf.visible=false;
   let touched=-100,lastTime=0;
-  return { root, actorPosition: [1.4,.9,.15],interact(){touched=lastTime;},update(t, beat, scroll) {
+  return { root, actorPosition: [1.4,.9,.15],actorMobilePosition:[1.05,1.15,.15],interact(){touched=lastTime;},update(t, beat, scroll) {
     lastTime=t;const age=t-touched;leaf.visible=age<1.2;flap.rotation.y=-Math.PI*Math.min(1,age/1.2);
     if(leaf.visible){const pos=leaf.geometry.attributes.position;for(let i=0;i<pos.count;i++)pos.setZ(i,Math.sin((pos.getX(i)+.67)/1.34*Math.PI)*Math.sin(age/1.2*Math.PI)*.35);pos.needsUpdate=true;leaf.geometry.computeVertexNormals();}
     pivot.rotation.y = -.3 + Math.sin(t * .3) * .07 + scroll * .16;
