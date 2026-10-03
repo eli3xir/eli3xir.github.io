@@ -9,11 +9,13 @@
 | 命令 | 验证范围 |
 | --- | --- |
 | `npm run build:blog` | 从 Markdown 重建 39 篇文章和列表；不递归删除博客目录 |
+| `npm run build:lightmaps` | 将 manifest 中的原始 JPEG 字节打包，不改变图片、UV 或 HDR 倍率 |
 | `npm test` | 节拍、路由、拒绝存储、采样、接入脚本重复运行 |
 | `npm run validate` | 55 页入口、import map、本地文件、脚本类型/语法及正文保留 |
 | `npm run test:browser` | 全量连续/直接访问、交互与降级行为；自动创建本地服务 |
 | `npm run test:audio` | 实际 OfflineAudioContext 渲染完整配乐、音量与重叠提示音，检查峰值/削波 |
 | `npm run test:loading` | 真实 HTTP 慢速分块传输、下载中往返导航、停滞连接取消 |
+| `npm run test:lightmaps` | 资源包完整、缺失、索引损坏、单张图片损坏的实际浏览器恢复 |
 | `npm run test:performance` | 指定 GPU 下的桌面与手机视口帧间隔；注明模拟限制 |
 
 首次浏览器检查前执行 `npx playwright-core install chromium`。已安装的浏览器可通过环境变量 `BROWSER_EXECUTABLE` 指定。Windows 可以用 `BROWSER_ANGLE=d3d11`；报告实际渲染器。
@@ -31,6 +33,8 @@
 `room focus carries` 检查同一角色与相机的连续物件探索，包括途中改选、启用配乐、系统暂停音频和减少动态效果。`portal follows` 同时核对角色发光点、粒子、纸幕圆心与揭示结束的姿态连续性。
 
 `room stays hidden` 暂缓光照图响应，核对模型不提前显现；随后释放请求并检查房间就绪，再模拟单张光照图失败，确认仍可进入房间。
+
+正常加载时光照 JPEG 由一个 `lightmaps.bin` 请求提供；`model.lightmapSource` 记录包内成功数量与独立原图回退数量。包构建与校验入口为 `tools/pack-room-lightmaps.mjs`，修改光照图后先重建再运行 `validate`。包内图片经 Blob URL 解码，不能再从 `image.src` 推导原文件名；使用 `texture.userData.lightmapFile` 与 manifest 对应。
 
 `test:audio` 同时检查 32 kHz 与 24 kHz、默认和最大音量。报告合成时间、PCM 字节数、整体/乐章 RMS 与峰值；信号通过不能替代音乐听感评审，也不能用桌面合成时间推断真实手机性能。
 

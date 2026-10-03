@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {startServer,launchBrowser,ready,settle,observe,output} from './browser-support.mjs';
 
 // Serve only the model through a real slow HTTP stream; other assets use the
-// normal preview server. This exercises browser abort and body-reading behavior.
+// normal preview server. This exercises native progress, completion and abort.
 const bytes=fs.readFileSync(new URL('../assets/room/room.glb',import.meta.url));
 let mode='slow',requests=0;
 const streamServer=http.createServer((request,response)=>{

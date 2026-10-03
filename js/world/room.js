@@ -5,6 +5,7 @@ import { batchStatic } from './batch.js';
 import { createRoomEffects } from './room-effects.js';
 import { createRoomLighting, tuneRoomMaterial } from './room-lighting.js';
 import { downloadRoom } from './room-download.js';
+import { createRoomLightmaps } from './room-lightmaps.js';
 
 const ZONES = {
   lab: [4.7,7.1,.25,1.6,-1.2,.15], blog: [3,4.7,.25,1.4,-1.2,.15],
@@ -19,7 +20,6 @@ export const ROOM_VIEWS = {
   skin: { camera:[-2.8,.15,-2.2], target:[-2.8,-.05,-.06] },
 };
 let cached = null;
-function deadline(promise,ms){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('材质加载超时')),ms);})]).finally(()=>clearTimeout(timer));}
 
 export function createRoom(status) {
   if (cached) {
@@ -69,9 +69,12 @@ export function createRoom(status) {
     // Keep partially lit surfaces out of the live scene while maps arrive.
     gltf.scene.visible=false;
     room.add(gltf.scene);
-    const manifest = await fetch('/assets/room/lightmaps/manifest.json',{signal:AbortSignal.timeout(6000)}).then(r=>r.ok?r.json():{}).catch(()=>({}));
+    const [manifest,textures]=await Promise.all([
+      fetch('/assets/room/lightmaps/manifest.json',{signal:AbortSignal.timeout(15000)}).then(r=>r.ok?r.json():{}).catch(()=>({})),
+      createRoomLightmaps(progress=>report(.65+progress*.2,'正在铺开房间的光')),
+    ]);
+    model.lightmapSource=textures.stats;
     const lightmaps = new Map();
-    const textures = new THREE.TextureLoader();
     const entries = Object.fromEntries(Object.entries(manifest).map(([k,v])=>[k.replaceAll('.',''),v]));
     const pending = [];
     const materials=new Map();
@@ -85,9 +88,7 @@ export function createRoom(status) {
       }
       object.material=materials.get(key);
       if(entry){
-        if(!lightmaps.has(entry.file)) lightmaps.set(entry.file,deadline(textures.loadAsync('/assets/room/lightmaps/'+entry.file),12000).then(texture=>{
-          texture.flipY=false;texture.colorSpace=THREE.SRGBColorSpace;texture.channel=1;return texture;
-        }));
+        if(!lightmaps.has(entry.file))lightmaps.set(entry.file,textures.load(entry.file));
         pending.push(lightmaps.get(entry.file).then(texture=>{
           object.material.lightMap=texture;
           object.material.lightMapIntensity=1.05*(Number.isFinite(entry.scale)&&entry.scale>0?entry.scale:1);

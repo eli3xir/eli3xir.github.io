@@ -247,7 +247,7 @@ try{
         window.studio.world.model.room.traverse(obj=>{
           for(const mat of [obj.material].flat().filter(Boolean)){
             if(!mat.lightMap||seen.has(mat.uuid))continue;seen.add(mat.uuid);
-            const file=new URL(mat.lightMap.image.src).pathname.split('/').pop();
+            const file=mat.lightMap.userData.lightmapFile||new URL(mat.lightMap.image.src).pathname.split('/').pop();
             const entry=Object.values(manifest).find(entry=>entry.file===file);
             if(entry?.scale)result.push({file,intensity:mat.lightMapIntensity,expected:entry.scale*1.05,
               width:mat.lightMap.image.width,height:mat.lightMap.image.height,expectedSize:entry.size,channel:mat.lightMap.channel});
@@ -267,8 +267,10 @@ try{
         await page.evaluate(focus=>window.studio.world.focus(focus),focus);await page.waitForTimeout(100);
       }
       const rendered=await page.evaluate(()=>window.studio.world.diagnostics());
+      const source=await page.evaluate(()=>window.studio.world.model.lightmapSource);
+      assert.deepEqual(source,{mode:'bundle',packed:122,fallback:0});
       assert.equal(rendered.roomReady,true);assert.ok(rendered.renderedFrames>15);assert.ok(rendered.drawCalls>0);
-      assert.deepEqual(log.errors,[]);results.push({width,maps});await context.close();
+      assert.deepEqual(log.errors,[]);results.push({width,source,maps});await context.close();
     }
     return results;
   });
@@ -390,8 +392,8 @@ try{
   await verify('room stays hidden until delayed lighting is ready, including a missing map',async()=>{
     const context=await browser.newContext({reducedMotion:'reduce'}),page=await context.newPage(),log=observe(page);
     let release;const gate=new Promise(resolve=>{release=resolve;});let intercepted=0;
-    const firstMap=page.waitForRequest('**/assets/room/lightmaps/*.jpg',{timeout:135000});
-    await page.route('**/assets/room/lightmaps/*.jpg',async request=>{intercepted++;await gate;await request.continue();});
+    const firstMap=page.waitForRequest('**/assets/room/lightmaps.bin',{timeout:135000});
+    await page.route('**/assets/room/lightmaps.bin',async request=>{intercepted++;await gate;await request.continue();});
     try{
       await Promise.all([page.goto(server.base),firstMap]);await page.waitForFunction(()=>window.studio?.world.model.room.children.some(child=>child.type==='Group'&&child.name!=='practical-light'));
       const pending=await page.evaluate(()=>{const model=window.studio.world.model;const imported=model.room.children.find(child=>child.type==='Group'&&child.name!=='practical-light');return{loaded:model.loaded,visible:imported.visible,loading:document.querySelector('.scene-status').classList.contains('loading')};});
@@ -400,7 +402,8 @@ try{
       release();await ready(page);
       assert.equal(await page.evaluate(()=>window.studio.world.model.room.children.find(child=>child.type==='Group'&&child.name!=='practical-light').visible),true);
       assert.deepEqual(log.errors,[]);assert.deepEqual(log.failed,[]);
-      await page.unroute('**/assets/room/lightmaps/*.jpg');
+      await page.unroute('**/assets/room/lightmaps.bin');
+      await page.route('**/assets/room/lightmaps.bin',request=>request.abort('failed'));
       await page.route('**/assets/room/lightmaps/wall_back.jpg',request=>request.abort('failed'));await page.reload();await ready(page);
       assert.equal(await page.evaluate(()=>window.studio.world.model.loaded),true);assert.equal(await page.locator('.scene-status.loading').count(),0);
       assert.ok((await page.locator('.scene-status').textContent()).includes('部分材质'));

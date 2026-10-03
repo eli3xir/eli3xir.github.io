@@ -53,4 +53,6 @@ eli3xir 是一间深夜仍亮着灯的工作室。房间里的物件通向不同
 
 以物件反馈和连续角色行为推动探索、阅读与理解，是视觉验收约束。药瓶反应、书页翻动、声波与信号有各自内容含义；不能用通用游戏镜头或静态幻灯片替代。首页的局部暗部和导航底板承托文字，保留主体空间的动态呈现。
 
-房间下载按收到的字节更新进度；30 秒没有新数据才中止停滞连接，总等待上限为 120 秒。持续慢传输期间可以先阅读其他板块，返回后恢复同一下载与当前状态。导入模型在光照贴图处理结束后统一显现，避免半成品材质闪现。传输依据浏览器 [ReadableStream](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API/Using_readable_streams) 与 [AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort)。
+房间下载按收到的字节更新进度；30 秒没有新数据才中止停滞连接，单次下载总等待上限为 120 秒。持续慢传输期间可以先阅读其他板块，返回后恢复同一下载与当前状态。导入模型在光照贴图处理结束后统一显现，避免半成品材质闪现。传输使用浏览器原生 [XMLHttpRequest 进度与完成事件](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest_API/Using_XMLHttpRequest)，明确区分完成、错误、取消和超时。
+
+122 张光照原图以一个带索引的二进制包传输，保持 JPEG 原始字节。浏览器逐图核对校验值，通过 Blob URL 解码后立即释放 URL；模型仍使用原尺寸、UV1 与 HDR 倍率。包不可用时回退独立原图，单图损坏只回退这一张；四个任务并行，原图请求在实际开始后计时，解码与回退阶段设总期限。`build:lightmaps` 生成包，`validate` 核对包与所有源图相同，避免更新图片后遗漏重建。

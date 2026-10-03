@@ -1,6 +1,7 @@
 import fs from 'node:fs';import path from 'node:path';import { fileURLToPath } from 'node:url';import { execFileSync } from 'node:child_process';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const failures=[];const warnings=[];
+try{execFileSync(process.execPath,['tools/pack-room-lightmaps.mjs','--check'],{cwd:root,stdio:'pipe'});}catch(error){failures.push(`Lightmap bundle: ${error.stderr||error.message}`);}
 function files(dir,excluded=new Set(['.git','node_modules','temp-docs','.playwright-cli'])){
   return fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>excluded.has(entry.name)?[]:entry.isDirectory()?files(path.join(dir,entry.name),excluded):[path.join(dir,entry.name)]);
 }

@@ -4,12 +4,14 @@
   "type": "module",
   "scripts": {
     "build:blog": "node tools/build-blog.js",
+    "build:lightmaps": "node tools/pack-room-lightmaps.mjs",
     "validate": "node tools/validate.mjs",
     "test": "node --test tools/tests/*.test.mjs",
     "test:browser": "node tools/browser-audit.mjs",
     "test:performance": "node tools/performance-audit.mjs",
     "test:audio": "node tools/audio-audit.mjs",
-    "test:loading": "node tools/room-loading-audit.mjs"
+    "test:loading": "node tools/room-loading-audit.mjs",
+    "test:lightmaps": "node tools/lightmap-audit.mjs"
   },
   "engines": {
     "node": ">=22"
