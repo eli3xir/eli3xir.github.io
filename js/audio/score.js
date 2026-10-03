@@ -15,6 +15,9 @@ export class Score {
     this.mix = MIXES.home;
     this.sources = [];
     this.gains = [];
+    const stems=readSetting('score-stems','1111');
+    this.stemEnabled=Array.from(/^[01]{4}$/.test(stems)?stems:'1111',value=>value==='1');
+    this.meters=[];this.levelValues=new Float32Array(4);
     this.listeners = new Set();
   }
 
@@ -79,10 +82,12 @@ export class Score {
       source.loop = true;
       source.playbackRate.value=playbackRate;
       const gain = this.context.createGain();
-      gain.gain.value = this.mix[i];
+      gain.gain.value = this.mix[i]*(this.stemEnabled[i]?1:0);
       const pan = this.context.createStereoPanner();
       pan.pan.value = [-.28, 0, .22, .04][i];
       source.connect(gain).connect(pan).connect(this.master);
+      const analyser=this.context.createAnalyser();analyser.fftSize=512;gain.connect(analyser);
+      this.meters.push({analyser,samples:new Float32Array(512)});
       source.start(start, position);
       this.sources.push(source);
       this.gains.push(gain);
@@ -103,7 +108,23 @@ export class Score {
 
   scene(id) {
     this.mix = MIXES[id] || MIXES.home;
-    this.gains.forEach((gain, i) => gain.gain.setTargetAtTime(this.mix[i], this.context.currentTime, .22));
+    this.gains.forEach((gain, i) => gain.gain.setTargetAtTime(this.mix[i]*(this.stemEnabled[i]?1:0), this.context.currentTime, .22));
+  }
+
+  toggleStem(index){
+    if(!Number.isInteger(index)||index<0||index>3)return;
+    this.stemEnabled[index]=!this.stemEnabled[index];
+    const parameter=this.gains[index]?.gain;
+    if(parameter)parameter.setTargetAtTime(this.stemEnabled[index]?this.mix[index]:0,this.context.currentTime,.035);
+    writeSetting('score-stems',this.stemEnabled.map(enabled=>enabled?'1':'0').join(''));this.notify();
+  }
+
+  levels(){
+    this.levelValues.fill(0);if(!this.audible||this.volume===0)return this.levelValues;
+    this.meters.forEach(({analyser,samples},i)=>{
+      analyser.getFloatTimeDomainData(samples);let power=0;for(const sample of samples)power+=sample*sample;
+      this.levelValues[i]=Math.min(1,Math.sqrt(power/samples.length)*10*this.volume/.45);
+    });return this.levelValues;
   }
 
   setVolume(value) {

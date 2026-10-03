@@ -3,6 +3,7 @@ import { brass, ink, paper, glass, mesh, ring, liquidMaterial } from './material
 import { createExperiment } from './experiments.js';
 import { createBook } from './book.js';
 import { createSignalBench } from './signal-bench.js';
+import {createPhonograph} from './phonograph.js';
 
 function plinth(root, radius = 1) {
   mesh(new THREE.CylinderGeometry(radius, radius * 1.04, .14, 96), ink(), root, [0, -1.16, 0]);
@@ -37,26 +38,6 @@ function potion() {
   } };
 }
 
-function radio() {
-  const root = new THREE.Group();
-  const deck = new THREE.Group(); root.add(deck); deck.rotation.set(.3, -.3, -.04);
-  mesh(new THREE.BoxGeometry(2.5, .27, 1.75), ink(), deck, [0, -.45, 0]);
-  mesh(new THREE.BoxGeometry(2.52, .035, 1.77), brass(), deck, [0, -.3, 0]);
-  const record = mesh(new THREE.CylinderGeometry(.78,.78,.034,112), ink(), deck, [-.25,-.25,0]);
-  for (let i = 0; i < 22; i++) ring(record, .18+i*.025, .0025, .019, new THREE.MeshStandardMaterial({ color: 0x3b4340, metalness: .62, roughness: .3 }));
-  mesh(new THREE.CylinderGeometry(.16,.16,.008,64), paper(), record, [0,.023,0]);
-  mesh(new THREE.CylinderGeometry(.022,.022,.1,24), brass(), record, [0,.06,0]);
-  const path = new THREE.CatmullRomCurve3([new THREE.Vector3(.93,-.18,.55),new THREE.Vector3(.92,.07,.2),new THREE.Vector3(.56,.08,-.08),new THREE.Vector3(.15,-.14,-.38)]);
-  mesh(new THREE.TubeGeometry(path, 40,.025,12,false), brass(), deck);
-  mesh(new THREE.BoxGeometry(.09,.06,.18), ink(), deck, [.15,-.15,-.38]);
-  const horn = new THREE.Group(); root.add(horn); horn.position.set(.84,.01,.1); horn.rotation.z = -.46;
-  const profile = [[.045,0],[.05,.3],[.075,.5],[.15,.7],[.28,.92],[.5,1.14],[.72,1.35],[.78,1.39]];
-  mesh(new THREE.LatheGeometry(profile.map(p => new THREE.Vector2(...p)),96), new THREE.MeshStandardMaterial({ color: 0xbe8650, metalness:.9, roughness:.25, side:THREE.DoubleSide }), horn);
-  ring(horn, .78,.017,1.39);
-  const wave = ring(root,1.28,.008,.5); wave.rotation.x = .9;
-  return { root, displayScale:.88, actorPosition: [-.8,.8,.2], update(t, beat) { record.rotation.y = -t*1.6; wave.scale.setScalar(1+beat.pulse*.055); wave.rotation.z = t*.1; } };
-}
-
 function about() {
   const root = new THREE.Group();
   plinth(root,1.05);
@@ -86,5 +67,5 @@ function skin() {
 
 export function createModel(route) {
   if(route.experiment)return createExperiment(route.experimentId);
-  return ({ lab:potion, blog:()=>createBook(route.contentTitle,route.readingEntries), radio, projects:()=>createSignalBench(route.relay), about, skin }[route.id] || potion)();
+  return ({ lab:potion, blog:()=>createBook(route.contentTitle,route.readingEntries), radio:()=>createPhonograph(route.radioPlayback), projects:()=>createSignalBench(route.relay), about, skin }[route.id] || potion)();
 }

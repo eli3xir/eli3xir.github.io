@@ -8,6 +8,7 @@ import { BPM } from '../audio/composition.js';
 import { readingEntries, bindReading } from './reading.js';
 import {createMessageRelay} from './message-relay.js';
 import {bindProjectSignal} from './project-signal.js';
+import {bindRadio} from './radio.js';
 
 const original=document.cloneNode(true);
 const score=new Score();
@@ -66,6 +67,7 @@ async function mount(doc,url){
   contentEvents?.abort();contentEvents=new AbortController();
   route=routeFor(url.pathname,doc);route.readingEntries=readingEntries(doc,route);document.body.dataset.chapter=route.id;
   if(route.id==='projects')route.relay=createMessageRelay();
+  if(route.id==='radio')route.radioPlayback=()=>({active:score.audible,time:score.time,cycle:score.rhythm.cycleBar/32,levels:score.levels()});
   document.body.classList.toggle('article-view',route.article);document.body.classList.toggle('experiment-view',route.experiment);
   document.body.classList.remove('room-focused');preview.hidden=true;tooltip.hidden=true;
   document.title=doc.title||`${route.label} · eli3xir`;
@@ -79,6 +81,7 @@ async function mount(doc,url){
   world?.show(route);world?.applySkin(readSetting('room-skin','default'));score.scene(route.id);chrome.update(route);
   bindReading(section,route.readingEntries,{world,signal:contentEvents.signal});
   if(route.relay)bindProjectSignal(section,doc,{world,score,relay:route.relay,signal:contentEvents.signal});
+  if(route.id==='radio')bindRadio(section,main,{world,score,signal:contentEvents.signal,announce});
   enhanceContent(main,route,{signal:contentEvents.signal,score,world,announce});
   section.querySelector('[data-explore]')?.addEventListener('click',()=>{if(world?.model.loaded){world.focus('lab');objectFocus('lab');score.cue('hover');}else announce('移动鼠标或轻轻拖动，点击桌上与墙上的物件。也可以使用下方入口。');},{signal:contentEvents.signal});
   if(!matchMedia('(prefers-reduced-motion: reduce)').matches){

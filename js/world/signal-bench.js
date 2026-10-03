@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {brass,ink,mesh} from './materials.js';
-import {casing,terminal,display} from './signal-hardware.js';
+import {terminal,display} from './signal-hardware.js';
+import {casing} from './hardware.js';
 import {batchStatic} from './batch.js';
 
 export function createSignalBench(relay){

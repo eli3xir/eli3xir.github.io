@@ -34,6 +34,8 @@
 
 `npm run test:signal` 检查项目工作台的发送端选择、键盘与实体命中、发送/到达内容、暂停声音、40 次发送的纹理稳定、减少动态效果、跨板块返回和无 WebGL 降级，验证实现笔记锚点与原项目保留。报告 `signal-audit.json` 包含实际 base；`signal-flow-*` 与 `signal-done-*` 截图记录传输和到达画面。支持 `BASE_URL` 与代理参数。
 
+`npm run test:radio` 检查唱片命中、键盘播放、暂停与抬针、四声部静音及实际 master PCM、音轨/分析节点身份、跨页订阅释放、浏览器暂停恢复、减少动态效果、刷新偏好及无 WebGL 操作。`radio-audit.json` 记录真实 base 和采样峰值；手机视口同时模拟缺少 `cancelAndHoldAtTime` 的环境，开关只依赖通用的渐变增益 API。
+
 `room focus carries` 检查同一角色与相机的连续物件探索，包括途中改选、启用配乐、系统暂停音频和减少动态效果。`portal follows` 同时核对角色发光点、粒子、纸幕圆心与揭示结束的姿态连续性。
 
 `room stays hidden` 暂缓光照图响应，核对模型不提前显现；随后释放请求并检查房间就绪，再模拟单张光照图失败，确认仍可进入房间。
