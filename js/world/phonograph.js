@@ -25,6 +25,8 @@ export function createPhonograph(playback){
   const profile=[[.045,0],[.05,.3],[.075,.5],[.15,.7],[.28,.92],[.5,1.14],[.72,1.35],[.78,1.39]];
   mesh(new THREE.LatheGeometry(profile.map(p=>new THREE.Vector2(...p)),96),new THREE.MeshStandardMaterial({color:0xb88245,metalness:.9,roughness:.3,side:THREE.DoubleSide}),horn);
   ring(horn,.78,.017,1.39,metal);
+  const mouth=new THREE.Object3D();mouth.position.y=1.39;horn.add(mouth);
+  const particleEmitter={object:mouth,levels:[0,0,0,0],time:0,enabled:false};
   for(const x of [-1.03,1.03])for(const z of [-.65,.65])mesh(new THREE.CylinderGeometry(.06,.08,.09,16),black,deck,[x,-.695,z]);
   const meters=createMeters(deck,metal);
   const lamp=mesh(new THREE.SphereGeometry(.035,16,12),new THREE.MeshStandardMaterial({color:0x45654b,emissive:0x9bda80,emissiveIntensity:0}),deck,[1.08,-.225,.63]);
@@ -32,12 +34,13 @@ export function createPhonograph(playback){
   batchStatic(deck,excluded);batchStatic(record);batchStatic(arm);
   let lastUI=null,lastAudio=null,lastCycle=0,angle=0,offset=0,wasActive=false,lower=0,returnUntil=0,disposed=false;
   const idle={active:false,time:0,cycle:0,levels:[0,0,0,0]};
-  const model={root,displayScale:.87,actorPosition:[-.85,.82,.2],onPick:null,
+  const model={root,displayScale:.87,actorPosition:[-.85,.82,.2],onPick:null,particleEmitter,
     pick(ray){root.updateMatrixWorld(true);const hit=ray.intersectObjects([record,...meters.map(m=>m.root)],true)[0];if(!hit)return null;
       let object=hit.object;while(object){if(object.userData.action)return object.userData.action;object=object.parent;}return null;},
     update(t,beat,scroll,now,reduced){
       if(disposed)return;const state=playback?.()||idle,dt=lastUI===null?0:Math.max(0,Math.min(.06,now-lastUI));lastUI=now;
       const active=state.active&&!reduced;
+      particleEmitter.enabled=active;particleEmitter.time=state.time;particleEmitter.levels=state.levels;
       if(active&&!wasActive)offset=angle+state.time*3.49;
       if(active)angle=offset-state.time*3.49;
       record.rotation.y=angle;wasActive=active;lastAudio=state.time;

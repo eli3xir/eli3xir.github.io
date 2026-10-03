@@ -273,6 +273,15 @@ export class World {
     this.particles.scale.setScalar(actorScale);this.particles.position.y=actorScale<1?-.3:0;
     const uniforms=this.particles.material.uniforms;
     uniforms.uTime.value=t;uniforms.uBeat.value=rhythm.pulse*(.5+mood*.5);uniforms.uGather.value=this.transition;
+    const emitter=this.model.particleEmitter;
+    uniforms.uEmission.value=emitter?.enabled&&!reduced?1:0;
+    uniforms.uLevels.value.set(0,0,0,0);uniforms.uAudioTime.value=emitter?.time||0;
+    if(emitter){
+      // Convert the real mouth frame into particle space after responsive/model transforms.
+      emitter.object.updateWorldMatrix(true,false);this.particles.updateWorldMatrix(true,false);
+      uniforms.uEmitter.value.copy(this.particles.matrixWorld).invert().multiply(emitter.object.matrixWorld);
+      uniforms.uLevels.value.fromArray(emitter.levels);
+    }
     // The same real beacon drives particles and the page aperture, including
     // responsive scale, character tilt, breathing and the focused room camera.
     const beacon=this.actor.beacon.getWorldPosition(new THREE.Vector3());
