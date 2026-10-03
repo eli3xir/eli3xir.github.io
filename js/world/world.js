@@ -13,7 +13,8 @@ import { disposeGroup } from './materials.js';
 import { FilmShader } from './film.js';
 import { createStage } from './stage.js';
 import { composeHero } from './composition.js';
-import { readSetting } from '../experience/domain.js';
+import { readSetting, nextBeatDelay } from '../experience/domain.js';
+import { BPM } from '../audio/composition.js';
 
 export class World {
   constructor(container,score,{status,onHover,onPick,onPortal}={}) {
@@ -70,11 +71,15 @@ export class World {
       this.last=performance.now();
       this.updateVisibility();
     },options);
-    this.reduced.addEventListener('change',()=>{this.moving=1;},options);
+    this.reduced.addEventListener('change',()=>{
+      if(this.reduced.matches){this.focusJourney=null;this.offsetCamera();this.camera.position.copy(this.desiredCamera);this.target.copy(this.desiredTarget);}
+      this.moving=1;
+    },options);
     this.resize();this.start();
   }
 
   resize() {
+    this.focusJourney=null;
     const quality=readSetting('visual-quality','auto');
     const ratio=quality==='low'?1:quality==='high'?Math.min(devicePixelRatio,2):Math.min(devicePixelRatio,innerWidth<700?1.25:1.6);
     this.renderer.setPixelRatio(ratio);this.renderer.setSize(innerWidth,innerHeight);
@@ -108,7 +113,7 @@ export class World {
 
   show(route) {
     if(this.model){this.scene.remove(this.model.root);if(!this.model.persistent)disposeGroup(this.model.root);}
-    this.route=route;this.focused=null;this.hovered=null;this.scroll=0;
+    this.route=route;this.focused=null;this.focusJourney=null;this.hovered=null;this.scroll=0;
     this.model=route.id==='home'?createRoom((...args)=>{if(this.route?.id==='home')this.status(...args);}):createModel(route);
     this.model.focus?.(null);
     this.scene.add(this.model.root);
@@ -129,15 +134,34 @@ export class World {
     // Swap at the covered midpoint; the reveal starts with a composed camera.
     this.camera.position.copy(this.desiredCamera);this.target.copy(this.desiredTarget);
     this.camera.lookAt(this.target);composeHero(this);this.offsetCamera();this.moving=1;
+    this.portalStart=this.actor.root.position.clone();this.portalScale=this.actor.root.scale.x;this.portalReveal=this.transition>0;
     this.heroObserver.disconnect();
     const copy=document.querySelector('.hero-copy');if(copy)this.heroObserver.observe(copy);
     this.renderer.domElement.dataset.chapter=route.id;
     this.container.dataset.ready='true';
   }
 
-  focus(id) { this.focused=id;this.model?.focus?.(id);this.offsetCamera();this.setRig();this.moving=1;this.actor.react(); }
+  focus(id) {
+    if(id===this.focused)return;
+    const audible=this.score.audible,clock=audible?this.score.time:performance.now()/1000;
+    this.focusJourney=this.reduced.matches?null:{from:this.actor.root.position.clone(),scale:this.actor.root.scale.x,fromView:this.viewState(),
+      clock:audible?'audio':'ui',start:clock+(audible?nextBeatDelay(clock):0),progress:0,duration:120/BPM};
+    this.focused=id;this.model?.focus?.(id);this.offsetCamera();this.setRig();this.moving=1;this.actor.react();
+    if(this.focusJourney){this.focusJourney.toView=this.viewState();this.focusProjection(0);}
+    if(this.reduced.matches){this.camera.position.copy(this.desiredCamera);this.target.copy(this.desiredTarget);this.camera.lookAt(this.target);}
+  }
+  viewState(){return this.camera.view?.enabled?{...this.camera.view}:{fullWidth:innerWidth,fullHeight:innerHeight,offsetX:0,offsetY:0};}
+  focusProjection(progress){
+    const {fromView:from,toView:to}=this.focusJourney,blend=(a,b)=>THREE.MathUtils.lerp(a,b,progress);
+    this.camera.setViewOffset(innerWidth,blend(from.fullHeight,to.fullHeight),blend(from.offsetX,to.offsetX),blend(from.offsetY,to.offsetY),innerWidth,innerHeight);
+  }
   applySkin(id){this.model?.applySkin?.(id);document.body.dataset.skin=id;this.rim.color.set(id==='ocean'?0x8ab6de:id==='forest'?0x88d6b0:0xa1d8d3);this.moving=1;}
-  transitionAt(progress){this.transition=progress;this.moving=1;this.updateVisibility();}
+  transitionAt(progress){
+    if(progress>0&&this.transition===0){
+      this.portalStart=this.actor.root.position.clone();this.portalScale=this.actor.root.scale.x;this.portalReveal=false;this.focusJourney=null;
+    }
+    this.transition=progress;this.moving=1;this.updateVisibility();
+  }
 
   portalPosition(){
     this.camera.updateMatrixWorld();
@@ -210,14 +234,28 @@ export class World {
     const actorScale=this.layoutScale||1;
     const journey=this.transition*this.transition*(3-2*this.transition);
     const idleScale=(this.model?.actorScale||1)*(this.route?.id==='home'&&this.focused?.5:1);
-    this.actor.root.scale.setScalar(THREE.MathUtils.lerp(idleScale,1,journey)*actorScale);
+    let bodyScale=THREE.MathUtils.lerp(this.portalReveal?idleScale*actorScale:(this.portalScale??idleScale*actorScale),actorScale,journey);
+    if(this.transition===0)bodyScale=idleScale*actorScale;
     const focusedView=this.route?.id==='home'&&ROOM_VIEWS[this.focused];
     const portalBody=focusedView?new THREE.Vector3(focusedView.target[0],focusedView.target[1]+.4,focusedView.target[2]-.75):new THREE.Vector3(0,.35,this.route?.id==='home'?-2.5:1.6);
     const verticalOffset=actorScale<1?-.3:0;
-    this.actor.root.position.set(
-      THREE.MathUtils.lerp(actorPos[0]*actorScale+Math.sin(t*.45)*.07,portalBody.x*actorScale,journey),
-      THREE.MathUtils.lerp(actorPos[1]*actorScale+verticalOffset+Math.sin(t*.8)*.08,portalBody.y*actorScale+verticalOffset,journey)+Math.sin(journey*Math.PI)*.12,
-      THREE.MathUtils.lerp(actorPos[2]*actorScale,portalBody.z*actorScale,journey));
+    const position=new THREE.Vector3(actorPos[0]*actorScale+Math.sin(t*.45)*.07,
+      actorPos[1]*actorScale+verticalOffset+Math.sin(t*.8)*.08,actorPos[2]*actorScale);
+    if(this.transition>0){
+      if(!this.portalReveal)position.copy(this.portalStart||position);
+      position.lerp(portalBody.multiplyScalar(actorScale).add(new THREE.Vector3(0,verticalOffset,0)),journey);
+      position.y+=Math.sin(journey*Math.PI)*.12;
+    }else if(this.focusJourney){
+      const flight=this.focusJourney,clock=this.score.audible?'audio':'ui',current=clock==='audio'?t:performance.now()/1000;
+      if(clock!==flight.clock){flight.clock=clock;flight.start=current-flight.progress*flight.duration;}
+      flight.progress=Math.max(flight.progress,THREE.MathUtils.clamp((current-flight.start)/flight.duration,0,1));
+      const p=flight.progress,pacing=p*p*(3-2*p);
+      this.focusProjection(pacing);
+      position.lerpVectors(flight.from,position.clone(),pacing);position.y+=Math.sin(p*Math.PI)*.48;
+      bodyScale=THREE.MathUtils.lerp(flight.scale,bodyScale,pacing);
+      if(p===1)this.focusJourney=null;
+    }
+    this.actor.root.position.copy(position);this.actor.root.scale.setScalar(bodyScale);
     this.actor.root.rotation.z=-journey*.3;
     this.particles.scale.setScalar(actorScale);this.particles.position.y=actorScale<1?-.3:0;
     const uniforms=this.particles.material.uniforms;

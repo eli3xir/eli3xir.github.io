@@ -60,6 +60,8 @@ export function createRoom(status) {
     if(!response.ok)throw new Error(`房间模型 HTTP ${response.status}`);
     const gltf=await loader.parseAsync(await response.arrayBuffer(),'/assets/room/');
     status(.65,'正在点亮材质');
+    // Keep partially lit surfaces out of the live scene while maps arrive.
+    gltf.scene.visible=false;
     room.add(gltf.scene);
     const manifest = await fetch('/assets/room/lightmaps/manifest.json',{signal:AbortSignal.timeout(6000)}).then(r=>r.ok?r.json():{}).catch(()=>({}));
     const lightmaps = new Map();
@@ -100,6 +102,7 @@ export function createRoom(status) {
     model.batching=batchStatic(gltf.scene,new Set(parts));
     model.loaded=true;
     model.applySkin(readSetting('room-skin','default'));
+    gltf.scene.visible=true;
     status(1,results.some(result=>result.status==='rejected')?'灯亮了，部分材质暂时未能加载':'灯亮了，欢迎进来');
     return model;
   };

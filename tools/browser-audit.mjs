@@ -220,6 +220,16 @@ try{
         assert.ok(evidence.seedDistance<1e-5,JSON.stringify(evidence));assert.ok(evidence.pixelError<1,JSON.stringify(evidence));assert.equal(evidence.finite,true);
         if(focus){assert.equal(evidence.focused,'lab');assert.ok(evidence.actorX>1.5);}
         assert.deepEqual(log.errors,[]);results.push({viewport,focus,...evidence});await page.evaluate(()=>window.studio.router.transition(0));
+        if(!focus){
+          const tail=await page.evaluate(async()=>{
+            const w=window.studio.world,r=window.studio.router;
+            Object.defineProperty(window.studio.score,'time',{get:()=>4});
+            const frame=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+            r.transition(1);w.show(window.studio.route);r.transition(.001);await frame();const before=w.actor.root.position.clone();
+            r.transition(0);await frame();return before.distanceTo(w.actor.root.position);
+          });
+          assert.ok(tail<.002,`reveal tail discontinuity ${tail}`);results.at(-1).revealTail=tail;
+        }
       }
       await context.close();
     }
@@ -377,6 +387,25 @@ try{
     await page.locator('.chapter-dock a[href="/projects/"]').click();await page.waitForFunction(()=>window.studio.route.id==='projects');await settle(page);
     await context.close();return{recovered:true};
   });
+  await verify('room stays hidden until delayed lighting is ready, including a missing map',async()=>{
+    const context=await browser.newContext({reducedMotion:'reduce'}),page=await context.newPage(),log=observe(page);
+    let release,seen;const gate=new Promise(resolve=>{release=resolve;}),firstMap=new Promise(resolve=>{seen=resolve;});let intercepted=0;
+    await page.route('**/assets/room/lightmaps/*.jpg',async request=>{intercepted++;seen();await gate;await request.continue();});
+    try{
+      await page.goto(server.base);await page.waitForFunction(()=>window.studio?.world.model.room.children.some(child=>child.type==='Group'&&child.name!=='practical-light'));await firstMap;
+      const pending=await page.evaluate(()=>{const model=window.studio.world.model;const imported=model.room.children.find(child=>child.type==='Group'&&child.name!=='practical-light');return{loaded:model.loaded,visible:imported.visible,loading:document.querySelector('.scene-status').classList.contains('loading')};});
+      assert.ok(intercepted>0);assert.equal(pending.loaded,false);assert.equal(pending.visible,false);assert.equal(pending.loading,true);
+      await page.waitForTimeout(200);assert.equal(await page.evaluate(()=>window.studio.world.model.loaded),false);
+      release();await ready(page);
+      assert.equal(await page.evaluate(()=>window.studio.world.model.room.children.find(child=>child.type==='Group'&&child.name!=='practical-light').visible),true);
+      assert.deepEqual(log.errors,[]);assert.deepEqual(log.failed,[]);
+      await page.unroute('**/assets/room/lightmaps/*.jpg');
+      await page.route('**/assets/room/lightmaps/wall_back.jpg',request=>request.abort('failed'));await page.reload();await ready(page);
+      assert.equal(await page.evaluate(()=>window.studio.world.model.loaded),true);assert.equal(await page.locator('.scene-status.loading').count(),0);
+      assert.ok((await page.locator('.scene-status').textContent()).includes('部分材质'));
+      return{pending,intercepted,missingMapReveals:true};
+    }finally{release();await context.close();}
+  });
   await verify('room guide focuses the potion scene and Escape returns to the overview',async()=>{
     const context=await browser.newContext();const page=await context.newPage();const log=observe(page);
     await page.goto(server.base);await ready(page);await settle(page);await page.locator('[data-explore]').click();
@@ -384,6 +413,39 @@ try{
     assert.equal(await page.locator('.object-preview a').getAttribute('href'),'/lab/');
     await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>window.studio.world.focused),null);
     assert.deepEqual(log.errors,[]);await context.close();return{guidedChapter:'lab'};
+  });
+  await verify('room focus carries the same character and camera continuously between objects',async()=>{
+    const results=[];
+    for(const viewport of [{width:1440,height:1000},{width:320,height:568},{width:390,height:844}]){
+      const context=await browser.newContext({viewport});const page=await context.newPage(),log=observe(page);
+      await page.goto(server.base);await ready(page);await settle(page);await page.waitForTimeout(120);
+      if(viewport.width===390){await page.locator('.sound-toggle').click();await page.waitForFunction(()=>window.studio.score.audible);}
+      const first=await page.evaluate(()=>{
+        const w=window.studio.world;window.auditFlightActor=w.actor.root;window.auditFlightRenderer=w.renderer;
+        const position=w.actor.root.position.clone(),projection=w.camera.projectionMatrix.clone();w.focus('lab');
+        return{distance:position.distanceTo(w.actor.root.position),projectionDifference:Math.max(...projection.elements.map((n,i)=>Math.abs(n-w.camera.projectionMatrix.elements[i])))};
+      });
+      assert.equal(first.distance,0);assert.ok(first.projectionDifference<1e-8);
+      await page.waitForTimeout(400);
+      const middle=await page.evaluate(()=>({progress:window.studio.world.focusJourney?.progress,position:window.studio.world.actor.root.position.toArray()}));
+      assert.ok(middle.progress>0&&middle.progress<1,JSON.stringify(middle));
+      if(viewport.width===390){
+        await page.evaluate(()=>window.studio.score.context.suspend());await page.waitForTimeout(80);
+        assert.ok(await page.evaluate(()=>window.studio.world.focusJourney.progress)>middle.progress);
+      }
+      const redirected=await page.evaluate(()=>{const w=window.studio.world,p=w.actor.root.position.clone();w.focus('radio');return p.distanceTo(w.actor.root.position);});
+      assert.equal(redirected,0);await page.waitForFunction(()=>!window.studio.world.focusJourney);
+      const landed=await page.evaluate(()=>{const w=window.studio.world;return{x:w.actor.root.position.x,scale:w.actor.root.scale.x,aspect:w.camera.aspect,sameActor:w.actor.root===window.auditFlightActor,sameRenderer:w.renderer===window.auditFlightRenderer};});
+      assert.ok(landed.x< -1.4);assert.equal(landed.scale,.5);assert.ok(Math.abs(landed.aspect-viewport.width/viewport.height)<1e-8);
+      assert.equal(landed.sameActor,true);assert.equal(landed.sameRenderer,true);
+      await page.evaluate(()=>window.studio.world.focus(null));await page.waitForFunction(()=>!window.studio.world.focusJourney);
+      assert.equal(await page.evaluate(()=>window.studio.world.actor.root.scale.x),1);
+      await page.emulateMedia({reducedMotion:'reduce'});await page.evaluate(()=>window.studio.world.focus('lab'));
+      await page.waitForTimeout(100);const reducedPosition=await page.evaluate(()=>window.studio.world.actor.root.position.toArray());
+      await page.waitForTimeout(150);assert.deepEqual(await page.evaluate(()=>window.studio.world.actor.root.position.toArray()),reducedPosition);
+      assert.deepEqual(log.errors,[]);results.push({viewport,first,middle,landed});await context.close();
+    }
+    return results;
   });
   await verify('reduced-motion experiment waits for deliberate playback',async()=>{
     const context=await browser.newContext({reducedMotion:'reduce'});const page=await context.newPage();const log=observe(page);
