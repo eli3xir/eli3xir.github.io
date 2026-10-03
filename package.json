@@ -14,7 +14,8 @@
     "test:lightmaps": "node tools/lightmap-audit.mjs",
     "test:reading": "node tools/reading-audit.mjs",
     "test:signal": "node tools/signal-audit.mjs",
-    "test:radio": "node tools/radio-audit.mjs"
+    "test:radio": "node tools/radio-audit.mjs",
+    "test:potion": "node tools/potion-audit.mjs"
   },
   "engines": {
     "node": ">=22"

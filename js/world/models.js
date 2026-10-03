@@ -12,7 +12,7 @@ function plinth(root, radius = 1) {
 
 function potion() {
   const root = new THREE.Group();
-  let touched=-100,lastTime=0;
+  let flight=null,queued=null,disposed=false;
   const shape = [[.05,-.85],[.38,-.84],[.58,-.68],[.62,-.3],[.58,.12],[.3,.45],[.18,.67],[.18,1.05],[.23,1.08]];
   const vesselMaterial=glass(0xe7f1eb);
   Object.assign(vesselMaterial,{opacity:.34,transmission:.55,roughness:.07,thickness:.1});
@@ -29,13 +29,23 @@ function potion() {
   }
   const orbit = ring(root, 1.02, .008, .05); orbit.rotation.x = 1.1; orbit.rotation.z = .32;
   plinth(root, .87);
-  return { root, actorPosition: [0, 1.72, 0],interact(){touched=lastTime;},update(t, beat) {
-    lastTime=t;const reaction=Math.exp(-Math.max(0,t-touched)*2.2);
-    liquid.material.uniforms.uTime.value = t; liquid.material.uniforms.uBeat.value = beat.pulse;
-    cap.position.y = 1.27 + Math.sin(t * .7) * .05+reaction*.24;
-    cap.rotation.z=Math.sin((t-touched)*8)*reaction*.18;
-    orbit.rotation.y = t * .12; vessel.rotation.y = Math.sin(t * .2) * .04;
-  } };
+  function begin(options){flight={start:options.now+options.delay,duration:options.duration};options.onStart?.(options.delay);}
+  return { root, actorPosition: [.72, 1.33, .1],
+    hitTest(ray){root.updateMatrixWorld(true);return ray.intersectObjects([vessel,cap],false).length>0;},
+    next(options){if(disposed)return false;if(flight){queued=options;return false;}begin(options);return true;},
+    update(t,beat,scroll,now=0,reduced=false){
+      if(disposed)return;
+      // Interaction completes on the UI clock even when the score is suspended.
+      const p=flight?(reduced?1:THREE.MathUtils.clamp((now-flight.start)/flight.duration,0,1)):0;
+      const reaction=Math.sin(p*Math.PI)**2;
+      liquid.material.uniforms.uTime.value=t;liquid.material.uniforms.uBeat.value=beat.pulse+reaction*.25;
+      cap.position.y=1.27+Math.sin(t*.7)*.05+reaction*.29;
+      cap.rotation.z=Math.sin(p*Math.PI*6)*reaction*.13;
+      orbit.rotation.y=t*.12;vessel.rotation.y=Math.sin(t*.2)*.04;
+      if(flight&&p===1){flight=null;if(queued&&!reduced){const next=queued;queued=null;begin({...next,now,delay:0});}else queued=null;}
+    },
+    dispose(){disposed=true;flight=queued=null;}
+  };
 }
 
 function about() {

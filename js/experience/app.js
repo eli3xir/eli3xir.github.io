@@ -82,6 +82,11 @@ async function mount(doc,url){
   bindReading(section,route.readingEntries,{world,signal:contentEvents.signal});
   if(route.relay)bindProjectSignal(section,doc,{world,score,relay:route.relay,signal:contentEvents.signal});
   if(route.id==='radio')bindRadio(section,main,{world,score,signal:contentEvents.signal,announce});
+  if(route.id==='lab'&&!route.experiment&&world){
+    const trigger=document.createElement('button');trigger.type='button';trigger.className='explore-button reaction-trigger';
+    trigger.textContent='试一次反应 ↗';trigger.setAttribute('aria-label','触发药瓶反应');
+    section.querySelector('.explore-button').before(trigger);trigger.addEventListener('click',()=>world.interact(),{signal:contentEvents.signal});
+  }
   enhanceContent(main,route,{signal:contentEvents.signal,score,world,announce});
   section.querySelector('[data-explore]')?.addEventListener('click',()=>{if(world?.model.loaded){world.focus('lab');objectFocus('lab');score.cue('hover');}else announce('移动鼠标或轻轻拖动，点击桌上与墙上的物件。也可以使用下方入口。');},{signal:contentEvents.signal});
   if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
