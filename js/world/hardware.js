@@ -9,4 +9,3 @@ export function casing(width,height,depth,radius=.06){
   const g=new THREE.ExtrudeGeometry(s,{depth:depth-.04,bevelEnabled:true,bevelSize:.015,bevelThickness:.02,bevelSegments:3,curveSegments:6,steps:1});
   g.translate(0,0,-depth/2+.02);return g;
 }
-
