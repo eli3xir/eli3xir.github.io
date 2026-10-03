@@ -36,6 +36,7 @@
 | [Blender 4.5 Render Baking](https://docs.blender.org/manual/en/4.5/render/cycles/baking.html) / [Denoise](https://docs.blender.org/manual/en/4.5/compositing/types/filter/denoise.html) | 既有 UV 的漫反射光照烘焙，法线引导 HDR 去噪与显示颜色分离；网页正文已下载核对 |
 | [W3C 对比度最低要求](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html) | 普通文字 4.5:1、大字 3:1；用于后续动态背景上的实际文字检查，当前不是全站符合性声明 |
 | [Three.js PMREMGenerator](https://threejs.org/docs/pages/PMREMGenerator.html) | 核对从场景和指定位置生成反射环境的 API，并对照本地 0.185.1 实现；实际房间反射仍待候选画面对照 |
+| [Three.js CatmullRomCurve3](https://threejs.org/docs/pages/CatmullRomCurve3.html) / [TubeGeometry](https://threejs.org/docs/pages/TubeGeometry.html) / [CanvasTexture](https://threejs.org/docs/pages/CanvasTexture.html) | 项目工作台使用同一路径描述实体线路与传输位置，复用画布纹理显示实际消息 |
 
 本项目新几何、动画和配乐原创实现。采用外部代码或资产时必须记录来源、版本、许可及实际使用范围。
 
@@ -46,3 +47,5 @@
 Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐字节一致；采用需要的 addon 闭包，MIT 许可随代码本地保留。KaTeX 0.16.22 来自官方 npm 包，MIT 许可及字体本地保留。Cormorant Garamond 和 Space Grotesk 从 Google Fonts 官方仓库取得，SIL OFL 文本随字体保留。既有 PixiJS 依赖用于原实验，未改写为另一套玩法。
 
 本站没有发布第三方参考视频、音频、下载的新外部模型或 AI 图片。新的模型与声音来自本仓库原创代码，房间使用既有 model-studio 资产。
+
+2026-10-03 通过只读 Git 克隆核对 [C++ 聊天室仓库](https://gitee.com/buptsg2019/cpp-chat-room)：默认分支 HEAD 为 `e8e0cd44ed8f74ffba5109ee7a8a7332b04ffc41`，当前公开树仅有 README 与许可；README 支持 C++、Linux、多线程、MySQL 的原项目说明，并链接作者实现笔记。本站对应笔记为 [50706.html](../../blog/50706.html)，保留原内容。新增通信工作台是浏览器本地流程演示，不宣称已运行该仓库后端或核验了缺失的服务器实现。

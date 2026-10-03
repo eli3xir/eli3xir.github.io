@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { brass, ink, paper, glass, mesh, ring, liquidMaterial } from './materials.js';
 import { createExperiment } from './experiments.js';
 import { createBook } from './book.js';
+import { createSignalBench } from './signal-bench.js';
 
 function plinth(root, radius = 1) {
   mesh(new THREE.CylinderGeometry(radius, radius * 1.04, .14, 96), ink(), root, [0, -1.16, 0]);
@@ -56,27 +57,6 @@ function radio() {
   return { root, displayScale:.88, actorPosition: [-.8,.8,.2], update(t, beat) { record.rotation.y = -t*1.6; wave.scale.setScalar(1+beat.pulse*.055); wave.rotation.z = t*.1; } };
 }
 
-function projects() {
-  const root = new THREE.Group();
-  plinth(root,1.5);
-  const nodes = [];
-  for (let i = 0; i < 5; i++) {
-    const x = (i-2)*.57;
-    const height = [.65,1.15,1.7,1.05,.65][i];
-    mesh(new THREE.BoxGeometry(.31,height,.36), ink(), root, [x,-1+height/2,0]);
-    const box = mesh(new THREE.BoxGeometry(.34,.34,.38), glass(0xc0d9e4), root, [x,height-.82,0]);
-    const core = mesh(new THREE.BoxGeometry(.12,.12,.12), new THREE.MeshStandardMaterial({ color:0x8bcce9,emissive:0x71b4d7,emissiveIntensity:1.4 }), root, [x,height-.82,0]);
-    nodes.push({ box, core, y:height-.82 });
-    const line = new THREE.CatmullRomCurve3([new THREE.Vector3(x,-.95,.3),new THREE.Vector3(x,-.88,.8),new THREE.Vector3(0,-.88,1.1)]);
-    mesh(new THREE.TubeGeometry(line,24,.008,8,false), brass(), root);
-  }
-  const signal = mesh(new THREE.OctahedronGeometry(.25,0), brass(), root,[0,1.22,0]);
-  return { root, actorPosition:[1.05,.65,.35], update(t,beat) {
-    nodes.forEach((node,i)=>{node.box.rotation.y=t*.1+i*.4;node.core.scale.setScalar(1+Math.sin(t*2-i)*.15+beat.pulse*.15);});
-    signal.rotation.set(t*.2,t*.3,0); signal.position.y=1.2+Math.sin(t*.9)*.1;
-  } };
-}
-
 function about() {
   const root = new THREE.Group();
   plinth(root,1.05);
@@ -106,5 +86,5 @@ function skin() {
 
 export function createModel(route) {
   if(route.experiment)return createExperiment(route.experimentId);
-  return ({ lab:potion, blog:()=>createBook(route.contentTitle,route.readingEntries), radio, projects, about, skin }[route.id] || potion)();
+  return ({ lab:potion, blog:()=>createBook(route.contentTitle,route.readingEntries), radio, projects:()=>createSignalBench(route.relay), about, skin }[route.id] || potion)();
 }

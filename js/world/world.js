@@ -192,6 +192,7 @@ export class World {
     this.targetPointer.set(event.clientX/innerWidth*2-1,-event.clientY/innerHeight*2+1);
     this.ray.setFromCamera(this.targetPointer,this.camera);
     if(this.route?.id!=='home'){
+      if(this.model?.onPick){const id=this.model.pick?.(this.ray);if(id!==null&&id!==undefined)this.model.onPick(id);else this.actor.react();return;}
       if(this.model?.hitTest&&!this.model.hitTest(this.ray)){this.actor.react();return;}
       this.interact();return;
     }
