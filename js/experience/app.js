@@ -91,7 +91,10 @@ async function loadMath(main){
     if(main.isConnected&&window.renderMathInElement)window.renderMathInElement(main.querySelector('.post-content'),{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]});
   }catch{announce('公式渲染暂时未能加载，原始公式仍保留在文章中。');}
 }
-router=new Router({score,mount,announce,transition:progress=>{curtain.style.setProperty('--portal',String(progress));world?.transitionAt(progress);view.style.setProperty('--page-shift',String(progress));}});
+router=new Router({score,mount,announce,transition:progress=>{
+  curtain.style.setProperty('--portal',String(Math.max(0,(progress-.48)/.52)));
+  world?.transitionAt(progress);view.style.setProperty('--page-shift',String(progress));
+}});
 addEventListener('keydown',event=>{if(event.key==='Escape'){unfocus();document.querySelector('.sound-settings').open=false;}});
 addEventListener('message',event=>{
   const frame=document.querySelector('.experiment-frame');if(event.origin!==location.origin||event.source!==frame?.contentWindow)return;

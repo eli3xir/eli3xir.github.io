@@ -144,6 +144,8 @@ export class World {
     if(!this.down)return;
     const down=this.down;this.down=null;
     if(Math.hypot(event.clientX-down[0],event.clientY-down[1])>8||this.transition>.01)return;
+    const hero=document.querySelector('.world-hero')?.getBoundingClientRect();
+    if(!hero||event.clientY<hero.top||event.clientY>hero.bottom)return;
     if(event.target.closest('a,button,input,select,textarea')||event.clientY>innerHeight)return;
     if(this.route?.id!=='home'){this.actor.react();this.model?.interact?.();this.burst=1;this.score.cue('hover');return;}
     this.targetPointer.set(event.clientX/innerWidth*2-1,-event.clientY/innerHeight*2+1);
@@ -188,11 +190,18 @@ export class World {
     this.actor.update(t,rhythm,this.pointer,this.route?.id==='about');
     const actorPos=this.route?.id==='home'&&this.focused?ROOM_VIEWS[this.focused].target.map((value,i)=>value+(i===1?.4:i===2?-.18:0)):(this.model?.actorPosition||[0,0,0]);
     const actorScale=innerWidth<700&&this.route?.id!=='home'?.72:1;
-    this.actor.root.scale.setScalar((this.model?.actorScale||1)*actorScale);
-    this.actor.root.position.set(actorPos[0]*actorScale+Math.sin(t*.45)*.07,actorPos[1]*actorScale-(actorScale<1?.3:0)+Math.sin(t*.8)*.08,actorPos[2]*actorScale);
+    const journey=this.transition*this.transition*(3-2*this.transition);
+    this.actor.root.scale.setScalar(THREE.MathUtils.lerp(this.model?.actorScale||1,1,journey)*actorScale);
+    const portalZ=this.route?.id==='home'?-2.5:1.6;
+    this.actor.root.position.set(
+      THREE.MathUtils.lerp(actorPos[0]*actorScale+Math.sin(t*.45)*.07,0,journey),
+      THREE.MathUtils.lerp(actorPos[1]*actorScale-(actorScale<1?.3:0)+Math.sin(t*.8)*.08,.35*actorScale,journey)+Math.sin(journey*Math.PI)*.12,
+      THREE.MathUtils.lerp(actorPos[2]*actorScale,portalZ*actorScale,journey));
+    this.actor.root.rotation.z=-journey*.3;
     this.particles.scale.setScalar(actorScale);this.particles.position.y=actorScale<1?-.3:0;
     const uniforms=this.particles.material.uniforms;
-    uniforms.uTime.value=t;uniforms.uBeat.value=rhythm.pulse;
+    uniforms.uTime.value=t;uniforms.uBeat.value=rhythm.pulse;uniforms.uGather.value=this.transition;
+    uniforms.uPortal.value.set(0,.67,portalZ);
     this.burst=(this.burst||0)*Math.exp(-dt*3);
     uniforms.uSize.value=this.renderer.getPixelRatio();uniforms.uEnergy.value=this.route?.id==='home'?.28:.5+this.transition*.5+this.burst*.5;
     this.particles.visible=true;

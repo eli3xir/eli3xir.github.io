@@ -94,6 +94,30 @@ try{
         const toc=page.locator('.studio-toc a').first();await toc.click();assert.ok(new URL(page.url()).hash.length>1);
         return{matches,tagged,copiedCharacters:copied.length};
       });
+      await verify('particle journey preserves seeds through gathering and release',async()=>{
+        await page.evaluate(()=>window.studio.router.navigate('/lab/'));await settle(page);
+        await page.evaluate(()=>{
+          window.auditSeeds=window.studio.world.particles.geometry;
+          const transition=window.studio.router.transition;window.auditJourney=[];
+          window.studio.router.transition=progress=>{
+            transition(progress);window.auditJourney.push({progress,mode:window.studio.world.particles.material.uniforms.uMode.value,
+              gather:window.studio.world.particles.material.uniforms.uGather.value,cover:Number(document.querySelector('.portal-layer').style.getPropertyValue('--portal'))});
+          };
+          window.auditRestoreTransition=()=>{window.studio.router.transition=transition;};
+        });
+        await page.evaluate(()=>window.studio.router.navigate('/blog/'));await settle(page);
+        const evidence=await page.evaluate(()=>{
+          const sameSeeds=window.auditSeeds===window.studio.world.particles.geometry;
+          const journey=window.auditJourney;window.auditRestoreTransition();
+          return{sameSeeds,frames:journey.length,maxGather:Math.max(...journey.map(frame=>frame.gather)),minGather:Math.min(...journey.map(frame=>frame.gather)),
+            visibleGather:journey.some(frame=>frame.gather>.25&&frame.gather<.48&&frame.cover===0),
+            destination:window.studio.world.particles.material.uniforms.uMode.value,
+            finalGather:window.studio.world.particles.material.uniforms.uGather.value};
+        });
+        assert.equal(evidence.sameSeeds,true);assert.ok(evidence.frames>10);assert.equal(evidence.maxGather,1);assert.equal(evidence.minGather,0);
+        assert.equal(evidence.visibleGather,true);assert.equal(evidence.destination,2);assert.equal(evidence.finalGather,0);
+        assert.deepEqual(log.errors,[]);return evidence;
+      });
       await verify('offscreen article pauses GPU rendering and navigation resumes it',async()=>{
         await page.evaluate(()=>window.studio.router.navigate('/blog/24471.html'));await settle(page);
         await page.evaluate(()=>scrollTo(0,innerHeight*1.5));

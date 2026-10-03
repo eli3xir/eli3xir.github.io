@@ -40,7 +40,7 @@ export class Router {
     await new Promise(resolve=>{
       const start=performance.now();
       const frame=now=>{
-        const p=Math.min(1,(now-start)/duration);
+        const p=Math.max(0,Math.min(1,(now-start)/duration));
         const eased=p<.5?4*p*p*p:1-(-2*p+2)**3/2;
         this.transition(from+(to-from)*eased);
         if(p<1)this.animation=requestAnimationFrame(frame);else resolve();
@@ -68,7 +68,7 @@ export class Router {
       this.currentURL=url;
       scrollTo(0,0);
       this.score.cue('reveal');
-      await this.animate(1,0,this.score.playing?60000/112:610);
+      await this.animate(1,0,this.score.playing?120000/112:760);
       const h1=document.querySelector('.hero-title');h1?.setAttribute('tabindex','-1');h1?.focus({preventScroll:true});
       if(url.hash)document.getElementById(decodeURIComponent(url.hash.slice(1)))?.scrollIntoView();
     }catch(error){

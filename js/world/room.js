@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { SKINS, readSetting } from '../experience/domain.js';
 import { batchStatic } from './batch.js';
 import { createRoomEffects } from './room-effects.js';
+import { createRoomLighting, tuneRoomMaterial } from './room-lighting.js';
 
 const ZONES = {
   lab: [4.7,7.1,.25,1.6,-1.2,.15], blog: [3,4.7,.25,1.4,-1.2,.15],
@@ -24,6 +25,7 @@ export function createRoom(status) {
   const root = new THREE.Group();
   const room = new THREE.Group(); room.position.set(-4,-1.1,0);root.add(room);
   const effects=createRoomEffects(room);let vinyl=null;let focused=null;
+  createRoomLighting(room);
   const model = { root, room, persistent:true, loaded:false, actorPosition:[.2,.1,-1.3],
     focus(id){focused=id;effects.setFocus(id);},update(t,beat){effects.update(t,beat);if(vinyl&&focused==='radio')vinyl.rotation.y=-t*2.4;} };
   cached = model;
@@ -71,7 +73,7 @@ export function createRoom(status) {
       const entry=entries[object.name]||entries[object.name.replace(/_\d+$/,'')];
       const key=object.material.uuid+'/'+(entry?.file||'none');
       if(!materials.has(key)){
-        const clone=object.material.clone();clone.userData.originalColor=clone.color?.clone();materials.set(key,clone);
+        const clone=object.material.clone();clone.userData.originalColor=clone.color?.clone();tuneRoomMaterial(clone);materials.set(key,clone);
       }
       object.material=materials.get(key);
       if(entry){

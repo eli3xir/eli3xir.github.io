@@ -11,9 +11,11 @@ function potion() {
   const root = new THREE.Group();
   let touched=-100,lastTime=0;
   const shape = [[.05,-.85],[.38,-.84],[.58,-.68],[.62,-.3],[.58,.12],[.3,.45],[.18,.67],[.18,1.05],[.23,1.08]];
-  const vessel = mesh(new THREE.LatheGeometry(shape.map(p => new THREE.Vector2(...p)), 112), glass(), root);
-  const liquid = mesh(new THREE.SphereGeometry(.55, 64, 40), liquidMaterial('#63dcb4'), root, [0, -.29, 0]);
-  liquid.scale.set(1, .8, 1);
+  const vesselMaterial=glass(0xe7f1eb);
+  Object.assign(vesselMaterial,{opacity:.34,transmission:.55,roughness:.07,thickness:.1});
+  const vessel = mesh(new THREE.LatheGeometry(shape.map(p => new THREE.Vector2(...p)), 112), vesselMaterial, root);
+  const fillShape=[[0,-.81],[.35,-.8],[.55,-.64],[.57,-.3],[.54,0],[.535,.035],[0,.035]];
+  const liquid = mesh(new THREE.LatheGeometry(fillShape.map(p=>new THREE.Vector2(...p)),96),liquidMaterial('#63dcb4'),root);
   mesh(new THREE.CylinderGeometry(.17, .17, .06, 64), brass(), root, [0, 1.1, 0]);
   const cap = mesh(new THREE.CylinderGeometry(.22, .2, .15, 64), ink(), root, [0, 1.27, 0]);
   ring(root, .58, .013, -.48);

@@ -51,6 +51,7 @@ export async function settle(page){
 export function observe(page){
   const errors=[],failed=[];
   page.on('pageerror',error=>errors.push(error.message));
+  page.on('console',message=>{if(message.type()==='error'&&message.text().includes('THREE.WebGLProgram'))errors.push(message.text());});
   page.on('response',response=>{if(response.status()>=400)failed.push({status:response.status(),url:response.url()});});
   page.on('requestfailed',request=>failed.push({error:request.failure()?.errorText,url:request.url()}));
   return{errors,failed,drain(){const result={errors:[...errors],failed:[...failed]};errors.length=0;failed.length=0;return result;}};
