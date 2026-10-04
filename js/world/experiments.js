@@ -3,30 +3,7 @@ import { mesh,brass,ink,glass,liquidMaterial,labelTexture,ring } from './materia
 import { randomSequence } from '../audio/synth.js';
 import {createOcean} from './ocean.js';
 import {createWordMachine} from './word-machine.js';
-
-function moon(){
-  const root=new THREE.Group();
-  const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=512;
-  const ctx=canvas.getContext('2d');ctx.fillStyle='#b4b2a4';ctx.fillRect(0,0,1024,512);
-  const random=randomSequence(28);
-  for(let i=0;i<1100;i++){
-    const x=(random()+1)*512,y=(random()+1)*256,r=2+(random()+1)**3*5;
-    const gradient=ctx.createRadialGradient(x-r*.15,y-r*.15,r*.1,x,y,r);
-    gradient.addColorStop(0,'#727c72');gradient.addColorStop(.7,'#909b88');gradient.addColorStop(.9,'#d3d0b8');gradient.addColorStop(1,'#b4b2a4');
-    ctx.fillStyle=gradient;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
-  }
-  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
-  const surface=mesh(new THREE.SphereGeometry(.98,80,48),new THREE.MeshStandardMaterial({map:texture,roughness:.95,bumpMap:texture,bumpScale:.015}),root,[0,-.25,0]);
-  const lander=new THREE.Group();root.add(lander);lander.position.set(.2,1.08,.12);
-  mesh(new THREE.BoxGeometry(.25,.2,.24),brass(),lander);
-  mesh(new THREE.BoxGeometry(.13,.1,.12),ink(),lander,[0,.13,0]);
-  for(const x of [-1,1])for(const z of [-1,1]){
-    const leg=mesh(new THREE.CylinderGeometry(.008,.012,.2,10),brass(),lander,[x*.15,-.16,z*.15]);leg.rotation.z=x*.35;
-    mesh(new THREE.SphereGeometry(.035,12,8),ink(),lander,[x*.18,-.25,z*.15]);
-  }
-  const orbit=ring(root,1.4,.006,-.2);orbit.rotation.x=.9;orbit.rotation.z=.4;
-  return{root,actorPosition:[-.8,.95,.1],update(t,beat){surface.rotation.y=t*.025;lander.position.y=1.1+Math.sin(t*.6)*.1;orbit.rotation.y=t*.03;}};
-}
+import {createMoon} from './moon.js';
 
 function fluid(){
   const root=new THREE.Group();
@@ -87,5 +64,5 @@ function breakout(){
 }
 
 export function createExperiment(id){
-  return({moon,ocean:createOcean,fluid,trails:()=>starField(),galaxy:()=>starField(true),glass:lens,breakout,partext:createWordMachine,bullet:()=>starField(false,true)}[id]||fluid)();
+  return({moon:createMoon,ocean:createOcean,fluid,trails:()=>starField(),galaxy:()=>starField(true),glass:lens,breakout,partext:createWordMachine,bullet:()=>starField(false,true)}[id]||fluid)();
 }

@@ -20,7 +20,8 @@
     "test:about": "node tools/about-audit.mjs",
     "test:character": "node tools/character-audit.mjs",
     "test:ocean": "node tools/ocean-audit.mjs",
-    "test:partext": "node tools/partext-audit.mjs"
+    "test:partext": "node tools/partext-audit.mjs",
+    "test:moon": "node tools/moon-audit.mjs"
   },
   "engines": {
     "node": ">=22"

@@ -66,3 +66,7 @@ Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐�
 本站没有发布第三方参考视频、音频、下载的新外部模型或 AI 图片。新的模型与声音来自本仓库原创代码，房间使用既有 model-studio 资产。
 
 2026-10-03 通过只读 Git 克隆核对 [C++ 聊天室仓库](https://gitee.com/buptsg2019/cpp-chat-room)：默认分支 HEAD 为 `e8e0cd44ed8f74ffba5109ee7a8a7332b04ffc41`，当前公开树仅有 README 与许可；README 支持 C++、Linux、多线程、MySQL 的原项目说明，并链接作者实现笔记。本站对应笔记为 [50706.html](../../blog/50706.html)，保留原内容。新增通信工作台是浏览器本地流程演示，不宣称已运行该仓库后端或核验了缺失的服务器实现。
+
+2026-10-04 阅读 NASA [Apollo Experience Report — Lunar Module Landing Gear Subsystem](https://ntrs.nasa.gov/api/citations/19720018253/downloads/19720018253.pdf)，并实际渲染查看 PDF 第 15、23 页（印刷页 8、16）的展开机构、主/次支柱、脚垫和 Apollo 11 月面照片。本站借鉴四腿支撑和可见结构连接，几何由代码原创；没有采用该报告图片作为网页资产，也没有按工程尺寸精确复刻。
+
+同轮核对 NASA [月球与地球数值对比](https://science.nasa.gov/moon/by-the-numbers/) 的月面重力 1.624 m/s²，作为月尘简化运动的重力常数；阅读 [Flag Day – Flying High](https://www.nasa.gov/history/flag-day-flying-high-the-stars-and-stripes-in-space/) 关于无风环境、旗面横杆的说明，移除原实验持续飘动。红色小旗沿用原实验的色彩，不标示真实任务身份。研究 PDF 和参考帧仅保存在忽略的临时目录。
