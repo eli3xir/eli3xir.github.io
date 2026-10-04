@@ -48,14 +48,18 @@ try{
    // font may reflow the title while native scroll anchoring holds the target.
    await page.evaluate(()=>document.fonts.ready);
    const positions=()=>page.locator('.post-content h1,.post-content h2,.post-content h3').evaluateAll(nodes=>nodes.map(node=>node.getBoundingClientRect().top+scrollY));
-   const before=await positions(),reserved=await page.locator('.post-content img[src^="/assets/blog/recovered/"]').evaluateAll(images=>images.map(image=>({height:image.getBoundingClientRect().height,naturalWidth:image.naturalWidth})));
+   const before=await positions(),anchorBefore=await page.locator('#section-10').evaluate(node=>node.getBoundingClientRect().top);
+   const reserved=await page.locator('.post-content img[src^="/assets/blog/recovered/"]').evaluateAll(images=>images.map(image=>({height:image.getBoundingClientRect().height,naturalWidth:image.naturalWidth})));
    assert.equal(reserved.length,26);assert.ok(reserved.every(image=>image.height>0&&image.naturalWidth===0));
    await page.locator('.post-content img').evaluateAll(images=>images.forEach(image=>{image.loading='eager';}));release();
    await page.locator('.post-content img').evaluateAll(images=>Promise.all(images.map(image=>image.decode())));await page.waitForTimeout(150);
    const after=await positions();assert.ok(after.every((value,index)=>Math.abs(value-before[index])<1),JSON.stringify({before,after}));
    assert.equal(await page.evaluate(()=>window.studio.world.model.index),10);
-   assert.ok(await page.locator('#section-10').evaluate(node=>Math.abs(node.getBoundingClientRect().top-62)<1));
-   report.cases.push({name:'26 recovered images preserve direct chapter link',viewport,reserved,before,after});
+   const anchorAfter=await page.locator('#section-10').evaluate(node=>node.getBoundingClientRect().top);
+   // Fonts have settled before the baseline but their native anchor residual
+   // can remain. Image loading must add less than 1 px of movement.
+   assert.ok(Math.abs(anchorAfter-anchorBefore)<1&&Math.abs(anchorBefore-62)<=2&&Math.abs(anchorAfter-62)<=2,JSON.stringify({anchorBefore,anchorAfter}));
+   report.cases.push({name:'26 recovered images preserve direct chapter link',viewport,reserved,before,after,anchorBefore,anchorAfter});
    console.log(`PASS delayed restored figures and direct chapter ${viewport.width}`);
   }finally{release();await context.close();}
   const fontContext=await browser.newContext({viewport,reducedMotion:'reduce'}),fontPage=await fontContext.newPage();

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {startServer,launchBrowser,ready,settle,observe,output} from './browser-support.mjs';
 const server=process.env.BASE_URL?{base:process.env.BASE_URL,close:async()=>{}}:await startServer(),browser=await launchBrowser();
 const report={base:server.base,cases:[],failures:[]};fs.mkdirSync(output,{recursive:true});
+const fallbackOnly=process.env.IMAGE_INSPECTOR_FALLBACK_ONLY==='1';
 const firstSource=JSON.parse(fs.readFileSync('assets/blog/recovered/manifest.json','utf8')).articles.find(a=>a.article==='/blog/4830.html').images[0].local;
 async function openArticle(page,path='/blog/4830.html'){
  await page.goto(server.base+path,{waitUntil:'domcontentloaded'});await ready(page);await settle(page);await page.evaluate(()=>document.fonts.ready);
@@ -20,7 +21,7 @@ const state=page=>page.locator('.image-inspector').evaluate(dialog=>{
   buttons:[...dialog.querySelectorAll('button')].map(button=>({text:button.textContent,height:button.getBoundingClientRect().height}))};
 });
 try{
- for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
+ if(!fallbackOnly)for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
   const context=await browser.newContext({viewport}),page=await context.newPage(),log=observe(page);
   await openArticle(page);assert.equal(await page.locator('.article-image-open').count(),8);
   const opener=page.locator('.article-image-open').first();await opener.scrollIntoViewIfNeeded();await opener.locator('img').evaluate(image=>image.decode());
@@ -65,7 +66,7 @@ try{
   assert.deepEqual(log.errors,[]);assert.deepEqual(log.failed,[]);
   report.cases.push({name:'inspect, pan, keyboard, return, resize and route cleanup',viewport,initial,fit,actual,panned,keyboard,restored,resized,tabOrder});await context.close();console.log(`PASS image inspector, input and cleanup ${viewport.width}`);
  }
- {
+ if(!fallbackOnly){
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2,reducedMotion:'reduce'}),page=await context.newPage(),log=observe(page);
   await openArticle(page);const source=page.locator('.article-image-open img').first();await source.scrollIntoViewIfNeeded();await source.evaluate(image=>image.decode());const box=await source.boundingBox();
   await page.touchscreen.tap(box.x+box.width*.35,box.y+box.height*.45);await settledImage(page);const initial=await state(page);
@@ -85,7 +86,7 @@ try{
   assert.equal(await page.evaluate(()=>document.activeElement.className),'article-image-open');assert.deepEqual(log.errors,[]);assert.deepEqual(log.failed,[]);
   report.cases.push({name:'emulated touch opens selected detail and natively pans/cancels',initial,focus,panned});await context.close();console.log('PASS touch detail, native pan and cancellation');
  }
- for(const outcome of ['close-before-load','image-failure']){
+ if(!fallbackOnly)for(const outcome of ['close-before-load','image-failure']){
   const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'}),page=await context.newPage(),log=observe(page);
   let release;const gate=new Promise(resolve=>{release=resolve;});
   await page.route('**'+firstSource,async route=>{await gate;if(outcome==='image-failure')await route.fulfill({status:404,body:'Unavailable'});else await route.continue().catch(()=>{});});
@@ -109,7 +110,7 @@ try{
    report.cases.push({name:outcome,expectedRequests:log.failed});console.log(`PASS ${outcome}`);
   }finally{release();await context.close();}
  }
- {
+ if(!fallbackOnly){
   const context=await browser.newContext({viewport:{width:320,height:568},reducedMotion:'reduce'}),page=await context.newPage(),log=observe(page);
   await page.addInitScript(()=>{const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return /webgl/i.test(type)?null:get.call(this,type,...args);};});
   await openArticle(page);await page.locator('.article-image-open').first().click();await settledImage(page);
@@ -119,11 +120,13 @@ try{
   report.cases.push({name:'reduced motion without WebGL',result});await context.close();console.log('PASS reduced-motion inspector without WebGL');
  }
  {
-  const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'}),page=await context.newPage();
+  const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'}),page=await context.newPage(),log=observe(page);
+  report.fallbackRequests=log;
   await page.addInitScript(()=>{HTMLDialogElement.prototype.showModal=undefined;});await openArticle(page);
   const opener=page.locator('.article-image-open').first();assert.equal(await opener.evaluate(node=>node.tagName),'A');
   const waiting=page.waitForEvent('popup');await opener.click();const popup=await waiting;await popup.waitForLoadState('domcontentloaded');
   assert.equal(new URL(popup.url()).pathname,firstSource);assert.equal(await page.locator('.image-inspector').count(),0);await popup.close();
+  assert.deepEqual(log.errors,[]);assert.deepEqual(log.failed,[]);
   report.cases.push({name:'unsupported dialog opens original image'});await context.close();console.log('PASS original-image fallback');
  }
 }catch(error){report.failures.push(error.stack);process.exitCode=1;}
