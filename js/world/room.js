@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { SKINS, readSetting } from '../experience/domain.js';
+import { readSetting } from '../experience/domain.js';
+import {roomSkinColor} from './room-palette.js';
 import { batchStatic } from './batch.js';
 import { createRoomEffects } from './room-effects.js';
 import { createRoomLighting, tuneRoomMaterial } from './room-lighting.js';
@@ -23,6 +24,7 @@ let cached = null;
 
 export function createRoom(status) {
   if (cached) {
+    cached.onStatus=status;
     if(cached.loaded)status(1,'房间已就绪');
     else if(cached.failed)cached.retry();
     else status(cached.progress??.05,cached.message||'正在搬入工作室');
@@ -32,19 +34,16 @@ export function createRoom(status) {
   const room = new THREE.Group(); room.position.set(-4,-1.1,0);root.add(room);
   const effects=createRoomEffects(room);let vinyl=null;let focused=null;
   createRoomLighting(room);
-  const model = { root, room, persistent:true, loaded:false, actorPosition:[.2,.1,-1.3],
+  const model = { root, room, persistent:true, loaded:false, onStatus:status, actorPosition:[.2,.1,-1.3],
     focus(id){focused=id;effects.setFocus(id);},update(t,beat){effects.update(t,beat);if(vinyl&&focused==='radio')vinyl.rotation.y=-t*2.4;} };
   cached = model;
-  const report=(progress,message,error)=>{model.progress=progress;model.message=message;status(progress,message,error);};
+  const report=(progress,message,error)=>{model.progress=progress;model.message=message;model.onStatus(progress,message,error);};
   model.applySkin = id => {
-    const skin = SKINS[id] || SKINS.default;
     room.traverse(object => {
       if (!object.isMesh) return;
       for (const mat of [object.material].flat()) {
         if (!mat.color) continue;
-        const original = mat.userData.originalColor;
-        if (original) mat.color.copy(original);
-        if (id !== 'default' && /wall_plaster|ceiling|trim|rug|cork/.test(mat.name)) mat.color.setRGB(...skin.wall);
+        roomSkinColor(mat,id,mat.color);
       }
     });
   };
@@ -107,6 +106,7 @@ export function createRoom(status) {
     vinyl=new THREE.Group();vinyl.position.copy(center);gltf.scene.add(vinyl);gltf.scene.updateWorldMatrix(true,true);
     parts.forEach(object=>vinyl.attach(object));
     model.batching=batchStatic(gltf.scene,new Set(parts));
+    model.asset=gltf.scene;
     model.loaded=true;
     model.applySkin(readSetting('room-skin','default'));
     gltf.scene.visible=true;

@@ -1,4 +1,4 @@
-import { SKINS, readSetting, writeSetting } from './domain.js';
+import { SKINS, readSetting } from './domain.js';
 import { MOVEMENTS } from '../audio/composition.js';
 
 export function pageContent(doc,route) {
@@ -48,11 +48,6 @@ export function pageContent(doc,route) {
 export function enhanceContent(main,route,{signal,score,world,announce}) {
   if(!main)return;
   const options={signal};
-  main.querySelectorAll('[data-skin]').forEach(button=>button.addEventListener('click',()=>{
-    const saved=writeSetting('room-skin',button.dataset.skin);world?.applySkin(button.dataset.skin);
-    main.querySelectorAll('[data-skin]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
-    score.cue('hover');announce(`已应用「${SKINS[button.dataset.skin].name}」${saved?'':'，当前浏览器无法保存，下次需重新选择。'}`);
-  },options));
   const search=main.querySelector('#search');
   if(search){
     search.setAttribute('aria-label','搜索文章标题或标签');

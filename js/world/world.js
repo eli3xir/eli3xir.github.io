@@ -126,11 +126,12 @@ export class World {
     this.actor.root.rotation.y=route.id==='home'?Math.PI:0;
     this.particles.material.uniforms.uMode.value=['home','lab','blog','radio','projects','about','skin'].indexOf(route.id);
     this.particles.material.uniforms.uColor.value.set(route.color);
-    this.scene.environmentIntensity=route.id==='home'?.12:.42;
-    this.renderer.toneMappingExposure=route.id==='home'?.88:.92;
-    this.bloom.threshold=route.id==='home'?8:1.35;
-    this.key.intensity=route.id==='home'?2:16;this.rim.intensity=route.id==='home'?3:22;
-    this.fill.intensity=route.id==='home'?.35:2;
+    this.bakedLighting=route.id==='home'||Boolean(this.model.bakedLighting);
+    this.scene.environmentIntensity=this.bakedLighting?.12:.42;
+    this.renderer.toneMappingExposure=this.bakedLighting?.88:.92;
+    this.bloom.threshold=this.bakedLighting?8:1.35;
+    this.key.intensity=this.bakedLighting?2:16;this.rim.intensity=this.bakedLighting?3:22;
+    this.fill.intensity=this.bakedLighting?.35:2;
     this.key.castShadow=readSetting('visual-quality','auto')!=='low'&&route.id!=='home';
     this.floor.visible=route.id!=='home';
     this.offsetCamera();this.setRig();
@@ -158,7 +159,7 @@ export class World {
     const {fromView:from,toView:to}=this.focusJourney,blend=(a,b)=>THREE.MathUtils.lerp(a,b,progress);
     this.camera.setViewOffset(innerWidth,blend(from.fullHeight,to.fullHeight),blend(from.offsetX,to.offsetX),blend(from.offsetY,to.offsetY),innerWidth,innerHeight);
   }
-  applySkin(id){this.model?.applySkin?.(id);document.body.dataset.skin=id;this.rim.color.set(id==='ocean'?0x8ab6de:id==='forest'?0x88d6b0:0xa1d8d3);this.moving=1;}
+  applySkin(id,options){this.model?.applySkin?.(id,options);document.body.dataset.skin=id;this.rim.color.set(id==='ocean'?0x8ab6de:id==='forest'?0x88d6b0:0xa1d8d3);this.moving=1;}
   transitionAt(progress){
     if(progress>0&&this.transition===0){
       this.portalStart=this.actor.root.position.clone();this.portalScale=this.actor.root.scale.x;this.portalReveal=false;this.focusJourney=null;
@@ -292,7 +293,7 @@ export class World {
     if(this.transition>0)this.onPortal(this.portalPosition());
     this.burst=(this.burst||0)*Math.exp(-dt*3);
     uniforms.uSize.value=this.renderer.getPixelRatio();uniforms.uEnergy.value=(this.route?.id==='home'?.28:.5)*(.78+mood*.35)+this.transition*.5+this.burst*.5;
-    this.bloom.strength=this.route?.id==='home'?.018+mood*.012:.18+mood*.07;
+    this.bloom.strength=this.bakedLighting?.018+mood*.012:.18+mood*.07;
     this.particles.visible=true;
     this.model.root.visible=true;this.actor.root.visible=true;
     this.film.uniforms.uTime.value=t;this.film.uniforms.uTransition.value=this.transition;
