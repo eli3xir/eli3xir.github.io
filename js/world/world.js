@@ -16,6 +16,7 @@ import { composeHero } from './composition.js';
 import { nextBeatDelay } from '../experience/domain.js';
 import {visualQuality,qualityRatio} from '../experience/visual-quality.js';
 import { BPM } from '../audio/composition.js';
+import {frameRoomCorner} from './room-framing.js';
 
 export class World {
   constructor(container,score,{status,onHover,onPick,onPortal}={}) {
@@ -66,6 +67,8 @@ export class World {
     this.moving=0;this.scroll=0;this.transition=0;this.last=performance.now();this.frames=[];this.renderedFrames=0;
     this.events=new AbortController();
     this.heroObserver=new ResizeObserver(()=>{if(this.model&&!this.focused)this.resize();});
+    this.previewObserver=new ResizeObserver(()=>{if(this.focused&&!this.focusJourney)this.resize();});
+    const preview=document.querySelector('.object-preview');if(preview)this.previewObserver.observe(preview);
     const options={signal:this.events.signal};
     addEventListener('resize',()=>this.resize(),options);
     addEventListener('pointermove',e=>this.move(e),{...options,passive:true});
@@ -105,7 +108,11 @@ export class World {
   offsetCamera() {
     this.camera.aspect=innerWidth/innerHeight;
     this.camera.clearViewOffset();
-    if(this.focused)return;
+    if(this.focused){
+      const frame=frameRoomCorner(this,ROOM_VIEWS[this.focused]);
+      if(frame)this.camera.setViewOffset(innerWidth,innerHeight,frame.offsetX,frame.offsetY,innerWidth,innerHeight);
+      return;
+    }
     const compact=this.compact??innerWidth<=850;
     const height=compact?this.heroHeight||innerHeight:innerHeight;
     this.camera.setViewOffset(innerWidth,height,compact?0:-innerWidth*.2,compact?(this.heroOffset||0)+scrollY:0,innerWidth,innerHeight);
@@ -114,6 +121,7 @@ export class World {
   setRig() {
     if(this.focused&&ROOM_VIEWS[this.focused]) {
       const view=ROOM_VIEWS[this.focused];this.desiredCamera.set(...view.camera);this.desiredTarget.set(...view.target);
+      frameRoomCorner(this,view);
     }else if(this.route?.id==='home') {
       this.desiredCamera.set(0,1.02,innerWidth<700?-10.2:-7.7);this.desiredTarget.set(0,-.06,0);
     }else {
@@ -163,9 +171,10 @@ export class World {
     if(id===this.focused)return;
     const audible=this.score.audible,clock=audible?this.score.time:performance.now()/1000;
     this.focusJourney=this.reduced.matches?null:{from:this.actor.root.position.clone(),scale:this.actor.root.scale.x,fromView:this.viewState(),
+      fromCamera:this.camera.position.clone(),fromTarget:this.target.clone(),
       clock:audible?'audio':'ui',start:clock+(audible?nextBeatDelay(clock):0),progress:0,duration:120/BPM};
-    this.focused=id;this.model?.focus?.(id);this.offsetCamera();this.setRig();this.moving=1;this.actor.react();
-    if(this.focusJourney){this.focusJourney.toView=this.viewState();this.focusProjection(0);}
+    this.onPick(id);this.focused=id;this.model?.focus?.(id);this.offsetCamera();this.setRig();this.moving=1;this.actor.react();
+    if(this.focusJourney){this.focusJourney.toView=this.viewState();this.focusJourney.toCamera=this.desiredCamera.clone();this.focusJourney.toTarget=this.desiredTarget.clone();this.focusProjection(0);}
     if(this.reduced.matches){this.camera.position.copy(this.desiredCamera);this.target.copy(this.desiredTarget);this.camera.lookAt(this.target);}
   }
   viewState(){return this.camera.view?.enabled?{...this.camera.view}:{fullWidth:innerWidth,fullHeight:innerHeight,offsetX:0,offsetY:0};}
@@ -215,7 +224,7 @@ export class World {
       this.interact();return;
     }
     const id=this.model.pick?.(this.ray);
-    if(id){this.focus(id);this.onPick(id);this.score.cue('hover');}
+    if(id){this.focus(id);this.score.cue('hover');}
     else this.actor.react();
   }
 
@@ -251,7 +260,16 @@ export class World {
       wanted.y+=this.pointer.y*.07;
     }else if(!this.focused){wanted.x+=this.pointer.x*.13;wanted.y+=this.pointer.y*.075;}
     wanted.z*=1-this.transition*.11;
-    this.camera.position.lerp(wanted,damping);this.target.lerp(this.desiredTarget,damping);this.camera.lookAt(this.target);
+    if(this.focusJourney){
+      const flight=this.focusJourney,clock=this.score.audible?'audio':'ui',current=clock==='audio'?t:now/1000;
+      if(clock!==flight.clock){flight.clock=clock;flight.start=current-flight.progress*flight.duration;}
+      flight.progress=Math.max(flight.progress,THREE.MathUtils.clamp((current-flight.start)/flight.duration,0,1));
+      const p=flight.progress,pacing=p*p*(3-2*p),arc=Math.sin(p*Math.PI)*.48;
+      this.focusProjection(pacing);this.camera.position.lerpVectors(flight.fromCamera,flight.toCamera,pacing);this.target.lerpVectors(flight.fromTarget,flight.toTarget,pacing);
+      this.camera.position.y+=arc;this.target.y+=arc;
+      this.camera.position.addScaledVector(this.camera.position.clone().sub(this.target).normalize(),Math.sin(p*Math.PI)*.2);
+    }else{this.camera.position.lerp(wanted,damping);this.target.lerp(this.desiredTarget,damping);}
+    this.camera.lookAt(this.target);
     if(this.model){
       this.model.update(t,rhythm,this.scroll,now/1000,reduced);
       if(!this.model.persistent){
@@ -279,11 +297,8 @@ export class World {
       position.lerp(portalBody.multiplyScalar(actorScale).add(new THREE.Vector3(0,verticalOffset,0)),journey);
       position.y+=Math.sin(journey*Math.PI)*.12;
     }else if(this.focusJourney){
-      const flight=this.focusJourney,clock=this.score.audible?'audio':'ui',current=clock==='audio'?t:performance.now()/1000;
-      if(clock!==flight.clock){flight.clock=clock;flight.start=current-flight.progress*flight.duration;}
-      flight.progress=Math.max(flight.progress,THREE.MathUtils.clamp((current-flight.start)/flight.duration,0,1));
+      const flight=this.focusJourney;
       const p=flight.progress,pacing=p*p*(3-2*p);
-      this.focusProjection(pacing);
       position.lerpVectors(flight.from,position.clone(),pacing);position.y+=Math.sin(p*Math.PI)*.48;
       bodyScale=THREE.MathUtils.lerp(flight.scale,bodyScale,pacing);
       if(p===1)this.focusJourney=null;

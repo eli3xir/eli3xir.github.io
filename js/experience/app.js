@@ -21,6 +21,7 @@ import {bindGlass} from './glass.js';
 import {bindBreakout} from './breakout.js';
 import {bindBullet} from './bullet.js';
 import {visualQuality,watchVisualQuality} from './visual-quality.js';
+import {createRoomExplorer} from './room-explorer.js';
 
 const original=document.cloneNode(true);
 const score=new Score();
@@ -59,13 +60,10 @@ function objectHover(id,event){
   stage.classList.toggle('has-hover',Boolean(id));
 }
 function objectFocus(id){
-  const chapter=CHAPTERS.find(c=>c.id===id);if(!chapter)return;
-  document.body.classList.add('room-focused');preview.hidden=false;
-  preview.innerHTML=`<button class="preview-close" aria-label="返回房间全景">×</button><p class="eyebrow">${chapter.number} / A NEW CORNER</p><h2>${chapter.label}</h2><p class="preview-description"></p><a class="explore-button" href="${chapter.path}">进入这个世界 <span aria-hidden="true">↗</span></a>`;
-  preview.querySelector('.preview-description').textContent=chapter.subtitle;
-  preview.querySelector('button').addEventListener('click',()=>unfocus(),{once:true});
+  explorer.show(id);
 }
-function unfocus(){world?.focus(null);preview.hidden=true;document.body.classList.remove('room-focused');}
+const explorer=createRoomExplorer(preview,{world:()=>world,score});
+function unfocus(){world?.focus(null);}
 try{world=new World(stage,score,{status:sceneStatus,onHover:objectHover,onPick:objectFocus,onPortal:point=>{
   curtain.style.setProperty('--portal-x',`${Math.max(.03,Math.min(.97,point.x))*100}%`);
   curtain.style.setProperty('--portal-y',`${Math.max(.03,Math.min(.97,point.y))*100}%`);
@@ -83,7 +81,7 @@ async function mount(doc,url){
   if(route.id==='projects')route.relay=createMessageRelay();
   if(route.id==='radio')route.radioPlayback=()=>({active:score.audible,time:score.time,cycle:score.rhythm.cycleBar/32,levels:score.levels()});
   document.body.classList.toggle('article-view',route.article);document.body.classList.toggle('experiment-view',route.experiment);
-  document.body.classList.remove('room-focused');preview.hidden=true;tooltip.hidden=true;
+  explorer.reset();tooltip.hidden=true;
   document.title=doc.title||`${route.label} · eli3xir`;
   let description=document.head.querySelector('meta[name="description"]');
   if(!description){description=document.createElement('meta');description.name='description';document.head.append(description);}
@@ -113,7 +111,7 @@ async function mount(doc,url){
     section.querySelector('.explore-button').before(trigger);trigger.addEventListener('click',()=>world.interact(),{signal:contentEvents.signal});
   }
   enhanceContent(main,route,{signal:contentEvents.signal,score,world,announce,reading});
-  section.querySelector('[data-explore]')?.addEventListener('click',()=>{if(world?.model.loaded){world.focus('lab');objectFocus('lab');score.cue('hover');}else announce('移动鼠标或轻轻拖动，点击桌上与墙上的物件。也可以使用下方入口。');},{signal:contentEvents.signal});
+  section.querySelector('[data-explore]')?.addEventListener('click',()=>{if(world?.model.loaded){world.focus('lab');score.cue('hover');}else announce('移动鼠标或轻轻拖动，点击桌上与墙上的物件。也可以使用下方入口。');},{signal:contentEvents.signal});
   if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
     const delay=score.audible?nextBeatDelay(score.time)*1000:80;
     section.querySelectorAll('.hero-word').forEach((word,i)=>{

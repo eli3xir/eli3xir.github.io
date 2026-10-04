@@ -8,6 +8,7 @@
     "build:reflections": "node tools/build-room-reflections.mjs",
     "validate:reflections": "node tools/validate-room-reflections.mjs",
     "test:reflections": "node tools/room-reflections-audit.mjs",
+    "test:room-explorer": "node tools/room-explorer-audit.mjs",
     "validate": "node tools/validate.mjs",
     "test": "node --test tools/tests/*.test.mjs",
     "test:browser": "node tools/browser-audit.mjs",
