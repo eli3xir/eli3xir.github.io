@@ -135,7 +135,8 @@ export class World {
     this.key.intensity=this.bakedLighting?2:16;this.rim.intensity=this.bakedLighting?3:22;
     this.fill.intensity=this.bakedLighting?.35:2;
     this.key.castShadow=readSetting('visual-quality','auto')!=='low'&&route.id!=='home';
-    this.floor.visible=route.id!=='home';
+    this.scene.background.setRGB(...(this.model.background||[16/255,21/255,19/255]));
+    this.floor.visible=route.id!=='home'&&this.model.floor!==false;
     this.offsetCamera();this.setRig();
     // Swap at the covered midpoint; the reveal starts with a composed camera.
     this.camera.position.copy(this.desiredCamera);this.target.copy(this.desiredTarget);

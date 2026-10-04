@@ -1,0 +1,18 @@
+import {galaxyControls} from './galaxy-controls.js';
+import {createGalaxyState} from '../world/galaxy-state.js';
+import {nextBeatDelay} from './domain.js';
+export function bindGalaxy(section,main,{world,score,signal}){
+ const model=world?.model,fallback=createGalaxyState(),frame=main.querySelector('.experiment-frame');let ready=false,visible=false,owner='hero',epoch=0,pending=[];
+ const state=()=>model?.diagnostics()||fallback.state,reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches,post=data=>frame.contentWindow?.postMessage(data,location.origin),options=()=>({wait:score.audible&&!reduced()?nextBeatDelay(score.time):0,reduced:reduced()});
+ const perform=(action,value)=>{if(owner==='transfer'){pending.push({action,value});pending=pending.slice(-8);return;}if(owner==='frame'){post({type:'galaxy-action',epoch,action,value});if(action==='band'||action==='push')score.cue('hover',value.options.wait);return;}
+  const target=model||fallback;if(action==='band'){if(target.selectBand(value.band,model?value.options:{...value.options,reduced:true}))score.cue('hover',value.options.wait);}if(action==='push'){target.push(model?value.options:{...value.options,reduced:true});score.cue('hover',value.options.wait);}if(action==='pause')target.pause(value);if(action==='view')model?model.preset(value):fallback.view(value);if(action==='zoom')target.zoom(value);controls.set(state());if(world)world.moving=1;
+ };
+ const controls=galaxyControls({signal,onBand:band=>perform('band',{band,options:options()}),onView:value=>perform('view',value),onPush:()=>perform('push',{options:options()}),onPause:value=>perform('pause',value),onZoom:value=>perform('zoom',value)});
+ section.querySelector('.hero-note').remove();section.querySelector('.explore-button').before(controls.element);section.querySelector('.explore-button').textContent='带着这个视角，靠近看看 ↓';main.querySelector('.experiment-intro p').textContent='同一片星系，不同的光。拖动环视，滚轮或双指缩放，轻点加速转动；方向键、空格与 B 键也可操作。波段着色为示意，非真实观测数据。';controls.set(state());
+ if(model){model.onState=controls.set;model.onComplete=()=>score.cue('reveal');model.onPick=hit=>{if(hit.kind==='band')perform('band',{band:1-state().targetBand,options:options()});else perform('push',{options:options()});};}
+ const visibility=()=>{if(owner==='hero')model?.setActive(!document.hidden);if(!ready)return;const active=visible&&!document.hidden;if(active&&owner==='hero'){epoch++;owner='frame';model?.setActive(false);post({type:'galaxy-owner',epoch,active:true,snapshot:model?.snapshot()||fallback.snapshot()});}else if(!active&&owner==='frame'){epoch++;owner='transfer';post({type:'galaxy-owner',epoch,active:false});}};
+ const observer=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting&&entries[0].intersectionRatio>=.15;visibility();},{threshold:[0,.15]});observer.observe(frame);document.addEventListener('visibilitychange',visibility,{signal});
+ addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==frame.contentWindow)return;const data=event.data;if(data?.type==='galaxy-ready'){ready=true;visibility();}if(data?.type==='galaxy-settings'&&data.epoch===epoch&&owner==='frame'&&(model||fallback).restore(data.snapshot)){controls.set(state());if(world)world.moving=1;}
+  if(data?.type==='galaxy-state'&&data.epoch===epoch&&owner==='transfer'){(model||fallback).restore(data.snapshot);owner='hero';model?.setActive(!document.hidden);controls.set(state());if(world)world.moving=1;visibility();const actions=pending;pending=[];actions.forEach(({action,value})=>perform(action,value));}},{signal});
+ signal.addEventListener('abort',()=>{observer.disconnect();post({type:'galaxy-owner',epoch:++epoch,active:false});if(model)model.onState=model.onPick=model.onComplete=null;},{once:true});
+}

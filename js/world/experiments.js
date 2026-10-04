@@ -6,6 +6,7 @@ import {createWordMachine} from './word-machine.js';
 import {createMoon} from './moon.js';
 import {createFluid} from './fluid.js';
 import {createTrails} from './trails.js';
+import {createGalaxy} from './galaxy.js';
 
 function starField(galaxy=false,bullet=false){
   const root=new THREE.Group();const count=galaxy?7000:bullet?1200:3200;
@@ -51,5 +52,5 @@ function breakout(){
 }
 
 export function createExperiment(id,renderer){
-  return({moon:createMoon,ocean:createOcean,fluid:()=>createFluid(renderer),trails:createTrails,galaxy:()=>starField(true),glass:lens,breakout,partext:createWordMachine,bullet:()=>starField(false,true)}[id]||(()=>createFluid(renderer)))();
+  return({moon:createMoon,ocean:createOcean,fluid:()=>createFluid(renderer),trails:createTrails,galaxy:createGalaxy,glass:lens,breakout,partext:createWordMachine,bullet:()=>starField(false,true)}[id]||(()=>createFluid(renderer)))();
 }

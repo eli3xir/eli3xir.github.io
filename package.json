@@ -23,7 +23,8 @@
     "test:partext": "node tools/partext-audit.mjs",
     "test:moon": "node tools/moon-audit.mjs",
     "test:fluid": "node tools/fluid-audit.mjs",
-    "test:trails": "node tools/trails-audit.mjs"
+    "test:trails": "node tools/trails-audit.mjs",
+    "test:galaxy": "node tools/galaxy-audit.mjs"
   },
   "engines": {
     "node": ">=22"

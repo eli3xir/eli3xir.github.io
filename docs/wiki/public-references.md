@@ -79,3 +79,7 @@ Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐�
 2026-10-04 阅读 IAU [Startrails — First Place](https://iauarchive.eso.org/public/images/detail/ann21047m/) 的说明，并下载、实际查看该页星轨照片：地球自转轴定义天极，北极星靠近天极但不是严格重合；前景树木与固定背景提供尺度。本站采用共同角速度和稳定装置的构图关系，页面称“天极”，未把参考图片发布为资产。
 
 同轮阅读 ESO [A hypnotising view of Paranal](https://www.eso.org/public/images/potw2546a/) 关于长曝光和叠加固定画面、天极旋转的文字；图片请求失败，没有将该图记为已观看。数值核对 NASA [Earth Fact Sheet](https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html) 的 23.9345 小时恒星自转周期，以及 USNO [Sidereal Time](https://aa.usno.navy.mil/data/siderealtime) 对约 23 小时 56 分恒星日的解释。本站将一至六小时加速为数秒并标注示意星空；颜色、星位、相机与曝光弧线均由原创代码生成，不推断实际观测日期或地点。
+
+2026-10-04 阅读 NASA 的 [NGC 628：Webb 与 Hubble 对照](https://science.nasa.gov/asset/webb/webb-and-hubbles-views-of-spiral-galaxy-ngc-628/) 并实际查看该页并排图像：可见光中的暗尘埃与红外指定颜色中的发光结构承担不同视觉信息。另阅读 [NGC 1300 对照说明](https://science.nasa.gov/asset/webb/webb-and-hubbles-views-of-spiral-galaxy-ngc-1300/)，该页图片未单独查看，不记为图像观察依据。本站借鉴同一对象随观察波段揭示结构的关系，未复制参考图或宣称复现某个真实星系。
+
+同轮下载并阅读 ESA/Hubble [A galactic disc, edge-on and up close](https://esahubble.org/images/potw1228a/) 的正文，实际查看 NGC 4565 侧面图像：薄盘、遮光尘埃和盘外星光形成层次。浏览工具重试失败后通过 HTTP 下载取得正文与图片，临时文件没有发布。本站使用原创程序密度和几何表现薄盘、隆起及近似遮挡；均匀转动和点击加速是交互演示，不表示真实恒星轨道或 N 体演化。
