@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "format": "rgbe8-planar-cubeuv-gzip",
+  "three": "185",
+  "position": [
+    0.1,
+    0.45,
+    -1.2
+  ],
+  "size": 128,
+  "sigma": 0.02,
+  "near": 0.05,
+  "far": 25,
+  "palettes": {
+    "default": [
+      0.72,
+      0.65,
+      0.53
+    ],
+    "brick": [
+      0.72,
+      0.48,
+      0.38
+    ],
+    "forest": [
+      0.42,
+      0.52,
+      0.42
+    ],
+    "ocean": [
+      0.48,
+      0.56,
+      0.68
+    ],
+    "cream": [
+      0.88,
+      0.85,
+      0.78
+    ]
+  },
+  "file": "probes.bin",
+  "bytes": 1068933,
+  "decodedBytes": 3932160,
+  "sha256": "82a522286896d42fbd3839e9017e9f562e81a2a863e5d7d4a40af27f0f7a00d4",
+  "decodedSha256": "92a66609e092a104c840c15fb9c8ad29300da73db101509feeff253a0c8b303f",
+  "entries": [
+    {
+      "id": "default",
+      "width": 384,
+      "height": 512,
+      "pixelOffset": 0,
+      "pixels": 196608,
+      "capturedSha256": "961480a601ffde6ab19355cf7759add87fe6881959a0ca0dbdb0d284b68fe4a7"
+    },
+    {
+      "id": "brick",
+      "width": 384,
+      "height": 512,
+      "pixelOffset": 196608,
+      "pixels": 196608,
+      "capturedSha256": "c7e7c83438703c45b31cd063f3b205d58ca8cb32716682bec5a0167c7616efcc"
+    },
+    {
+      "id": "forest",
+      "width": 384,
+      "height": 512,
+      "pixelOffset": 393216,
+      "pixels": 196608,
+      "capturedSha256": "bbe132357889980064a367f97321a86fb1305160b72610027303dcf18b17894b"
+    },
+    {
+      "id": "ocean",
+      "width": 384,
+      "height": 512,
+      "pixelOffset": 589824,
+      "pixels": 196608,
+      "capturedSha256": "9fbcb4167a8f7f590845cda25975509de3b8efe0188e363c06b073df7a22f4bf"
+    },
+    {
+      "id": "cream",
+      "width": 384,
+      "height": 512,
+      "pixelOffset": 786432,
+      "pixels": 196608,
+      "capturedSha256": "7c19102054516cbe72c7b595de937def34bb8422e3c39868f991006c61408e9a"
+    }
+  ],
+  "error": {
+    "meanAbsolute": 0.0004693989502525207,
+    "maxRelativeToPixelPeak": 0.003917742706838819,
+    "capturedPeak": 12.0703125
+  },
+  "inputs": {
+    "assets/room/room.glb": "e84a92fb7cf455014446c81237aec2157e32e3a906e711d5f9c26849c96e82cc",
+    "assets/room/lightmaps/manifest.json": "f022848ff9a5a0bfcd5a634bd752f8a610cf4ba81e956f7374d00f053870fafe",
+    "assets/room/lightmaps.bin": "b7064604e834e2909ba6c6c149d59fbb87c1b01f00b23031fe44f889bbcf615f",
+    "js/world/room-lighting.js": "03397803782232574f72a2ab44cc114ad3a6391ff1f9f1a00cf153e6eb123a2f",
+    "tools/build-room-reflections.mjs": "2200fe55942274e56848919d65ee2b8f92482e3865990cae0d56acf15b9f9d7f",
+    "tools/reflection-encoding.mjs": "287066a599d60c3d798e5939b74ae3061df9052c75b3ddcb394ceb09c89b016f"
+  },
+  "notes": "One static room probe per palette; excludes the character and particles. Baked diffuse is not added twice. No parallax correction or live-object reflection."
+}

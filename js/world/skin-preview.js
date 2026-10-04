@@ -4,11 +4,13 @@ import {createRoom} from './room.js';
 import {ROOM_FINISH,roomSkinColor} from './room-palette.js';
 import {brass,ink,mesh} from './materials.js';
 import {casing} from './hardware.js';
+import {bindRoomReflection} from './room-reflections.js';
 
-export function createSkinPreview(){
+export function createSkinPreview(renderer){
   const root=new THREE.Group(),display=new THREE.Group();root.add(display);display.rotation.x=.2;
   const keys=Object.keys(SKINS),tiles=[],materials=new Map(),surfaces=[];
-  let selected='default',flight=null,preview=null,disposed=false,generation=0;
+  let selected='default',flight=null,preview=null,disposed=false,generation=0,reflections=null;
+  const reflectionRotation=new THREE.Matrix3(),rotationMatrix=new THREE.Matrix4();
   const base=mesh(casing(3.18,.18,2.42,.07),ink(),display,[0,-.95,.08]);base.name='finish-table';
   mesh(casing(3.1,.025,2.34,.055),brass(),display,[0,-.845,.08]);
   mesh(casing(3.02,.025,2.25,.045),new THREE.MeshStandardMaterial({color:0x293129,roughness:.82}),display,[0,-.82,.08]);
@@ -25,7 +27,8 @@ export function createSkinPreview(){
     pick(ray){root.updateMatrixWorld(true);return ray.intersectObjects(tiles,false)[0]?.object.userData.skin??null;},
     applySkin(id,options){
       if(disposed)return;id=SKINS[id]?id:'default';selected=id;model.selected=id;
-      if(!options||options.reduced){flight=null;setColors();setTiles();return;}
+      if(!options||options.reduced){flight=null;setColors();setTiles();reflections?.set(id);return;}
+      reflections?.begin(id);
       surfaces.forEach(s=>{s.from.copy(s.material.color);roomSkinColor(s.material,id,s.to);});
       flight={start:options.now+options.delay,duration:options.duration,from:tiles.map(tile=>tile.position.y),marker:marker.position.x};
     },
@@ -33,10 +36,12 @@ export function createSkinPreview(){
       if(!flight||disposed)return;
       const p=reduced?1:THREE.MathUtils.clamp((now-flight.start)/flight.duration,0,1),ease=p*p*(3-2*p);
       surfaces.forEach(s=>s.material.color.lerpColors(s.from,s.to,ease));
+      reflections?.blend(ease);
       tiles.forEach((tile,i)=>{tile.position.y=THREE.MathUtils.lerp(flight.from[i],-.69+(keys[i]===selected?.075:0),ease);});
       marker.position.x=THREE.MathUtils.lerp(flight.marker,(keys.indexOf(selected)-2)*.56,ease);
       if(p===1)flight=null;
     },
+    afterTransform(){if(preview&&reflections){preview.updateWorldMatrix(true,false);rotationMatrix.extractRotation(preview.matrixWorld);reflectionRotation.setFromMatrix4(rotationMatrix).invert();}},
     dispose(){
       disposed=true;generation++;flight=null;model.onStatus=model.onPick=null;
       // Geometry and lightmaps belong to the persistent source room. Detach them
@@ -45,15 +50,16 @@ export function createSkinPreview(){
     },
     retryPreview(){
       if(disposed)return;const token=++generation;model.previewStatus='loading';model.onStatus?.();
-      const source=createRoom(()=>{});
+      const source=createRoom(()=>{},renderer);
       model.ready=source.ready.then(()=>{
         if(disposed||token!==generation)return;
-        const asset=source.asset.clone(true);
+        const asset=source.asset.clone(true);reflections=source.reflections;model.reflections=reflections;reflections?.set(selected);
         asset.traverse(object=>{
           if(!object.isMesh)return;object.castShadow=object.receiveShadow=false;
           const copy=original=>{
             if(materials.has(original))return materials.get(original);
             const material=original.clone();
+            if(reflections)bindRoomReflection(material,reflections.texture,reflectionRotation);
             if(original.userData.originalColor)material.userData.originalColor=original.userData.originalColor.clone();
             materials.set(original,material);
             if(material.color){roomSkinColor(material,selected,material.color);if(ROOM_FINISH.test(material.name))surfaces.push({material,from:material.color.clone(),to:material.color.clone()});}

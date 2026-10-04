@@ -124,7 +124,7 @@ export class World {
   show(route) {
     if(this.model){this.model.dispose?.();this.scene.remove(this.model.root);if(!this.model.persistent)disposeGroup(this.model.root);}
     this.route=route;this.focused=null;this.focusJourney=null;this.hovered=null;this.scroll=0;
-    this.model=route.id==='home'?createRoom((...args)=>{if(this.route?.id==='home')this.status(...args);}):createModel(route,this.renderer);
+    this.model=route.id==='home'?createRoom((...args)=>{if(this.route?.id==='home')this.status(...args);},this.renderer):createModel(route,this.renderer);
     this.model.focus?.(null);
     this.scene.add(this.model.root);
     if(route.id!=='home')this.status(1,'世界已就绪');
@@ -136,6 +136,11 @@ export class World {
     this.particles.material.uniforms.uColor.value.set(route.color);
     this.bakedLighting=route.id==='home'||Boolean(this.model.bakedLighting);
     this.scene.environmentIntensity=this.bakedLighting?.12:.42;
+    this.scene.environment=this.environment;
+    if(route.id==='home'){
+      const room=this.model,apply=()=>{if(this.model===room&&room.reflections){this.scene.environment=room.reflections.texture;this.scene.environmentIntensity=.45;this.moving=1;}};
+      apply();room.ready.then(apply).catch(()=>{});
+    }
     this.renderer.toneMappingExposure=this.bakedLighting?.88:.92;
     this.bloom.threshold=this.bakedLighting?8:1.35;
     this.key.intensity=this.bakedLighting?2:16;this.rim.intensity=this.bakedLighting?3:22;
@@ -254,6 +259,7 @@ export class World {
         this.model.root.position.y=this.compact?-.3:-this.scroll*.42;
         this.model.root.scale.setScalar((this.model.displayScale||1)*(this.layoutScale||1)*(1-this.transition*.08));
       }
+      this.model.afterTransform?.();
     }
     this.actor.update(t,rhythm,this.pointer,this.route?.id==='about',dt,this.model?.actorMotion,reduced?0:now/1000);
     const actorPos=this.route?.id==='home'&&this.focused?ROOM_VIEWS[this.focused].target.map((value,i)=>value+(i===1?.4:i===2?-.18:0)):((this.compact&&this.model?.actorMobilePosition)||this.model?.actorPosition||[0,0,0]);

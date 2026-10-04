@@ -1,5 +1,7 @@
 # 公开参考与核验
 
+2026-10-05 房间反射调整阅读 Three.js 官方 [PMREMGenerator](https://threejs.org/docs/pages/PMREMGenerator.html)、[MeshStandardMaterial](https://threejs.org/docs/pages/MeshStandardMaterial.html) 与 [MeshPhysicalMaterial](https://threejs.org/docs/pages/MeshPhysicalMaterial.html)，并对照本地固定 0.185.1 的生成器、物理材质着色块和 [r185 WebGLRenderer](https://github.com/mrdoob/three.js/blob/r185/src/renderers/WebGLRenderer.js)。采用按粗糙度过滤的静态房间环境；透射容器使用完整 opacity，液体作为后方实体绘制。文档与本地版本分开核对，未把最新版本算法直接归于本地依赖。实际比较固定取景的通用反射与房间反射、原透明表面与调整后的瓶口/液面；早期全画面角色眨眼不同，不能称为逐像素严格 A/B。全部新反射由既有房间生成，没有下载参考模型、视频或图像资产。
+
 研究日期：2026-10-03。公开搜索可以广泛覆盖主题，无法证明已穷尽全网；以下记录可追溯的来源、采用范围和不确定性。
 
 ## 模型与社区案例

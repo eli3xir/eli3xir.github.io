@@ -7,6 +7,7 @@ import { createRoomEffects } from './room-effects.js';
 import { createRoomLighting, tuneRoomMaterial } from './room-lighting.js';
 import { downloadRoom } from './room-download.js';
 import { createRoomLightmaps } from './room-lightmaps.js';
+import {loadRoomReflections,bindRoomReflection} from './room-reflections.js';
 
 const ZONES = {
   lab: [4.7,7.1,.25,1.6,-1.2,.15], blog: [3,4.7,.25,1.4,-1.2,.15],
@@ -22,7 +23,7 @@ export const ROOM_VIEWS = {
 };
 let cached = null;
 
-export function createRoom(status) {
+export function createRoom(status,renderer) {
   if (cached) {
     cached.onStatus=status;
     if(cached.loaded)status(1,'房间已就绪');
@@ -39,6 +40,7 @@ export function createRoom(status) {
   cached = model;
   const report=(progress,message,error)=>{model.progress=progress;model.message=message;model.onStatus(progress,message,error);};
   model.applySkin = id => {
+    model.reflections?.set(id);
     room.traverse(object => {
       if (!object.isMesh) return;
       for (const mat of [object.material].flat()) {
@@ -61,6 +63,7 @@ export function createRoom(status) {
   const loadRoom = async()=>{
     model.failed=false;
     report(.05,'正在点亮工作室');
+    const reflections=renderer?loadRoomReflections(renderer).catch(error=>{model.reflectionError=error.message;return null;}):Promise.resolve(null);
     const loader = new GLTFLoader();
     const bytes=await downloadRoom(progress=>report(.05+progress*.55,progress?`正在搬入工作室 · ${Math.round(progress*100)}%`:'正在搬入工作室'));
     const gltf=await loader.parseAsync(bytes,'/assets/room/');
@@ -99,6 +102,8 @@ export function createRoom(status) {
       }
     });
     const results=await Promise.allSettled(pending);
+    model.reflections=await reflections;
+    if(model.reflections)materials.forEach(material=>bindRoomReflection(material,model.reflections.texture));
     // Keep the turntable independent; merge the hundreds of tiny static lamp details.
     gltf.scene.updateWorldMatrix(true,true);const center=new THREE.Vector3(2.39,1.155,-.45);
     const parts=[];const box=new THREE.Box3();const point=new THREE.Vector3();

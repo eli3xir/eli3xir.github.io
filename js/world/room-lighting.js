@@ -20,6 +20,18 @@ export function createRoomLighting(room) {
 }
 
 export function tuneRoomMaterial(material) {
+  // These exact glTF material names belong to the labware group. The source
+  // used alpha blending for its shells; preserve their geometry and liquid hues.
+  if(material.name==='Material_0'){
+    material.transmission=.96;material.opacity=1;material.transparent=false;
+    material.depthWrite=true;material.roughness=.075;material.thickness=.015;material.ior=1.46;
+    material.emissiveIntensity=0;
+  }
+  // Opaque liquid is visible in the transmission buffer behind the glass.
+  // This is a layered illustration, not a second refractive volume.
+  if(/^Material_[123567]$/.test(material.name)){
+    material.transmission=0;material.emissiveIntensity=.18;
+  }
   // The imported frosted glass had a long optical path that obscured its cores.
   if(material.transmission===1){
     material.transmission=.25;material.opacity=.38;material.transparent=true;

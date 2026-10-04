@@ -1,5 +1,9 @@
 # 网站运行与测试
 
+房间反射：`npm run build:reflections` 在本地浏览器中从实际房间生成五配色 CubeUV 图集，默认写入 `assets/room/reflections`；可用 `REFLECTION_OUTPUT` 指向独立目录做对照。需要 Node 22、可用 WebGL2 浏览器和既有本地浏览器环境，生成结果与输入摘要必须一起更新。`npm run validate:reflections` 核对字节、输入、配色和原 GLB 的玻璃/液体归属，已接入主 validate；文本按仓库 `.gitattributes` 的 LF 保存。
+
+`npm run test:reflections` 六组检查桌面/手机模拟尺寸下真实 GPU 图集端点、中点与途中改选，任意渲染目标状态恢复、共享身份、24 次换色资源稳定、无实时环境捕获、玻璃材质、三个降级分支与加载中跨页。实际选择期间记录 RAF 间隔，不能当作 GPU 执行时间或真机帧率。设置 `BASE_URL` 和既有 `BROWSER_PROXY` 可在发布后核对真实网址；报告写入 `tools/test-results/room-reflections-audit.json`，每次保存归档再执行后续检查。
+
 运行环境：Node.js 22+，本地预览可用 Python 3。目标为 GitHub Pages 静态托管。
 
 ## 命令

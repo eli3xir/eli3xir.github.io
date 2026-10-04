@@ -13,6 +13,7 @@ for(const image of [...restored.images,...recovered.flatMap(article=>article.ima
   if(size.width!==image.width||size.height!==image.height||bytes.length!==image.bytes)failures.push(`Restored article image metadata differs: ${image.local}`);
 }
 try{execFileSync(process.execPath,['tools/pack-room-lightmaps.mjs','--check'],{cwd:root,stdio:'pipe'});}catch(error){failures.push(`Lightmap bundle: ${error.stderr||error.message}`);}
+try{execFileSync(process.execPath,['tools/validate-room-reflections.mjs'],{cwd:root,stdio:'pipe'});}catch(error){failures.push(`Room reflections: ${error.stderr||error.message}`);}
 function files(dir,excluded=new Set(['.git','node_modules','temp-docs','.playwright-cli'])){
   return fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>excluded.has(entry.name)?[]:entry.isDirectory()?files(path.join(dir,entry.name),excluded):[path.join(dir,entry.name)]);
 }
