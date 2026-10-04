@@ -1,24 +1,20 @@
-/* 液态玻璃：透镜跟随鼠标（惯性缓动），第二块小透镜反向跟随 */
-(function () {
-  const l1 = document.getElementById('lens1');
-  const l2 = document.getElementById('lens2');
-  let mx = innerWidth / 2, my = innerHeight / 2;
-  let x1 = mx, y1 = my, x2 = mx, y2 = my;
-
-  addEventListener('pointermove', (e) => { mx = e.clientX; my = e.clientY; }, { passive: true });
-
-  function loop() {
-    requestAnimationFrame(loop);
-    // 主透镜：慢速跟随（液体迟滞感）
-    x1 += (mx - x1) * 0.06;
-    y1 += (my - y1) * 0.06;
-    l1.style.left = (x1 - 170) + 'px';
-    l1.style.top = (y1 - 110) + 'px';
-    // 小透镜：反向 + 更慢
-    x2 += ((innerWidth - mx) - x2) * 0.04;
-    y2 += ((innerHeight - my) - y2) * 0.04;
-    l2.style.left = (x2 - 95) + 'px';
-    l2.style.top = (y2 - 95) + 'px';
-  }
-  loop();
-})();
+import {createGlassState} from './world/glass-state.js';
+import {glassControls} from './experience/glass-controls.js';
+import {createGlassDesk} from './experience/glass-desk.js';
+document.body.classList.add('glass-playing');const state=createGlassState(),reduced=matchMedia('(prefers-reduced-motion: reduce)'),events=new AbortController();let active=parent===window,epoch=0,last=null,handle=0,pointer=null,sent='',drawn='';
+const send=()=>{if(parent===window||!active)return;const snapshot=state.snapshot(),key=JSON.stringify(snapshot);if(key!==sent){sent=key;parent.postMessage({type:'glass-settings',epoch,snapshot},location.origin);}};
+const complete=()=>{if(parent!==window)parent.postMessage({type:'lab-reveal'},location.origin);};
+function action(name,value){if(!active)return;if(name==='press'){if(state.press(value.kind,{reduced:reduced.matches,...value.options}))complete();}if(name==='move')state.move(value.x,value.y);if(name==='power')state.focus(value);if(name==='freeze')state.freeze(value);if(name==='home'){state.freeze(false);state.move(0,0);state.focus(.65);}controls.set(state.state);send();}
+const controls=glassControls({signal:events.signal,onPress:kind=>action('press',{kind}),onPower:value=>action('power',value),onFreeze:value=>action('freeze',value),onHome:()=>action('home')});document.body.append(controls.element);const desk=createGlassDesk(document.body,{signal:events.signal,onPress:kind=>action('press',{kind})});controls.set(state.state);
+desk.stage.addEventListener('pointerdown',event=>{if(!active||event.target.closest('button'))return;pointer=event.pointerId;desk.stage.setPointerCapture(pointer);desk.stage.focus({preventScroll:true});if(!state.state.frozen)action('move',desk.point(event));});
+desk.stage.addEventListener('pointermove',event=>{if(!active||state.state.frozen||event.pointerType==='touch'&&event.pointerId!==pointer)return;action('move',desk.point(event));});
+const clear=()=>{pointer=null;};for(const name of ['pointerup','pointercancel','lostpointercapture'])desk.stage.addEventListener(name,clear);addEventListener('blur',clear);
+desk.stage.addEventListener('keydown',event=>{if(event.target.closest('button')||!active||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' ','Home'].includes(event.key))return;event.preventDefault();if(event.key===' ')action('press',{kind:'stamp'});else if(event.key==='Home')action('home');else{state.freeze(false);const s=state.state;action('move',{x:s.targetX+(event.key==='ArrowLeft'?-.15:event.key==='ArrowRight'?.15:0),y:s.targetY+(event.key==='ArrowUp'?.15:event.key==='ArrowDown'?-.15:0)});}});
+function draw(now){const dt=last===null?0:Math.max(0,(now-last)/1000);last=now;if(active&&!document.hidden&&state.update(dt,reduced.matches))complete();const key=JSON.stringify(state.snapshot());if(key!==drawn){drawn=key;desk.draw(state.state);controls.set(state.state);}send();}
+function loop(now){if(!active||document.hidden)return;draw(now);handle=requestAnimationFrame(loop);}
+function rendering(){cancelAnimationFrame(handle);last=null;if(active&&!document.hidden)handle=requestAnimationFrame(loop);}
+function resize(){desk.resize();drawn='';draw(performance.now());}
+document.addEventListener('visibilitychange',()=>{clear();rendering();});addEventListener('resize',resize);reduced.addEventListener('change',()=>{drawn='';draw(performance.now());});
+addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==parent)return;const data=event.data;if(data?.type==='glass-owner'&&Number.isSafeInteger(data.epoch)&&typeof data.active==='boolean'){epoch=data.epoch;active=data.active;clear();if(active&&data.snapshot)state.restore(data.snapshot);rendering();controls.set(state.state);if(!active)parent.postMessage({type:'glass-state',epoch,snapshot:state.snapshot()},location.origin);else draw(performance.now());}else if(data?.type==='glass-action'&&data.epoch===epoch&&active)action(data.action,data.value);});
+if(!desk.diagnostics().refracts)document.querySelector('.demo-hud p').textContent='清晰玻璃模式 · 纸面仍可点击，拖动或方向键移动透镜';
+resize();rendering();if(parent!==window)parent.postMessage({type:'glass-ready'},location.origin);window.glassExperiment={state,desk,diagnostics:()=>({...state.state,active,epoch,pointer,...desk.diagnostics()})};

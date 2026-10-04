@@ -24,7 +24,8 @@
     "test:moon": "node tools/moon-audit.mjs",
     "test:fluid": "node tools/fluid-audit.mjs",
     "test:trails": "node tools/trails-audit.mjs",
-    "test:galaxy": "node tools/galaxy-audit.mjs"
+    "test:galaxy": "node tools/galaxy-audit.mjs",
+    "test:glass": "node tools/glass-audit.mjs"
   },
   "engines": {
     "node": ">=22"

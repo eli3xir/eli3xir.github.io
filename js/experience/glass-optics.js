@@ -1,0 +1,10 @@
+// Orthographic, single-interface ellipsoid approximation. Offsets sample inward.
+export function lensOffset(x,y,index=1.5){
+ const r2=x*x+y*y;if(r2>=1)return[0,0];const z=Math.sqrt(1-r2),length=Math.hypot(x,y,z/.26),nx=x/length,ny=y/length,nz=z/.26/length,eta=1/index,a=eta*nz-Math.sqrt(1-eta*eta*(1-nz*nz)),rz=-eta+a*nz,t=-(.26*z+.53)/rz;
+ return[a*nx*t*.5,a*ny*t*.5];
+}
+export function createLensFilter(svg,id){
+ const ns='http://www.w3.org/2000/svg',filter=document.createElementNS(ns,'filter');filter.id=id;filter.setAttribute('filterUnits','userSpaceOnUse');filter.setAttribute('primitiveUnits','userSpaceOnUse');filter.setAttribute('color-interpolation-filters','sRGB');
+ const image=document.createElementNS(ns,'feImage'),warp=document.createElementNS(ns,'feDisplacementMap');image.setAttribute('result','field');image.setAttribute('preserveAspectRatio','none');warp.setAttribute('in','SourceGraphic');warp.setAttribute('in2','field');warp.setAttribute('xChannelSelector','R');warp.setAttribute('yChannelSelector','G');filter.append(image,warp);svg.append(filter);let size=0,builds=0,canvas=document.createElement('canvas');
+ return{filter,warp,resize(value){value=Math.round(value);if(value===size)return;size=value;builds++;const pad=Math.ceil(size*.35),extent=size+pad*2;canvas.width=canvas.height=extent;const ctx=canvas.getContext('2d'),pixels=ctx.createImageData(extent,extent);for(let y=0;y<extent;y++)for(let x=0;x<extent;x++){const [dx,dy]=lensOffset((x-pad+.5)/size*2-1,(y-pad+.5)/size*2-1),i=(y*extent+x)*4;pixels.data[i]=Math.round((.5+dx/.64)*255);pixels.data[i+1]=Math.round((.5+dy/.64)*255);pixels.data[i+2]=128;pixels.data[i+3]=255;}ctx.putImageData(pixels,0,0);for(const el of [filter,image]){el.setAttribute('x',-pad);el.setAttribute('y',-pad);el.setAttribute('width',extent);el.setAttribute('height',extent);}image.setAttribute('href',canvas.toDataURL());},set(power){warp.setAttribute('scale',size*.64*(.15+.85*power));},diagnostics:()=>({size,builds}),dispose(){filter.remove();canvas.width=canvas.height=1;canvas=null;}};
+}

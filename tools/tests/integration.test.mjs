@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
+import fs from 'node:fs';
 const {integrate}=createRequire(import.meta.url)('../integrate-experience.cjs');
 
 test('repeated integration preserves ES module experiments and the classic bootstrap',()=>{
@@ -14,9 +15,10 @@ test('repeated integration preserves ES module experiments and the classic boots
   assert.ok(!second.includes('data-src="/js/experience/lab-host.js"'));
 });
 
-test('a classic canvas experiment stays classic and gets one bootstrap',()=>{
-  const result=integrate('<html><head></head><body><script src="/js/lab-glass.js"></script></body></html>',true);
-  assert.ok(result.includes('data-src="/js/lab-glass.js" data-module="false"'));
+test('a classic experiment source stays classic and gets one bootstrap',t=>{
+  const read=fs.readFileSync;t.mock.method(fs,'readFileSync',(file,...args)=>String(file).endsWith('lab-classic-fixture.js')?'(()=>{})();':read(file,...args));
+  const result=integrate('<html><head></head><body><script src="/js/lab-classic-fixture.js"></script></body></html>',true);
+  assert.ok(result.includes('data-src="/js/lab-classic-fixture.js" data-module="false"'));
   assert.equal((result.match(/<script src="\/js\/experience\/lab-host.js">/g)||[]).length,1);
 });
 

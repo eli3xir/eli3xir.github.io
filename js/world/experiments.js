@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { mesh,brass,ink,glass,liquidMaterial,labelTexture,ring } from './materials.js';
+import { mesh,brass,glass,ring } from './materials.js';
 import { randomSequence } from '../audio/synth.js';
 import {createOcean} from './ocean.js';
 import {createWordMachine} from './word-machine.js';
@@ -7,6 +7,7 @@ import {createMoon} from './moon.js';
 import {createFluid} from './fluid.js';
 import {createTrails} from './trails.js';
 import {createGalaxy} from './galaxy.js';
+import {createGlass} from './glass.js';
 
 function starField(galaxy=false,bullet=false){
   const root=new THREE.Group();const count=galaxy?7000:bullet?1200:3200;
@@ -28,17 +29,6 @@ function starField(galaxy=false,bullet=false){
   return{root,actorPosition:[1.25,.8,.1],update(t,beat){field.rotation[galaxy?'y':'z']=t*(bullet?.12:.028);core.scale.setScalar(1+beat.pulse*.2);}};
 }
 
-function lens(){
-  const root=new THREE.Group();
-  const texture=labelTexture('Another way to see.','FIELD NOTES / ELI3XIR');
-  mesh(new THREE.PlaneGeometry(2.5,1.3),new THREE.MeshStandardMaterial({map:texture,side:THREE.DoubleSide,roughness:.8}),root,[0,0,-.3]);
-  const group=new THREE.Group();root.add(group);group.position.set(.2,.1,.35);
-  const lens=mesh(new THREE.SphereGeometry(.63,64,40),glass(0xe0e7cb),group);lens.scale.z=.3;
-  const rim=mesh(new THREE.TorusGeometry(.65,.025,12,96),brass(),group);
-  const handle=mesh(new THREE.CylinderGeometry(.038,.04,.7,16),brass(),group,[.45,-.67,0]);handle.rotation.z=.6;
-  return{root,actorPosition:[-.95,.85,.2],update(t,beat){group.position.x=.2+Math.sin(t*.45)*.24;group.position.y=.1+Math.cos(t*.7)*.12;rim.rotation.z=t*.02;}};
-}
-
 function breakout(){
   const root=new THREE.Group();root.rotation.x=.1;
   const tiles=[];const palette=[0xdab878,0x99b7a0,0xb68e9b,0x8ea6bb];
@@ -52,5 +42,5 @@ function breakout(){
 }
 
 export function createExperiment(id,renderer){
-  return({moon:createMoon,ocean:createOcean,fluid:()=>createFluid(renderer),trails:createTrails,galaxy:createGalaxy,glass:lens,breakout,partext:createWordMachine,bullet:()=>starField(false,true)}[id]||(()=>createFluid(renderer)))();
+  return({moon:createMoon,ocean:createOcean,fluid:()=>createFluid(renderer),trails:createTrails,galaxy:createGalaxy,glass:createGlass,breakout,partext:createWordMachine,bullet:()=>starField(false,true)}[id]||(()=>createFluid(renderer)))();
 }

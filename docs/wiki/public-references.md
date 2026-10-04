@@ -83,3 +83,7 @@ Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐�
 2026-10-04 阅读 NASA 的 [NGC 628：Webb 与 Hubble 对照](https://science.nasa.gov/asset/webb/webb-and-hubbles-views-of-spiral-galaxy-ngc-628/) 并实际查看该页并排图像：可见光中的暗尘埃与红外指定颜色中的发光结构承担不同视觉信息。另阅读 [NGC 1300 对照说明](https://science.nasa.gov/asset/webb/webb-and-hubbles-views-of-spiral-galaxy-ngc-1300/)，该页图片未单独查看，不记为图像观察依据。本站借鉴同一对象随观察波段揭示结构的关系，未复制参考图或宣称复现某个真实星系。
 
 同轮下载并阅读 ESA/Hubble [A galactic disc, edge-on and up close](https://esahubble.org/images/potw1228a/) 的正文，实际查看 NGC 4565 侧面图像：薄盘、遮光尘埃和盘外星光形成层次。浏览工具重试失败后通过 HTTP 下载取得正文与图片，临时文件没有发布。本站使用原创程序密度和几何表现薄盘、隆起及近似遮挡；均匀转动和点击加速是交互演示，不表示真实恒星轨道或 N 体演化。
+
+2026-10-04 阅读并实际查看 kube 的 [Liquid Glass in the Browser: Refraction with CSS and SVG](https://kube.io/blog/liquid-glass-css-svg/) 透镜演示，参考曲面法线、折射方向、位移图边界和实时 backdrop-filter 的组织方式。本站自行生成光学场与纸面，不采用其演示图片。文章的归一化文字与标准的位移幅度表述不完全一致，实现以 [W3C Filter Effects 的 feDisplacementMap 定义](https://www.w3.org/TR/filter-effects-1/#feDisplacementMapElement) 为准：反向读取位置由 `scale × (channel − 0.5)` 给出；同时阅读 [MDN 元素说明](https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/feDisplacementMap) 核对公式与默认线性色彩空间，本站显式使用 sRGB 编码映射。
+
+同轮阅读 Chrome 官方 [HTML-in-canvas origin trial changes](https://developer.chrome.com/blog/html-in-canvas-ot-changes) 的 2026-09-29 更新，确认它仍处试用且存在版本间 API 变化。本站没有采用试用 API、启用实验标志或将 CanvasTexture 说成实际 DOM 渲染；下方实验直接使用原生 HTML 按钮和 SVG backdrop 位移。三维首屏仅折射自己的纸面纹理，两处共享内容状态。当前真实像素检查针对 Chromium，其他浏览器使用清晰模式；不由 CSS.supports 的返回值推断所有浏览器都能正确折射。
