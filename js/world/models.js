@@ -6,7 +6,7 @@ import {createPotion} from './potion.js';
 import {createSkinPreview} from './skin-preview.js';
 import {createLeisure} from './leisure.js';
 
-export function createModel(route) {
-  if(route.experiment)return createExperiment(route.experimentId);
+export function createModel(route,renderer) {
+  if(route.experiment)return createExperiment(route.experimentId,renderer);
   return ({ lab:createPotion, blog:()=>createBook(route.contentTitle,route.readingEntries), radio:()=>createPhonograph(route.radioPlayback), projects:()=>createSignalBench(route.relay), about:createLeisure, skin:createSkinPreview }[route.id] || createPotion)();
 }

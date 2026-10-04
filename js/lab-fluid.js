@@ -1,171 +1,40 @@
-/* 流体实验：二维稳定流体（semi-Lagrangian + 压力投影），鼠标拖动注入染料和速度 */
-(function () {
-  const canvas = document.getElementById('scene');
-  const ctx = canvas.getContext('2d');
-  const N = 72;             // 网格分辨率
-  const SIZE = (N + 2) * (N + 2);
-  const ITER = 16;          // Jacobi 迭代次数
-
-  let u = new Float32Array(SIZE), v = new Float32Array(SIZE);
-  let u0 = new Float32Array(SIZE), v0 = new Float32Array(SIZE);
-  let p = new Float32Array(SIZE), div = new Float32Array(SIZE);
-  // 染料 RGB 三场
-  let dr = new Float32Array(SIZE), dg = new Float32Array(SIZE), db = new Float32Array(SIZE);
-  let dr0 = new Float32Array(SIZE), dg0 = new Float32Array(SIZE), db0 = new Float32Array(SIZE);
-
-  const IX = (x, y) => x + (N + 2) * y;
-
-  function setBnd(b, x) {
-    for (let i = 1; i <= N; i++) {
-      x[IX(0, i)] = b === 1 ? -x[IX(1, i)] : x[IX(1, i)];
-      x[IX(N + 1, i)] = b === 1 ? -x[IX(N, i)] : x[IX(N, i)];
-      x[IX(i, 0)] = b === 2 ? -x[IX(i, 1)] : x[IX(i, 1)];
-      x[IX(i, N + 1)] = b === 2 ? -x[IX(i, N)] : x[IX(i, N)];
-    }
-    x[IX(0, 0)] = 0.5 * (x[IX(1, 0)] + x[IX(0, 1)]);
-    x[IX(0, N + 1)] = 0.5 * (x[IX(1, N + 1)] + x[IX(0, N)]);
-    x[IX(N + 1, 0)] = 0.5 * (x[IX(N, 0)] + x[IX(N + 1, 1)]);
-    x[IX(N + 1, N + 1)] = 0.5 * (x[IX(N, N + 1)] + x[IX(N + 1, N)]);
-  }
-
-  function linSolve(b, x, x0, a, c) {
-    const inv = 1 / c;
-    for (let k = 0; k < ITER; k++) {
-      for (let j = 1; j <= N; j++)
-        for (let i = 1; i <= N; i++)
-          x[IX(i, j)] = (x0[IX(i, j)] + a * (x[IX(i - 1, j)] + x[IX(i + 1, j)] + x[IX(i, j - 1)] + x[IX(i, j + 1)])) * inv;
-      setBnd(b, x);
-    }
-  }
-
-  function project() {
-    for (let j = 1; j <= N; j++)
-      for (let i = 1; i <= N; i++) {
-        div[IX(i, j)] = -0.5 * (u[IX(i + 1, j)] - u[IX(i - 1, j)] + v[IX(i, j + 1)] - v[IX(i, j - 1)]) / N;
-        p[IX(i, j)] = 0;
-      }
-    setBnd(0, div); setBnd(0, p);
-    linSolve(0, p, div, 1, 4);
-    for (let j = 1; j <= N; j++)
-      for (let i = 1; i <= N; i++) {
-        u[IX(i, j)] -= 0.5 * N * (p[IX(i + 1, j)] - p[IX(i - 1, j)]);
-        v[IX(i, j)] -= 0.5 * N * (p[IX(i, j + 1)] - p[IX(i, j - 1)]);
-      }
-    setBnd(1, u); setBnd(2, v);
-  }
-
-  function advect(b, d, d0, uu, vv, dt) {
-    const dt0 = dt * N;
-    for (let j = 1; j <= N; j++)
-      for (let i = 1; i <= N; i++) {
-        let x = i - dt0 * uu[IX(i, j)];
-        let y = j - dt0 * vv[IX(i, j)];
-        if (x < 0.5) x = 0.5; if (x > N + 0.5) x = N + 0.5;
-        if (y < 0.5) y = 0.5; if (y > N + 0.5) y = N + 0.5;
-        const i0 = x | 0, j0 = y | 0, i1 = i0 + 1, j1 = j0 + 1;
-        const s1 = x - i0, s0 = 1 - s1, t1 = y - j0, t0 = 1 - t1;
-        d[IX(i, j)] = s0 * (t0 * d0[IX(i0, j0)] + t1 * d0[IX(i0, j1)]) + s1 * (t0 * d0[IX(i1, j0)] + t1 * d0[IX(i1, j1)]);
-      }
-    setBnd(b, d);
-  }
-
-  function step(dt) {
-    // 速度场：微弱扩散 + 平流 + 投影
-    u0.set(u); v0.set(v);
-    linSolve(1, u, u0, 0.05, 1 + 0.05 * 4);
-    linSolve(2, v, v0, 0.05, 1 + 0.05 * 4);
-    project();
-    u0.set(u); v0.set(v);
-    advect(1, u, u0, u0, v0, dt);
-    advect(2, v, v0, u0, v0, dt);
-    project();
-    // 染料：平流 + 衰减
-    dr0.set(dr); dg0.set(dg); db0.set(db);
-    advect(0, dr, dr0, u, v, dt);
-    advect(0, dg, dg0, u, v, dt);
-    advect(0, db, db0, u, v, dt);
-    const fade = 0.998;
-    for (let i = 0; i < SIZE; i++) { dr[i] *= fade; dg[i] *= fade; db[i] *= fade; }
-  }
-
-  /* ---------- 渲染 ---------- */
-  const img = ctx.createImageData(N, N);
-  function render() {
-    const px = img.data;
-    for (let j = 1; j <= N; j++)
-      for (let i = 1; i <= N; i++) {
-        const o = ((j - 1) * N + (i - 1)) * 4;
-        px[o] = Math.min(255, dr[IX(i, j)] * 255);
-        px[o + 1] = Math.min(255, dg[IX(i, j)] * 255);
-        px[o + 2] = Math.min(255, db[IX(i, j)] * 255);
-        px[o + 3] = 255;
-      }
-    // 先绘制小图，再放大（平滑插值）
-    const tmp = document.createElement('canvas');
-    tmp.width = tmp.height = N;
-    tmp.getContext('2d').putImageData(img, 0, 0);
-    ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(tmp, 0, 0, canvas.width, canvas.height);
-  }
-
-  /* ---------- 交互 ---------- */
-  let mouseX = 0, mouseY = 0, pmX = 0, pmY = 0, down = false;
-  const COLORS = [[0.5, 0.2, 1], [0, 0.9, 0.75], [1, 0.3, 0.5], [0.2, 0.6, 1], [1, 0.7, 0.2]];
-  let colorIdx = 0;
-  function inject(x, y, dx, dy) {
-    const gx = Math.round((x / canvas.clientWidth) * N);
-    const gy = Math.round((y / canvas.clientHeight) * N);
-    if (gx < 1 || gx > N || gy < 1 || gy > N) return;
-    const c = COLORS[colorIdx];
-    for (let j = -2; j <= 2; j++)
-      for (let i = -2; i <= 2; i++) {
-        const xi = gx + i, yj = gy + j;
-        if (xi < 1 || xi > N || yj < 1 || yj > N) continue;
-        const w = 1 - Math.hypot(i, j) / 3;
-        u[IX(xi, yj)] += dx * 0.4 * w;
-        v[IX(xi, yj)] += dy * 0.4 * w;
-        dr[IX(xi, yj)] += c[0] * 0.5 * w;
-        dg[IX(xi, yj)] += c[1] * 0.5 * w;
-        db[IX(xi, yj)] += c[2] * 0.5 * w;
-      }
-  }
-  canvas.addEventListener('pointerdown', (e) => { down = true; colorIdx = (colorIdx + 1) % COLORS.length; pmX = e.clientX; pmY = e.clientY; inject(e.clientX, e.clientY, 0, 0); });
-  canvas.addEventListener('pointermove', (e) => {
-    if (!down) return;
-    const dx = e.clientX - pmX, dy = e.clientY - pmY;
-    inject(e.clientX, e.clientY, dx, dy);
-    pmX = e.clientX; pmY = e.clientY;
-  });
-  addEventListener('pointerup', () => (down = false));
-
-  // 自动扰动（开场演示）
-  let auto = 0;
-  function autoInject(t) {
-    if (down) return;
-    const x = canvas.clientWidth * (0.5 + 0.3 * Math.sin(t * 0.5));
-    const y = canvas.clientHeight * (0.5 + 0.3 * Math.cos(t * 0.7));
-    inject(x, y, Math.cos(t) * 8, Math.sin(t * 1.3) * 8);
-  }
-
-  function resize() {
-    canvas.width = canvas.clientWidth * Math.min(devicePixelRatio, 1.5);
-    canvas.height = canvas.clientHeight * Math.min(devicePixelRatio, 1.5);
-  }
-  resize();
-  addEventListener('resize', resize);
-  canvas.style.width = '100vw';
-  canvas.style.height = '100vh';
-  resize();
-
-  let last = performance.now();
-  function loop(ts) {
-    requestAnimationFrame(loop);
-    const dt = Math.min((ts - last) / 1000, 0.033);
-    last = ts;
-    auto += dt;
-    autoInject(auto);
-    step(dt);
-    render();
-  }
-  requestAnimationFrame(loop);
-})();
+import * as THREE from 'three';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {createFluid} from './world/fluid.js';
+import {createCharacter} from './world/character.js';
+import {fluidControls} from './experience/fluid-controls.js';
+let canvas=document.getElementById('scene'),renderer=null;
+try{renderer=new THREE.WebGLRenderer({canvas,antialias:true});}catch{const replacement=canvas.cloneNode();canvas.replaceWith(replacement);canvas=replacement;}
+document.body.classList.add('fluid-playing');canvas.classList.add('fluid-canvas');canvas.tabIndex=0;canvas.setAttribute('aria-label','混色玻璃：按住拖动，方向键移动滴色点，空格滴色');canvas.style.touchAction='none';
+const model=createFluid(renderer),events=new AbortController(),reduced=matchMedia('(prefers-reduced-motion: reduce)');let active=parent===window,epoch=0,frames=0,drag=null,point=[.58,.74],scene,camera,actor,ctx,image,small,smallContext;
+model.setActive(active);
+const notify=()=>{if(parent!==window){const d=model.diagnostics();parent.postMessage({type:'fluid-settings',epoch,color:d.color,paused:d.paused},location.origin);}};
+const controls=fluidControls({signal:events.signal,onColor:value=>model.select(value),onDrop:()=>model.addDrop({uv:point,reduced:reduced.matches}),onClear:()=>{model.clear();controls.announce('清水已备好，再给一点颜色。');},onPause:value=>model.setPaused(value)});document.body.append(controls.element);
+model.onState=state=>{controls.set(state);notify();};model.onDrop=()=>{controls.announce('这一滴已融入，拖动看看它的去向。');if(parent!==window)parent.postMessage({type:'lab-reveal'},location.origin);};controls.set(model.diagnostics());
+if(renderer){
+ renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.96;renderer.setPixelRatio(Math.min(devicePixelRatio,innerWidth<700?1.3:1.6));scene=new THREE.Scene();scene.background=new THREE.Color(0x13251e);
+ const environmentScene=new RoomEnvironment(),generator=new THREE.PMREMGenerator(renderer),environment=generator.fromScene(environmentScene,.04);scene.environment=environment.texture;scene.environmentIntensity=.4;environmentScene.dispose();generator.dispose();scene.add(new THREE.HemisphereLight(0xd9e6ce,0x302714,.7));const key=new THREE.DirectionalLight(0xffe7c3,1.7);key.position.set(-3,4,5);scene.add(key);camera=new THREE.PerspectiveCamera(38,1,.05,30);scene.add(model.root);
+ actor=createCharacter();actor.root.scale.setScalar(.55);model.actorAnchor.add(actor.root);
+}else{
+ ctx=canvas.getContext('2d');small=document.createElement('canvas');small.width=128;small.height=80;smallContext=small.getContext('2d');image=smallContext.createImageData(128,80);document.querySelector('.demo-hud p').textContent='平面画布 · 按住拖动；方向键和空格也能滴色。';
+}
+const ray=new THREE.Raycaster(),mouse=new THREE.Vector2(),neutral={beat:0,pulse:0,energy:.5};let targetVisible=false;
+canvas.addEventListener('focus',()=>{targetVisible=true;});canvas.addEventListener('blur',()=>{targetVisible=false;});
+function locate(event){const box=canvas.getBoundingClientRect();if(renderer){mouse.set((event.clientX-box.left)/box.width*2-1,1-(event.clientY-box.top)/box.height*2);ray.setFromCamera(mouse,camera);return model.hitUV(ray)?.toArray()||null;}return[(event.clientX-box.left)/box.width,1-(event.clientY-box.top)/box.height];}
+canvas.addEventListener('pointerdown',event=>{const uv=locate(event);if(!uv||drag)return;canvas.setPointerCapture(event.pointerId);canvas.focus({preventScroll:true});model.select((model.diagnostics().color+1)%5);point=uv;drag={id:event.pointerId,uv};model.inject(uv,[0,-.14],.8,.04);});
+canvas.addEventListener('pointermove',event=>{if(drag?.id!==event.pointerId)return;const uv=locate(event);if(!uv)return;point=uv;const delta=[THREE.MathUtils.clamp((uv[0]-drag.uv[0])*14,-1.2,1.2),THREE.MathUtils.clamp((uv[1]-drag.uv[1])*9,-1.2,1.2)];const distance=Math.hypot(uv[0]-drag.uv[0],uv[1]-drag.uv[1]),samples=Math.min(20,Math.max(1,Math.ceil(distance/.014)));
+ for(let i=1;i<=samples;i++)model.inject([THREE.MathUtils.lerp(drag.uv[0],uv[0],i/samples),THREE.MathUtils.lerp(drag.uv[1],uv[1],i/samples)],delta,.18/samples,.031);drag.uv=uv;
+});
+for(const name of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(name,event=>{if(drag?.id===event.pointerId)drag=null;});addEventListener('blur',()=>{drag=null;});
+canvas.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' ','Enter'].includes(event.key))return;event.preventDefault();if(event.key===' '||event.key==='Enter'){model.addDrop({uv:point,reduced:reduced.matches});return;}point=[THREE.MathUtils.clamp(point[0]+(event.key==='ArrowLeft'?-.06:event.key==='ArrowRight'?.06:0),.05,.95),THREE.MathUtils.clamp(point[1]+(event.key==='ArrowUp'?.06:event.key==='ArrowDown'?-.06:0),.05,.95)];controls.announce(`滴色点：横向 ${Math.round(point[0]*100)}%，纵向 ${Math.round(point[1]*100)}%。`);});
+function resize(){const width=innerWidth,height=Math.max(190,innerHeight-200);canvas.style.width=width+'px';canvas.style.height=height+'px';if(renderer){renderer.setSize(width,height,false);camera.aspect=width/height;camera.position.set(0,.12,Math.max(5.35,5.5/camera.aspect));camera.lookAt(0,.04,0);camera.updateProjectionMatrix();}else{canvas.width=width;canvas.height=height;}draw(performance.now());}
+function draw(now){model.update(0,neutral,0,now/1000,false);if(renderer){model.cell.target.visible=targetVisible;model.cell.target.position.set((point[0]-.5)*2.72,(point[1]-.5)*1.70+.03,.14);actor.update(0,neutral,mouse,false,0,{grounded:true},reduced.matches?0:now/1000);renderer.render(scene,camera);}else{const data=model.simulation.data;for(let i=0;i<data.length;i+=4){for(let c=0;c<3;c++){const base=[.74,.66,.51][c];image.data[i+c]=Math.min(255,(base*Math.exp(-data[i+c]*.8))**(1/2.2)*255);}image.data[i+3]=255;}smallContext.putImageData(image,0,0);ctx.save();ctx.translate(0,canvas.height);ctx.scale(1,-1);ctx.drawImage(small,0,0,canvas.width,canvas.height);ctx.restore();if(targetVisible){ctx.beginPath();ctx.arc(point[0]*canvas.width,(1-point[1])*canvas.height,8,0,Math.PI*2);ctx.strokeStyle='#eee1b9';ctx.stroke();}}frames++;}
+let handle=0;function cpuFrame(now){if(!active||document.hidden)return;draw(now);handle=requestAnimationFrame(cpuFrame);}
+function rendering(){model.setActive(active&&!document.hidden);if(renderer)renderer.setAnimationLoop(active&&!document.hidden?draw:null);else{cancelAnimationFrame(handle);if(active&&!document.hidden)handle=requestAnimationFrame(cpuFrame);}}
+document.addEventListener('visibilitychange',()=>{drag=null;rendering();});addEventListener('resize',resize);
+addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==parent)return;const data=event.data;if(data?.type!=='fluid-owner'||!Number.isSafeInteger(data.epoch)||typeof data.active!=='boolean')return;epoch=data.epoch;active=data.active;drag=null;
+ if(active){if(data.snapshot)model.restore(data.snapshot);else{if(Number.isInteger(data.color))model.select(data.color);model.setPaused(data.paused);}}
+ rendering();if(!active){const snapshot=model.snapshot(),f=snapshot.field;parent.postMessage({type:'fluid-state',epoch,snapshot},location.origin,[f.velocity.buffer,f.pressure.buffer,f.dye.buffer]);}else draw(performance.now());
+});
+resize();rendering();if(parent!==window)parent.postMessage({type:'fluid-ready'},location.origin);
+window.fluidExperiment={model,renderer,actor,camera,diagnostics:()=>({...model.diagnostics(),frames,drag,epoch,point:[...point],resources:renderer?{...renderer.info.memory}:null})};

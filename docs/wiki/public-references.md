@@ -70,3 +70,8 @@ Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐�
 2026-10-04 阅读 NASA [Apollo Experience Report — Lunar Module Landing Gear Subsystem](https://ntrs.nasa.gov/api/citations/19720018253/downloads/19720018253.pdf)，并实际渲染查看 PDF 第 15、23 页（印刷页 8、16）的展开机构、主/次支柱、脚垫和 Apollo 11 月面照片。本站借鉴四腿支撑和可见结构连接，几何由代码原创；没有采用该报告图片作为网页资产，也没有按工程尺寸精确复刻。
 
 同轮核对 NASA [月球与地球数值对比](https://science.nasa.gov/moon/by-the-numbers/) 的月面重力 1.624 m/s²，作为月尘简化运动的重力常数；阅读 [Flag Day – Flying High](https://www.nasa.gov/history/flag-day-flying-high-the-stars-and-stripes-in-space/) 关于无风环境、旗面横杆的说明，移除原实验持续飘动。红色小旗沿用原实验的色彩，不标示真实任务身份。研究 PDF 和参考帧仅保存在忽略的临时目录。
+2026-10-04 阅读 Jos Stam 的 [Stable Fluids（1999）](https://graphics.stanford.edu/courses/cs448-01-spring/papers/stam.pdf) 与 Mark Harris 的 [GPU Gems 第 38 章](https://developer.nvidia.com/gpugems/gpugems/part-vi-beyond-triangles/chapter-38-fast-fluid-dynamics-simulation-gpu)，采用回溯输运、压力投影、双缓冲、正方形单元及涡量补偿的组织思路。本站为原创 JavaScript/GLSL 二维近似，有限压力迭代仍有残余散度，未采用文章的示例资产或声称流体工程精度。
+
+染料校正对照 Selle 等的 [An Unconditionally Stable MacCormack Method](https://yingjie.math.gatech.edu/publications/SFKLR.pdf) 及 [作者书目页](https://andyselle.com/papers/7/)，阅读前向/反向误差估计与限制器，保留局部极值约束；没有将当前实现描述为已证明二阶精度。Stanford 镜像本次返回 404，已通过作者提供的 Georgia Tech PDF 核对正文。
+
+同时核对固定 [Three.js r185 WebGLRenderer](https://github.com/mrdoob/three.js/blob/r185/src/renderers/WebGLRenderer.js) 的目标切换/浮点回读和 [WebGLCapabilities](https://github.com/mrdoob/three.js/blob/r185/src/renderers/webgl/WebGLCapabilities.js) 的类型支持。当前以 RGBA32F 附件与手工双线性取样避免依赖浮点线性过滤，检测扩展后再检查帧缓冲完整性；交接使用同步回读，未宣称完全没有主线程停顿。所有混色器几何、染料、玻璃和输入动作由本站代码产生，没有引入外部流体视频或图片。

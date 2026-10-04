@@ -118,7 +118,7 @@ export class World {
   show(route) {
     if(this.model){this.model.dispose?.();this.scene.remove(this.model.root);if(!this.model.persistent)disposeGroup(this.model.root);}
     this.route=route;this.focused=null;this.focusJourney=null;this.hovered=null;this.scroll=0;
-    this.model=route.id==='home'?createRoom((...args)=>{if(this.route?.id==='home')this.status(...args);}):createModel(route);
+    this.model=route.id==='home'?createRoom((...args)=>{if(this.route?.id==='home')this.status(...args);}):createModel(route,this.renderer);
     this.model.focus?.(null);
     this.scene.add(this.model.root);
     if(route.id!=='home')this.status(1,'世界已就绪');

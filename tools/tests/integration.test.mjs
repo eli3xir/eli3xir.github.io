@@ -15,7 +15,13 @@ test('repeated integration preserves ES module experiments and the classic boots
 });
 
 test('a classic canvas experiment stays classic and gets one bootstrap',()=>{
-  const result=integrate('<html><head></head><body><script src="/js/lab-fluid.js"></script></body></html>',true);
-  assert.ok(result.includes('data-src="/js/lab-fluid.js" data-module="false"'));
+  const result=integrate('<html><head></head><body><script src="/js/lab-trails.js"></script></body></html>',true);
+  assert.ok(result.includes('data-src="/js/lab-trails.js" data-module="false"'));
   assert.equal((result.match(/<script src="\/js\/experience\/lab-host.js">/g)||[]).length,1);
+});
+
+test('a migrated fluid source is detected as a module even from an old script tag',()=>{
+  const result=integrate('<html><head></head><body><script src="/js/lab-fluid.js"></script></body></html>',true);
+  assert.ok(result.includes('data-src="/js/lab-fluid.js" data-module="true"'));
+  assert.equal(integrate(result,true),result);
 });

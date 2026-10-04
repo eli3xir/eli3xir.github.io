@@ -4,21 +4,7 @@ import { randomSequence } from '../audio/synth.js';
 import {createOcean} from './ocean.js';
 import {createWordMachine} from './word-machine.js';
 import {createMoon} from './moon.js';
-
-function fluid(){
-  const root=new THREE.Group();
-  const sphere=mesh(new THREE.SphereGeometry(.96,64,40),glass(0xced7c2),root);
-  const colors=['#70d5bc','#c290bb','#dfc079'];const flows=[];
-  colors.forEach((color,i)=>{
-    const points=[];for(let j=0;j<=96;j++){
-      const t=j/96*Math.PI*4;const r=.4+Math.sin(t*1.7+i)*.2;
-      points.push(new THREE.Vector3(Math.cos(t+i*2)*r,Math.sin(t*.5+i)*.7,Math.sin(t+i*2)*r));
-    }
-    const flow=mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points),192,.065,10,false),liquidMaterial(color),root);flows.push(flow);
-  });
-  const support=ring(root,1.08,.015,0);support.rotation.x=1.1;support.rotation.z=.4;
-  return{root,actorPosition:[1,1,.1],update(t,beat){flows.forEach((flow,i)=>{flow.rotation.y=t*.12*(i%2?-1:1);flow.material.uniforms.uTime.value=t+i;flow.material.uniforms.uBeat.value=beat.pulse;});sphere.rotation.y=t*.03;}};
-}
+import {createFluid} from './fluid.js';
 
 function starField(galaxy=false,bullet=false){
   const root=new THREE.Group();const count=galaxy?7000:bullet?1200:3200;
@@ -63,6 +49,6 @@ function breakout(){
   return{root,actorPosition:[1.3,.75,.1],update(t,beat){paddle.position.x=Math.sin(t*.8)*.8;ball.position.set(Math.sin(t*.8)*.8,-.5+Math.abs(Math.sin(t*1.3))*.9,.2);tiles.forEach(({tile,x,y,index})=>{const p=Math.max(0,Math.sin(t*.65-index*.07)-.86)*5;tile.position.set(x+p*(x+.1),y+p*.8,p*.3);tile.rotation.z=p*x;});}};
 }
 
-export function createExperiment(id){
-  return({moon:createMoon,ocean:createOcean,fluid,trails:()=>starField(),galaxy:()=>starField(true),glass:lens,breakout,partext:createWordMachine,bullet:()=>starField(false,true)}[id]||fluid)();
+export function createExperiment(id,renderer){
+  return({moon:createMoon,ocean:createOcean,fluid:()=>createFluid(renderer),trails:()=>starField(),galaxy:()=>starField(true),glass:lens,breakout,partext:createWordMachine,bullet:()=>starField(false,true)}[id]||(()=>createFluid(renderer)))();
 }
