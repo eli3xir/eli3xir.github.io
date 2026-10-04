@@ -143,13 +143,15 @@ export function renderScore(rate = SAMPLE_RATE, bars = BARS) {
 }
 
 export function renderCue(kind = 'reveal', rate = SAMPLE_RATE, bar=0) {
-  const arcade=/^brick[0-4]$/.test(kind)||kind==='paddle'||kind==='miss';
+  const arcade=/^brick[0-4]$/.test(kind)||['paddle','miss','graze','hit'].includes(kind);
   const buffer = new Float32Array(Math.round(rate * (arcade?.3:.85)));
   const chord=chordForBar(bar);let root=chord[0]+24;if(root<69)root+=12;
   const third=chord[0]%12===2?3:4;
   if(arcade){
     const row=/^brick/.test(kind)?Number(kind.at(-1)):0;
-    if(kind==='miss'){addNote(buffer,rate,0,.16,root-12,'pluck',.08);addNote(buffer,rate,.1,.18,root-17,'bell',.06);}
+    if(kind==='graze')addNote(buffer,rate,0,.13,root+19,'bell',.065);
+    else if(kind==='hit'){addNote(buffer,rate,0,.18,root-12,'pluck',.09);const noise=randomSequence(783);for(let i=0;i<Math.min(buffer.length,rate*.07);i++)buffer[i]+=noise()*.022*Math.exp(-i/rate*70);}
+    else if(kind==='miss'){addNote(buffer,rate,0,.16,root-12,'pluck',.08);addNote(buffer,rate,.1,.18,root-17,'bell',.06);}
     else{addNote(buffer,rate,0,kind==='paddle'?.12:.25,root+(kind==='paddle'?0:[12,third===3?10:9,7,third,0][row]),kind==='paddle'?'pluck':'bell',.11);const noise=randomSequence(782+row);for(let i=0;i<Math.min(buffer.length,rate*.04);i++)buffer[i]+=noise()*.025*Math.exp(-i/rate*120);}
   }
   else if (kind === 'hover') addNote(buffer, rate, 0, .13, root+12, 'bell', .1);

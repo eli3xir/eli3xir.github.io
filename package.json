@@ -26,7 +26,8 @@
     "test:trails": "node tools/trails-audit.mjs",
     "test:galaxy": "node tools/galaxy-audit.mjs",
     "test:glass": "node tools/glass-audit.mjs",
-    "test:breakout": "node tools/breakout-audit.mjs"
+    "test:breakout": "node tools/breakout-audit.mjs",
+    "test:bullet": "node tools/bullet-audit.mjs"
   },
   "engines": {
     "node": ">=22"

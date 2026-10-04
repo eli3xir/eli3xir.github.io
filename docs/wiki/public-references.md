@@ -92,3 +92,6 @@ Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐�
 同轮阅读 [Three.js InstancedMesh 文档](https://threejs.org/docs/pages/InstancedMesh.html)，核对矩阵/颜色更新、边界重算和实例释放接口，落地于本站固定 r185 依赖。四组实例在重复游玩中复用缓冲，离开时实例、几何与材质分别释放；官方文档的通用性能动机不能替代本站实测帧率。
 
 玩法沿用原实验的五行九列、三次机会和行分值，并对照 Atari 官方 [Breakout 家用版手册](https://atari.com/pages/breakout) 中移动挡板、发球与漏接的说明；该页为 1978 年家用版本，未混称为 1976 年街机规则。另阅读并实际查看 The Strong 博物馆的 [Breakout 街机藏品](https://artsandculture.google.com/asset/arcade-game-breakout/lAGqT3nqUqeBig?hl=en)，借鉴独立边框、控制位置和分层色带带来的可读性。本站为原创风格化游戏台，不复制街机外观、五球规则、参考照片或声音资产。
+2026-10-04 阅读 CAVE 官方 [弹幕射击说明](https://www.cave.co.jp/gameonline/danmakushooting.html)，并下载、实际查看页面第一张游戏画面：可辨认的弹幕轨迹和空隙构成躲避体验。同轮阅读 [虫姬样产品页](https://www.cave.co.jp/business/%E8%99%AB%E5%A7%AB%E3%81%95%E3%81%BE/) 并实际查看第三张图库画面，用于观察弹丸、角色与复杂背景的层次。浏览器图片抓取失败后通过 HTTP 下载取得原图；两张参考仅在临时目录，不发布为网站资产。本站保留原实验的三种弹型，自行设计椭圆装置、角色艇和着色，不复制商业游戏的人物、关卡、美术或声音。
+
+同轮阅读 Three.js 官方 [InstancedBufferGeometry](https://threejs.org/docs/pages/InstancedBufferGeometry.html)、[InstancedBufferAttribute](https://threejs.org/docs/pages/InstancedBufferAttribute.html) 和 [BufferAttribute](https://threejs.org/docs/pages/BufferAttribute.html)，核对实例数量、属性复用、`needsUpdate`、组件更新范围及首次使用前指定 usage 的要求。本站在固定 r185 的 WebGL 渲染中使用预分配实例四边形，GPU 像素位置另行测量；文档中的 WebGPU 专属属性释放不用于 WebGL，WebGL 通过所属几何释放缓冲。碰撞与固定步进继续采用前一轮已核对的时间分割原则，未引入第三方弹幕脚本或视频。

@@ -35,7 +35,7 @@ try{
           const samples=renderCue('reveal',rate,0),buffer=context.createBuffer(1,samples.length,rate);buffer.getChannelData(0).set(samples);
           const source=context.createBufferSource();source.buffer=buffer;source.connect(master);source.start(at);
         }
-        for(const [i,kind]of ['brick0','brick1','brick2','brick3','brick4','paddle','miss'].entries()){
+        for(const [i,kind]of ['brick0','brick1','brick2','brick3','brick4','paddle','miss','graze','graze','hit','graze'].entries()){
           const samples=renderCue(kind,rate,0),buffer=context.createBuffer(1,samples.length,rate);buffer.getChannelData(0).set(samples);
           const source=context.createBufferSource();source.buffer=buffer;source.connect(master);source.start(4+i*.065);
         }

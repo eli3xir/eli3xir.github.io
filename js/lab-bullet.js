@@ -1,156 +1,29 @@
-/* 弹幕地狱：PixiJS ParticleContainer 弹幕 + 擦弹判定（东方 Project 风格） */
-import * as PIXI from 'pixi.js';
-
-const app = new PIXI.Application();
-await app.init({ background: 0x100505, resizeTo: window, antialias: false });
-document.body.prepend(app.canvas);
-app.canvas.style.cssText = 'position:fixed;inset:0;z-index:0';
-
-const stat = document.getElementById('stat');
-const W = () => app.screen.width;
-const H = () => app.screen.height;
-
-/* ---------- 纹理 ---------- */
-function dotTex(color, r) {
-  const g = new PIXI.Graphics().circle(r, r, r).fill(color);
-  return app.renderer.generateTexture(g);
-}
-const bulletTex = dotTex(0xffffff, 5);
-const playerTex = dotTex(0xffffff, 4);
-const GRAZE_TEX = dotTex(0x7c5cff, 3);
-
-/* ---------- 弹幕容器 ---------- */
-const MAX_BULLETS = 8000;
-const bullets = new PIXI.ParticleContainer({
-  dynamicProperties: { position: true, vertex: false, rotation: false, color: true },
-});
-app.stage.addChild(bullets);
-const pool = [];
-const alive = [];
-function spawnBullet(x, y, vx, vy, tint) {
-  let b = pool.pop();
-  if (!b) b = new PIXI.Particle({ texture: bulletTex, anchorX: 0.5, anchorY: 0.5 });
-  b.x = x; b.y = y; b.tint = tint;
-  b.vx = vx; b.vy = vy; b.grazed = false;
-  bullets.addParticle(b);
-  alive.push(b);
-}
-function killBullet(i) {
-  const b = alive[i];
-  bullets.removeParticle(b);
-  pool.push(b);
-  alive[i] = alive[alive.length - 1];
-  alive.pop();
-}
-
-/* ---------- 玩家 ---------- */
-const player = new PIXI.Sprite(playerTex);
-player.anchor.set(0.5);
-app.stage.addChild(player);
-// 擦弹圈提示
-const grazeRing = new PIXI.Graphics().circle(0, 0, 14).stroke({ width: 1, color: 0x7c5cff, alpha: 0.5 });
-app.stage.addChild(grazeRing);
-let px = 0, py = 0, tx = 0, ty = 0;
-let lives = 3, invincible = 0, graze = 0, survived = 0, gameOver = false;
-
-app.stage.eventMode = 'static';
-app.stage.hitArea = app.screen;
-app.stage.on('pointermove', (e) => { tx = e.global.x; ty = e.global.y; });
-app.stage.on('pointerdown', () => {
-  if (gameOver) { lives = 3; graze = 0; survived = 0; gameOver = false; invincible = 120; }
-});
-
-/* ---------- Boss 与发射模式 ---------- */
-const boss = new PIXI.Graphics();
-boss.circle(0, 0, 22).fill(0xe63229);
-boss.circle(0, 0, 30).stroke({ width: 2, color: 0xff8888, alpha: 0.6 });
-app.stage.addChild(boss);
-
-const TINTS = [0xff5a4e, 0xffb340, 0xf8ef5a, 0x6a8dff, 0xff7edb];
-let patternT = 0, spiralA = 0, mode = 0, modeT = 0;
-const MODES = ['spiral', 'flower', 'aimed'];
-
-function emit(t) {
-  const bx = boss.x, by = boss.y;
-  if (mode === 0) { // 螺旋双臂
-    if (t % 3 < 1) {
-      spiralA += 0.11;
-      for (let arm = 0; arm < 3; arm++) {
-        const a = spiralA + (arm * Math.PI * 2) / 3;
-        const sp = 2.2;
-        spawnBullet(bx, by, Math.cos(a) * sp, Math.sin(a) * sp, TINTS[arm % TINTS.length]);
-      }
-    }
-  } else if (mode === 1) { // 花瓣环
-    if (t % 26 < 1) {
-      spiralA += 0.3;
-      for (let i = 0; i < 18; i++) {
-        const a = spiralA + (i / 18) * Math.PI * 2;
-        const sp = 1.6 + (i % 2) * 0.7;
-        spawnBullet(bx, by, Math.cos(a) * sp, Math.sin(a) * sp, TINTS[i % TINTS.length]);
-      }
-    }
-  } else { // 瞄准弹
-    if (t % 30 < 1) {
-      const a = Math.atan2(py - by, px - bx);
-      for (let i = -1; i <= 1; i++) {
-        spawnBullet(bx, by, Math.cos(a + i * 0.18) * 3.2, Math.sin(a + i * 0.18) * 3.2, 0xffffff);
-      }
-    }
-  }
-}
-
-/* ---------- 主循环 ---------- */
-let frame = 0;
-app.ticker.add(() => {
-  if (gameOver) {
-    stat.textContent = `💀 GAME OVER · 存活 ${survived.toFixed(1)}s · 擦弹 ${graze} · 点击重新开始`;
-    return;
-  }
-  frame++;
-  survived += 1 / 60;
-  if (invincible > 0) invincible--;
-
-  // 模式轮换
-  modeT++;
-  if (modeT > 600) { modeT = 0; mode = (mode + 1) % MODES.length; }
-
-  // Boss 缓慢游走
-  boss.x = W() / 2 + Math.sin(frame * 0.008) * W() * 0.25;
-  boss.y = H() * 0.25 + Math.cos(frame * 0.011) * H() * 0.08;
-  boss.rotation += 0.01;
-
-  emit(frame);
-  if (alive.length > MAX_BULLETS) killBullet(0);
-
-  // 玩家跟随（无惯性，跟手）
-  px = tx; py = ty;
-  player.x = px; player.y = py;
-  grazeRing.x = px; grazeRing.y = py;
-  player.alpha = invincible > 0 && frame % 8 < 4 ? 0.3 : 1;
-
-  // 子弹移动 + 判定
-  for (let i = alive.length - 1; i >= 0; i--) {
-    const b = alive[i];
-    b.x += b.vx;
-    b.y += b.vy;
-    if (b.x < -20 || b.x > W() + 20 || b.y < -20 || b.y > H() + 20) { killBullet(i); continue; }
-    const dx = b.x - px, dy = b.y - py;
-    const d2 = dx * dx + dy * dy;
-    if (d2 < 20) { // 命中判定点（半径 ~4.5）
-      if (invincible <= 0) {
-        lives--;
-        invincible = 150;
-        grazeRing.alpha = 1;
-        if (lives <= 0) gameOver = true;
-      }
-    } else if (d2 < 400 && !b.grazed) { // 擦弹（半径 20）
-      b.grazed = true;
-      graze++;
-    }
-  }
-
-  stat.textContent = `♥ ${lives} · 存活 ${survived.toFixed(1)}s · 擦弹 ${graze} · 场上弹幕 ${alive.length}`;
-});
-
-tx = W() / 2; ty = H() * 0.75;
+import * as THREE from 'three';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {createBullet} from './world/bullet.js';
+import {createBulletState} from './world/bullet-state.js';
+import {createCharacter} from './world/character.js';
+import {bulletControls} from './experience/bullet-controls.js';
+import {createBulletCanvas} from './experience/bullet-canvas.js';
+let canvas=document.getElementById('scene'),renderer=null;try{renderer=new THREE.WebGLRenderer({canvas,antialias:true});}catch{const next=canvas.cloneNode();canvas.replaceWith(next);canvas=next;}
+document.body.classList.add('bullet-playing');canvas.className='bullet-canvas';canvas.tabIndex=0;canvas.style.touchAction='none';canvas.setAttribute('aria-label','躲避场：方向键移动，Shift 微调，空格开始，P 暂停，R 重来；拖动避让');
+const model=renderer?createBullet():null,state=model?.state||createBulletState(),flat=renderer?null:createBulletCanvas(canvas),reduced=matchMedia('(prefers-reduced-motion: reduce)'),events=new AbortController(),neutral={beat:0,pulse:0,energy:.4},pointer=new THREE.Vector2(),rayPointer=new THREE.Vector2(),ray=new THREE.Raycaster(),keys=new Set();let active=parent===window,epoch=0,frames=0,last=null,sent='',sentAt=0,drag=null,scene,camera,actor;
+const send=(force=false)=>{if(parent===window||!active)return;const s=state.state,key=[s.tick,s.x,s.y,s.tx,s.ty,s.choice,s.paused,s.status].join(':');if(key===sent||!force&&performance.now()-sentAt<80)return;sentAt=performance.now();sent=key;parent.postMessage({type:'bullet-settings',epoch,snapshot:state.snapshot()},location.origin);};
+const notify=event=>{if(parent!==window)parent.postMessage({type:'bullet-event',epoch,event},location.origin);};
+const clear=()=>{drag=null;keys.clear();};
+function action(name,value){if(!active)return;if(name==='launch'&&state.launch(value||{}))notify({kind:'start',wait:value?.wait||0});if(name==='move')state.move(value.x,value.y);if(name==='choose')state.choose(value);if(name==='pause'){state.pause(value);keys.clear();}if(name==='reset'){state.reset();model?.field.invalidate();clear();notify({kind:'reset'});}controls.set(state.state);send(name!=='move');}
+const controls=bulletControls({signal:events.signal,onLaunch:()=>action('launch',{}),onMove:(x,y)=>action('move',{x,y}),onChoose:v=>action('choose',v),onPause:v=>action('pause',v),onReset:()=>action('reset')});document.body.append(controls.element);controls.set(state.state);
+if(renderer){renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;renderer.setPixelRatio(Math.min(devicePixelRatio,innerWidth<700?1.4:1.7));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;scene=new THREE.Scene();scene.background=new THREE.Color(0x10222c);const room=new RoomEnvironment(),generator=new THREE.PMREMGenerator(renderer),environment=generator.fromScene(room,.04);scene.environment=environment.texture;scene.environmentIntensity=.6;room.dispose();generator.dispose();scene.add(new THREE.HemisphereLight(0xd9e6e4,0x18222c,1.2));const key=new THREE.DirectionalLight(0xffdfb2,2.5);key.position.set(-3,5,7);key.castShadow=true;key.shadow.mapSize.set(1024,1024);key.shadow.camera.left=key.shadow.camera.bottom=-3;key.shadow.camera.right=key.shadow.camera.top=3;key.shadow.bias=-.0003;scene.add(key);camera=new THREE.PerspectiveCamera(38,1,.05,30);scene.add(model.root);actor=createCharacter();actor.root.scale.setScalar(model.actorScale/model.displayScale);model.actorAnchor.add(actor.root);model.onEvent=notify;model.setActive(active);}
+else document.querySelector('.demo-hud p').textContent='平面躲避场 · 同一局与判定规则 · 方向键或拖动避让';
+function point(event){if(!renderer)return flat.point(event);const b=canvas.getBoundingClientRect();rayPointer.set((event.clientX-b.left)/b.width*2-1,1-(event.clientY-b.top)/b.height*2);ray.setFromCamera(rayPointer,camera);return model.pick(ray);}
+canvas.addEventListener('pointerdown',event=>{if(!active)return;const p=point(event);if(!p)return;drag={id:event.pointerId,x:p.x,y:p.y,px:state.state.x,py:state.state.y};canvas.setPointerCapture(event.pointerId);canvas.focus({preventScroll:true});if(event.pointerType!=='touch')action('move',p);if(state.state.status!=='playing')action('launch',{});});
+canvas.addEventListener('pointermove',event=>{if(!active||event.pointerType==='touch'&&event.pointerId!==drag?.id)return;const p=point(event);if(!p)return;action('move',event.pointerType==='touch'?{x:drag.px+p.x-drag.x,y:drag.py+p.y-drag.y}:p);});
+for(const name of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(name,()=>{drag=null;});addEventListener('blur',clear);
+canvas.addEventListener('keydown',event=>{if(!active||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Shift',' ','Enter','p','P','r','R','Home'].includes(event.key))return;event.preventDefault();if(event.key.startsWith('Arrow')||event.key==='Shift'){keys.add(event.key);return;}if(event.repeat)return;if(event.key===' '||event.key==='Enter')action('launch',{});else if(event.key.toLowerCase()==='p')action('pause',!state.state.paused);else if(event.key.toLowerCase()==='r')action('reset');else action('move',{x:0,y:-1.35});});canvas.addEventListener('keyup',e=>keys.delete(e.key));canvas.addEventListener('blur',clear);
+function draw(now){const dt=last===null?0:Math.max(0,(now-last)/1000);last=now;if(keys.size&&active&&!state.state.paused){const dx=Number(keys.has('ArrowRight'))-Number(keys.has('ArrowLeft')),dy=Number(keys.has('ArrowUp'))-Number(keys.has('ArrowDown')),speed=(keys.has('Shift')?.9:3.2)*Math.min(.05,dt)/(Math.hypot(dx,dy)||1);if(dx||dy)state.move(state.state.tx+dx*speed,state.state.ty+dy*speed);}if(renderer){model.update(0,neutral,0,now/1000,reduced.matches);actor.update(0,neutral,pointer,false,reduced.matches?0:Math.min(dt,.05),model.actorMotion,reduced.matches?0:now/1000);renderer.render(scene,camera);frames++;}else{if(active&&!document.hidden)state.update(dt).forEach(notify);if(flat.draw(state.state,state.data))frames++;}controls.set(state.state);send();}
+function resize(){const width=innerWidth,height=Math.max(160,Math.floor(controls.element.getBoundingClientRect().top-76));canvas.style.width=width+'px';canvas.style.height=height+'px';if(renderer){renderer.setSize(width,height,false);camera.aspect=width/height;camera.position.set(0,.08,Math.max(8.6,6.7/camera.aspect));camera.lookAt(0,0,0);camera.updateProjectionMatrix();}else flat.resize(width,height);draw(performance.now());}
+let handle=0;function loop(now){if(!active||document.hidden)return;draw(now);handle=requestAnimationFrame(loop);}
+function rendering(){last=null;model?.setActive(active&&!document.hidden);if(renderer)renderer.setAnimationLoop(active&&!document.hidden?draw:null);else{cancelAnimationFrame(handle);if(active&&!document.hidden)handle=requestAnimationFrame(loop);}}
+document.addEventListener('visibilitychange',()=>{clear();rendering();});addEventListener('resize',resize);
+addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==parent)return;const d=event.data;if(d?.type==='bullet-owner'&&Number.isSafeInteger(d.epoch)&&typeof d.active==='boolean'){epoch=d.epoch;active=d.active;clear();if(active&&d.snapshot){state.restore(d.snapshot);model?.field.invalidate();}rendering();controls.set(state.state);if(!active)parent.postMessage({type:'bullet-state',epoch,snapshot:state.snapshot()},location.origin);else draw(performance.now());}else if(d?.type==='bullet-action'&&d.epoch===epoch&&active)action(d.action,d.value);});
+resize();rendering();if(parent!==window)parent.postMessage({type:'bullet-ready'},location.origin);window.bulletExperiment={model,state,renderer,camera,actor,diagnostics:()=>({...state.state,active,frames,drag,keys:[...keys],epoch,resources:renderer?{...renderer.info.memory}:null})};
