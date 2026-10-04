@@ -16,7 +16,8 @@
     "test:signal": "node tools/signal-audit.mjs",
     "test:radio": "node tools/radio-audit.mjs",
     "test:potion": "node tools/potion-audit.mjs",
-    "test:skin": "node tools/skin-audit.mjs"
+    "test:skin": "node tools/skin-audit.mjs",
+    "test:about": "node tools/about-audit.mjs"
   },
   "engines": {
     "node": ">=22"

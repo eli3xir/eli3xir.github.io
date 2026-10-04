@@ -70,6 +70,10 @@ body[data-skin="brick"]{--studio-gold:#c78870}body[data-skin="forest"]{--studio-
 .record-stems button[aria-pressed=true]{color:#eee1bd;border-color:#a6986677}.record-stems button[aria-pressed=true]:before{background:#d7be80}
 .record-position{font-size:9px;color:#b4bea9;margin:10px 0 0;line-height:1.7}
 .finish-controls{max-width:400px;pointer-events:auto;margin-top:2px}
+.leisure-controls{pointer-events:auto;margin:0 0 10px;max-width:390px}.leisure-intro{font-size:12px;line-height:1.7;color:#d0ceb9;margin:0 0 14px}
+.leisure-options{display:flex;gap:9px;flex-wrap:wrap}.leisure-options button{min-height:44px;padding:9px 13px;background:#c7c19f08;border:1px solid #7d806a66;color:#d7ceb7;font:inherit;font-size:12px;cursor:pointer}.leisure-options [aria-pressed=true]{border-color:#d6c89c;color:#f1e3bf}
+.leisure-status{font-size:11px;line-height:1.7;color:#adb59f;min-height:20px;margin:12px 0 0}[data-chapter="about"] .world-caption{display:none}
+[data-chapter="about"] .explore-button{margin-top:14px}
 .finish-options{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;max-width:302px}.finish-options button{min-height:48px;min-width:0;padding:7px 5px;font:inherit;font-size:11px;color:#c9ceb9;background:none;border:1px solid #7d806a55;cursor:pointer}
 .finish-options i{display:block;width:18px;height:5px;margin:0 auto 6px;background:var(--finish)}.finish-options [aria-pressed=true]{border-color:#d6c89c;color:#f1e3bf;background:#c7c19f10}
 .finish-current{font-size:12px;line-height:1.7;color:#d5d8c4;margin:10px 0 0}.finish-status{font-size:11px;line-height:1.6;color:#aeb8a1;margin:5px 0 12px;min-height:18px}
@@ -224,6 +228,7 @@ body[data-skin="brick"]{--studio-gold:#c78870}body[data-skin="forest"]{--studio-
   .world-hero{height:100svh;min-height:800px;max-height:none}.world-hero:before{background:linear-gradient(180deg,#10151366,transparent 50%)}
   [data-chapter="projects"] .world-hero{min-height:900px}[data-chapter="projects"] .world-caption{display:none}
   [data-chapter="radio"] .world-hero{min-height:900px}[data-chapter="radio"] .world-caption{display:none}
+  [data-chapter="about"] .world-hero{min-height:900px}
   [data-chapter="home"] .world-hero:before{background:linear-gradient(180deg,#10151399,#101513e6 18%,#101513db 44%,#10151322 63%,transparent 72%)}
   .hero-copy{top:135px;left:7vw;right:7vw;max-width:none}.hero-title{font-size:clamp(40px,10vw,62px);line-height:1.02}
   .eyebrow{font-size:8px;margin-bottom:22px}.hero-subtitle{margin-top:17px;font-size:12px}.hero-rule{margin-top:19px}.hero-note{font-size:9px}.hero-copy .explore-button{margin-top:15px;font-size:10px}

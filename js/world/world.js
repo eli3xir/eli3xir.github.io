@@ -60,6 +60,7 @@ export class World {
     this.film=new ShaderPass(FilmShader);this.composer.addPass(this.film);
     this.particles=createParticles(innerWidth<700?1200:2800);this.scene.add(this.particles);
     this.actor=createCharacter();this.scene.add(this.actor.root);
+    this.anchorPortalRotation=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,0,-.3));
     this.actor.root.rotation.y=0;
     this.moving=0;this.scroll=0;this.transition=0;this.last=performance.now();this.frames=[];this.renderedFrames=0;
     this.events=new AbortController();
@@ -123,7 +124,8 @@ export class World {
     if(route.id!=='home')this.status(1,'世界已就绪');
     this.actor.root.scale.setScalar((this.model.actorScale||1)*(innerWidth<700&&route.id!=='home'?.72:1));
     this.actor.root.position.set(...this.model.actorPosition);
-    this.actor.root.rotation.y=route.id==='home'?Math.PI:0;
+    this.actor.root.rotation.set(0,route.id==='home'?Math.PI:0,0);
+    if(this.model.actorAnchor){this.model.actorAnchor.getWorldPosition(this.actor.root.position);this.model.actorAnchor.getWorldQuaternion(this.actor.root.quaternion);}
     this.particles.material.uniforms.uMode.value=['home','lab','blog','radio','projects','about','skin'].indexOf(route.id);
     this.particles.material.uniforms.uColor.value.set(route.color);
     this.bakedLighting=route.id==='home'||Boolean(this.model.bakedLighting);
@@ -246,7 +248,7 @@ export class World {
         this.model.root.scale.setScalar((this.model.displayScale||1)*(this.layoutScale||1)*(1-this.transition*.08));
       }
     }
-    this.actor.update(t,rhythm,this.pointer,this.route?.id==='about',dt);
+    this.actor.update(t,rhythm,this.pointer,this.route?.id==='about',dt,this.model?.actorMotion);
     const actorPos=this.route?.id==='home'&&this.focused?ROOM_VIEWS[this.focused].target.map((value,i)=>value+(i===1?.4:i===2?-.18:0)):((this.compact&&this.model?.actorMobilePosition)||this.model?.actorPosition||[0,0,0]);
     const actorScale=this.layoutScale||1;
     const journey=this.transition*this.transition*(3-2*this.transition);
@@ -258,6 +260,7 @@ export class World {
     const verticalOffset=actorScale<1?-.3:0;
     const position=new THREE.Vector3(actorPos[0]*actorScale+Math.sin(t*.45)*.07,
       actorPos[1]*actorScale+verticalOffset+Math.sin(t*.8)*.08,actorPos[2]*actorScale);
+    const anchor=this.model?.actorAnchor;if(anchor)anchor.getWorldPosition(position);
     if(this.transition>0){
       if(!this.portalReveal)position.copy(this.portalStart||position);
       position.lerp(portalBody.multiplyScalar(actorScale).add(new THREE.Vector3(0,verticalOffset,0)),journey);
@@ -273,7 +276,8 @@ export class World {
       if(p===1)this.focusJourney=null;
     }
     this.actor.root.position.copy(position);this.actor.root.scale.setScalar(bodyScale);
-    this.actor.root.rotation.z=-journey*.3;
+    if(anchor){anchor.getWorldQuaternion(this.actor.root.quaternion);this.actor.root.quaternion.slerp(this.anchorPortalRotation,journey);}
+    else this.actor.root.rotation.z=-journey*.3;
     this.particles.scale.setScalar(actorScale);this.particles.position.y=actorScale<1?-.3:0;
     const uniforms=this.particles.material.uniforms;
     uniforms.uTime.value=t;uniforms.uBeat.value=rhythm.pulse*(.5+mood*.5);uniforms.uGather.value=this.transition;

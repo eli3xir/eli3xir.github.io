@@ -45,6 +45,8 @@
 
 ## 实际查看与采用
 
+2026-10-04 阅读 Kyle Wetton 的 [交互角色教程（2019）](https://tympanus.net/codrops/2019/10/14/how-to-create-an-interactive-3d-character-with-three-js/)，参考角色关注点、点击动作与过渡的组织方式；没有采用演示人物、Mixamo 动画或随机表演机制。关于页动作按本站原文的兴趣原创编排，保留同一 Mote 和连续空间。另对照 [InstancedMesh 官方说明](https://threejs.org/docs/pages/InstancedMesh.html) 与本地实现，棋盘用一份实例网格表示方格，并观察其实际释放事件。
+
 2026-10-04 对照 Three.js 官方 [Object3D](https://threejs.org/docs/pages/Object3D.html) 与 [Material](https://threejs.org/docs/pages/Material.html) 的克隆和资源说明，并检查本地 r185 实现。皮肤预览克隆物件与独立材质，继续共享首页几何和光照；以实际资源身份和 dispose 事件验证所有权。没有引入新版文档中本地版本不支持的统一释放接口，也没有新增外部模型或贴图。
 
 2026-10-04 对照 [MeshPhysicalMaterial 文档](https://threejs.org/docs/pages/MeshPhysicalMaterial.html) 核对透射与不透明度、厚度的关系；随后追踪固定 r185 的 [WebGLRenderer 透射过程](https://github.com/mrdoob/three.js/blob/r185/src/renderers/WebGLRenderer.js)、[WebGLBackground](https://github.com/mrdoob/three.js/blob/r185/src/renderers/webgl/WebGLBackground.js) 与 [WebGLShadowMap](https://github.com/mrdoob/three.js/blob/r185/src/renderers/webgl/WebGLShadowMap.js)。本站实际对照显示：阴影开启、场景无显式背景时瓶颈发白；显式背景可保留阴影并恢复透射。该观察针对本站当前渲染链，不泛化为所有 Three.js 场景。新瓶身、液面和气泡均由本站代码生成。

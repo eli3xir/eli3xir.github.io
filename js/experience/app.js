@@ -10,6 +10,7 @@ import {createMessageRelay} from './message-relay.js';
 import {bindProjectSignal} from './project-signal.js';
 import {bindRadio} from './radio.js';
 import {bindSkin} from './skin.js';
+import {bindAbout} from './about.js';
 
 const original=document.cloneNode(true);
 const score=new Score();
@@ -84,6 +85,7 @@ async function mount(doc,url){
   if(route.relay)bindProjectSignal(section,doc,{world,score,relay:route.relay,signal:contentEvents.signal});
   if(route.id==='radio')bindRadio(section,main,{world,score,signal:contentEvents.signal,announce});
   if(route.id==='skin')bindSkin(section,main,{world,score,signal:contentEvents.signal,announce});
+  if(route.id==='about')bindAbout(section,{world,score,signal:contentEvents.signal});
   if(route.id==='lab'&&!route.experiment&&world){
     const trigger=document.createElement('button');trigger.type='button';trigger.className='explore-button reaction-trigger';
     trigger.textContent='试一次反应 ↗';trigger.setAttribute('aria-label','触发药瓶反应');

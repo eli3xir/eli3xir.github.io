@@ -20,13 +20,16 @@ export function composeHero(world) {
     model.root.scale.setScalar((model.displayScale||1)*world.layoutScale);
     actor.scale.setScalar((model.actorScale||1)*world.layoutScale);
     actor.position.set(position[0]*world.layoutScale,position[1]*world.layoutScale-.3,position[2]*world.layoutScale);
-    model.root.updateMatrixWorld(true);actor.updateMatrixWorld(true);
+    model.root.updateMatrixWorld(true);
+    if(model.actorAnchor){model.actorAnchor.getWorldPosition(actor.position);model.actorAnchor.getWorldQuaternion(actor.quaternion);}
+    actor.updateMatrixWorld(true);
   };
   world.camera.aspect=innerWidth/innerHeight;
   world.camera.setViewOffset(innerWidth,height,0,0,innerWidth,innerHeight);
   world.camera.updateMatrixWorld(true);
   const bounds=()=>{
     const box=new THREE.Box3().setFromObject(model.root).union(new THREE.Box3().setFromObject(actor));
+    if(model.layoutBounds)box.union(model.layoutBounds.clone().applyMatrix4(model.root.matrixWorld));
     const result={left:Infinity,right:-Infinity,top:Infinity,bottom:-Infinity};
     for(const x of [box.min.x,box.max.x])for(const y of [box.min.y,box.max.y])for(const z of [box.min.z,box.max.z]){
       const p=new THREE.Vector3(x,y,z).project(world.camera);
