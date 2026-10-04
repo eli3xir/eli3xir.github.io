@@ -45,6 +45,10 @@
 
 ## 实际查看与采用
 
+2026-10-04 阅读 Mark Finch 的 [GPU Gems 水面章节](https://developer.nvidia.com/gpugems/gpugems/part-i-natural-effects/chapter-1-effective-water-simulation-physical-models)，采用几何波动与细小表面扰动分层、由同一高度函数求取姿态的思路。本站实现为四组方向正弦波和四点浮动近似，没有使用 Gerstner 水平位移或完整流体解算。另核对 [Three.js r185 Water 源码](https://github.com/mrdoob/three.js/blob/r185/examples/jsm/objects/Water.js) 的反射/水面组织方式；当前使用原创程序天空的 PMREM 环境与物理材质，没有复制该示例的平面反射代码、法线图片或外部船模。
+
+同轮查看 r185 官方 [Material 源码](https://github.com/mrdoob/three.js/blob/r185/src/materials/Material.js)：默认自定义程序缓存键来自 `onBeforeCompile` 的函数字符串，闭包里的不同帆尺寸不会自动形成不同键。主帆/前帆及其深度材质显式提供尺寸和方向键，并用实际画面检查两片帆。
+
 2026-10-04 阅读 Kyle Wetton 的 [交互角色教程（2019）](https://tympanus.net/codrops/2019/10/14/how-to-create-an-interactive-3d-character-with-three-js/)，参考角色关注点、点击动作与过渡的组织方式；没有采用演示人物、Mixamo 动画或随机表演机制。关于页动作按本站原文的兴趣原创编排，保留同一 Mote 和连续空间。另对照 [InstancedMesh 官方说明](https://threejs.org/docs/pages/InstancedMesh.html) 与本地实现，棋盘用一份实例网格表示方格，并观察其实际释放事件。
 
 2026-10-04 对照 Three.js 官方 [Object3D](https://threejs.org/docs/pages/Object3D.html) 与 [Material](https://threejs.org/docs/pages/Material.html) 的克隆和资源说明，并检查本地 r185 实现。皮肤预览克隆物件与独立材质，继续共享首页几何和光照；以实际资源身份和 dispose 事件验证所有权。没有引入新版文档中本地版本不支持的统一释放接口，也没有新增外部模型或贴图。

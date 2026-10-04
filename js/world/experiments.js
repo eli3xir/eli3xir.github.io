@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mesh,brass,ink,glass,liquidMaterial,labelTexture,ring } from './materials.js';
 import { randomSequence } from '../audio/synth.js';
+import {createOcean} from './ocean.js';
 
 function moon(){
   const root=new THREE.Group();
@@ -24,22 +25,6 @@ function moon(){
   }
   const orbit=ring(root,1.4,.006,-.2);orbit.rotation.x=.9;orbit.rotation.z=.4;
   return{root,actorPosition:[-.8,.95,.1],update(t,beat){surface.rotation.y=t*.025;lander.position.y=1.1+Math.sin(t*.6)*.1;orbit.rotation.y=t*.03;}};
-}
-
-function ocean(){
-  const root=new THREE.Group();
-  const geometry=new THREE.PlaneGeometry(3.1,2.35,70,50);geometry.rotateX(-Math.PI/2);
-  const water=liquidMaterial('#346f75');
-  water.onBeforeCompile=()=>{};
-  const sea=mesh(geometry,water,root,[0,-.5,0]);
-  const hullPoints=[[.05,-.22],[.22,-.15],[.33,0],[.31,.1]].map(p=>new THREE.Vector2(...p));
-  const boat=new THREE.Group();root.add(boat);boat.position.y=-.22;boat.rotation.y=-.6;
-  const hull=mesh(new THREE.LatheGeometry(hullPoints,64),brass(),boat);hull.scale.set(.85,1,2.35);
-  mesh(new THREE.CylinderGeometry(.013,.016,1.35,12),brass(),boat,[0,.6,0]);
-  const sailGeo=new THREE.BufferGeometry();sailGeo.setAttribute('position',new THREE.Float32BufferAttribute([.035,.09,0,.035,1.25,0,.035,.12,-.66],3));sailGeo.computeVertexNormals();
-  mesh(sailGeo,new THREE.MeshStandardMaterial({color:0xe6d4aa,side:THREE.DoubleSide,roughness:.68}),boat);
-  const edge=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(3.12,.035,2.37)),new THREE.LineBasicMaterial({color:0x9d9360}));edge.position.y=-.53;root.add(edge);
-  return{root,actorPosition:[.85,.7,.2],update(t,beat){water.uniforms.uTime.value=t;water.uniforms.uBeat.value=beat.pulse;boat.rotation.z=Math.sin(t)*.06;boat.position.y=-.22+Math.sin(t*1.2)*.035;sea.rotation.y=Math.sin(t*.12)*.05;}};
 }
 
 function fluid(){
@@ -113,5 +98,5 @@ function words(){
 }
 
 export function createExperiment(id){
-  return({moon,ocean,fluid,trails:()=>starField(),galaxy:()=>starField(true),glass:lens,breakout,partext:words,bullet:()=>starField(false,true)}[id]||fluid)();
+  return({moon,ocean:createOcean,fluid,trails:()=>starField(),galaxy:()=>starField(true),glass:lens,breakout,partext:words,bullet:()=>starField(false,true)}[id]||fluid)();
 }

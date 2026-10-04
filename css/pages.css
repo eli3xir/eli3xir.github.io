@@ -167,6 +167,9 @@ a:hover { text-decoration: underline; }
 
 /* ===== 实验演示页（全屏 canvas + HUD） ===== */
 .demo-body { overflow: hidden; background: #000; }
+.ocean-unavailable{position:fixed;inset:35% 10% auto;color:#eee3c9;font-size:16px;line-height:1.8;text-align:center}
+.ocean-helm{position:fixed;z-index:10;bottom:22px;left:22px;display:flex;gap:7px;padding:8px;background:#142c2bdb;border:1px solid #cfbc8755;touch-action:none}.ocean-helm button{width:48px;height:48px;font:22px Georgia,serif;background:#e6dcc713;color:#efe5c8;border:1px solid #d2bc8066;cursor:pointer;touch-action:none}.ocean-helm button:active,.ocean-helm button:focus-visible{background:#c4ae6d66;outline:2px solid #ede1bd}.ocean-playing .demo-hud{background:#142c2bd9;padding:15px 18px;max-width:calc(100vw - 40px);border-left:2px solid #c9b477}.ocean-playing .demo-hud p{color:#eee3c9}
+@media(max-width:600px){.ocean-playing .demo-hud{top:12px;left:12px;padding:10px 12px}.ocean-playing .demo-hud h1{font-size:15px}.ocean-playing .demo-hud p{font-size:11px}.ocean-playing .demo-hud p:not(.demo-stat){display:none}.ocean-helm{left:12px;bottom:12px;gap:6px;padding:6px}}
 .demo-body canvas.scene { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
 .demo-hud {
   position: fixed;

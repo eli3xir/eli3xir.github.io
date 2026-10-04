@@ -1,255 +1,79 @@
-/* 大海航行实验：Gerstner 风格波浪 + 帆船驾驶（Three.js） */
+/* Sailing shares the miniature's boat and height field; W/S, A/D and orbit remain. */
 import * as THREE from 'three';
+import {createSailboat} from './world/sailboat.js';
+import {createOceanWater} from './world/ocean-water.js';
+import {createOceanSky} from './world/ocean-sky.js';
+import {floatBoat} from './world/ocean-waves.js';
+import {createCharacter} from './world/character.js';
 
-const canvas = document.getElementById('scene');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.setSize(innerWidth, innerHeight);
-
-const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0x9ec8de, 80, 420);
-
-/* ---------- 灯光 ---------- */
-scene.add(new THREE.HemisphereLight(0xd8ecff, 0x2a5a80, 1.3));
-const sunLight = new THREE.DirectionalLight(0xfff2d8, 1.6);
-sunLight.position.set(60, 120, -80);
-scene.add(sunLight);
-const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 1000);
-
-/* ---------- 波浪参数（JS 与 shader 共用） ---------- */
-const WAVES = [
-  { dir: [1, 0.3], amp: 0.55, len: 22, speed: 1.1 },
-  { dir: [0.6, 1], amp: 0.35, len: 13, speed: 1.5 },
-  { dir: [-0.4, 0.8], amp: 0.22, len: 8, speed: 2.0 },
-  { dir: [0.9, -0.6], amp: 0.12, len: 4.5, speed: 2.6 },
-];
-function waveH(x, z, t) {
-  let h = 0;
-  for (const w of WAVES) {
-    const k = (Math.PI * 2) / w.len;
-    h += w.amp * Math.sin(k * (w.dir[0] * x + w.dir[1] * z) + w.speed * t);
-  }
-  return h;
+const canvas=document.getElementById('scene');let renderer;
+try{renderer=new THREE.WebGLRenderer({canvas,antialias:true});}catch{
+  const message=document.createElement('p');message.className='ocean-unavailable';message.textContent='当前设备无法显示 3D 海面。可以返回实验室，继续探索其他内容。';canvas.replaceWith(message);
 }
-function waveNormal(x, z, t) {
-  const e = 0.6;
-  const hL = waveH(x - e, z, t), hR = waveH(x + e, z, t);
-  const hD = waveH(x, z - e, t), hU = waveH(x, z + e, t);
-  return new THREE.Vector3(hL - hR, 2 * e, hD - hU).normalize();
+if(renderer){
+document.body.classList.add('ocean-playing');
+renderer.setPixelRatio(Math.min(devicePixelRatio,innerWidth<700?1.25:1.6));renderer.setSize(innerWidth,innerHeight);
+renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.93;
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(new THREE.Color().setRGB(.61,.68,.62),85,240);
+scene.add(new THREE.HemisphereLight(0xc4d5d1,0x24433d,1.1));
+const sunlight=new THREE.DirectionalLight(0xffe2b0,2.5);sunlight.position.set(-55,28,80);scene.add(sunlight);
+const camera=new THREE.PerspectiveCamera(53,innerWidth/innerHeight,.1,1000),sky=createOceanSky();scene.add(sky);
+const generator=new THREE.PMREMGenerator(renderer),environmentScene=new THREE.Scene();
+environmentScene.add(sky.clone());const environment=generator.fromScene(environmentScene,.03,.1,1000);scene.environment=environment.texture;scene.environmentIntensity=.8;generator.dispose();
+const sea=createOceanWater(600,600,{segments:innerWidth<700?144:220,scale:12,concentrate:true});scene.add(sea.water);
+const vessel=createSailboat(),boat=vessel.root;boat.scale.setScalar(4);scene.add(boat);
+const crew=createCharacter();crew.root.position.set(.145,.33,-.60);crew.root.scale.setScalar(.58);boat.add(crew.root);
+const neutral={beat:0,pulse:0,energy:.5},pointer=new THREE.Vector2(),grounded={grounded:true};
+
+const gulls=[],gullMaterial=new THREE.MeshStandardMaterial({color:0xdad8c3,side:THREE.DoubleSide,roughness:.8});
+for(let i=0;i<5;i++){
+  const gull=new THREE.Group();
+  for(const sign of [-1,1]){const wing=new THREE.Mesh(new THREE.PlaneGeometry(1.05,.16),gullMaterial);wing.position.x=sign*.47;wing.rotation.x=-Math.PI/2;gull.add(wing);}
+  scene.add(gull);gulls.push(gull);
 }
-
-/* ---------- 海面 ---------- */
-const oceanUniforms = { uTime: { value: 0 } };
-const ocean = new THREE.Mesh(
-  new THREE.PlaneGeometry(900, 900, 180, 180),
-  new THREE.ShaderMaterial({
-    uniforms: oceanUniforms,
-    fog: false,
-    vertexShader: /* glsl */`
-      uniform float uTime;
-      varying vec3 vPos;
-      varying vec3 vNrm;
-      float waveH(vec2 p, float t) {
-        float h = 0.0;
-        ${WAVES.map((w) => `h += ${w.amp.toFixed(3)} * sin(${(Math.PI * 2 / w.len).toFixed(5)} * (${w.dir[0].toFixed(2)} * p.x + ${w.dir[1].toFixed(2)} * p.y) + ${w.speed.toFixed(2)} * t);`).join('\n        ')}
-        return h;
-      }
-      void main() {
-        vec3 p = position;
-        float h = waveH(p.xy, uTime);
-        p.z += h;
-        float e = 0.6;
-        float hL = waveH(p.xy - vec2(e, 0.0), uTime);
-        float hR = waveH(p.xy + vec2(e, 0.0), uTime);
-        float hD = waveH(p.xy - vec2(0.0, e), uTime);
-        float hU = waveH(p.xy + vec2(0.0, e), uTime);
-        vNrm = normalize(vec3(hL - hR, 2.0 * e, hD - hU));
-        vPos = (modelMatrix * vec4(p, 1.0)).xyz;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
-      }
-    `,
-    fragmentShader: /* glsl */`
-      varying vec3 vPos;
-      varying vec3 vNrm;
-      void main() {
-        vec3 deep = vec3(0.02, 0.18, 0.35);
-        vec3 shallow = vec3(0.15, 0.55, 0.75);
-        vec3 n = normalize(vNrm);
-        float fres = pow(1.0 - max(n.z, 0.0), 2.0);
-        vec3 col = mix(deep, shallow, fres * 0.9 + 0.15);
-        // 阳光高光
-        vec3 sunDir = normalize(vec3(0.4, 0.7, 0.3));
-        float spec = pow(max(dot(reflect(-sunDir, n), vec3(0.0, 0.0, 1.0)), 0.0), 40.0);
-        col += vec3(1.0, 0.95, 0.8) * spec * 0.6;
-        // 远处雾化
-        float d = length(vPos.xz);
-        col = mix(col, vec3(0.62, 0.78, 0.87), smoothstep(80.0, 420.0, d));
-        gl_FragColor = vec4(col, 1.0);
-      }
-    `,
-  })
-);
-ocean.rotation.x = -Math.PI / 2;
-scene.add(ocean);
-
-/* ---------- 天空：渐变穹顶 + 太阳 + 云 ---------- */
-scene.background = new THREE.Color(0x9ec8de);
-{
-  // 太阳
-  const sun = new THREE.Mesh(new THREE.CircleGeometry(14, 32), new THREE.MeshBasicMaterial({ color: 0xfff3c8, fog: false }));
-  sun.position.set(120, 130, -350);
-  sun.lookAt(camera.position);
-  scene.add(sun);
-  // 云（canvas 椭圆组合）
-  function cloudTex() {
-    const c = document.createElement('canvas');
-    c.width = 256; c.height = 128;
-    const x = c.getContext('2d');
-    for (let i = 0; i < 9; i++) {
-      const g = x.createRadialGradient(60 + Math.random() * 130, 60 + Math.random() * 30, 5, 80 + Math.random() * 60, 64, 34 + Math.random() * 22);
-      g.addColorStop(0, 'rgba(255,255,255,0.9)');
-      g.addColorStop(1, 'rgba(255,255,255,0)');
-      x.fillStyle = g;
-      x.fillRect(0, 0, 256, 128);
-    }
-    const t = new THREE.CanvasTexture(c);
-    return t;
-  }
-  const ct = cloudTex();
-  for (let i = 0; i < 8; i++) {
-    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: ct, transparent: true, opacity: 0.85, fog: false }));
-    sp.position.set((Math.random() - 0.5) * 600, 70 + Math.random() * 60, -250 - Math.random() * 150);
-    sp.scale.set(90 + Math.random() * 70, 40 + Math.random() * 25, 1);
-    scene.add(sp);
-  }
+let speed=0,heading=-.42,camYaw=.35,camPitch=.29,drag=null,time=0,last=performance.now(),wind=.8,targetWind=.8,visible=true,renderedFrames=0;
+const keyboard=new Set(),touches=new Map(),codes={ArrowUp:'KeyW',ArrowDown:'KeyS',ArrowLeft:'KeyA',ArrowRight:'KeyD'};
+const controls=document.createElement('div');controls.className='ocean-helm';controls.setAttribute('role','group');controls.setAttribute('aria-label','驾驶帆船');
+for(const [code,label,glyph] of [['KeyA','向左转舵','←'],['KeyW','加速','↑'],['KeyS','减速','↓'],['KeyD','向右转舵','→']]){
+  const button=document.createElement('button');button.type='button';button.dataset.helm=code;button.textContent=glyph;button.setAttribute('aria-label',label);
+  button.addEventListener('pointerdown',event=>{event.preventDefault();button.setPointerCapture(event.pointerId);touches.set(event.pointerId,code);});
+  for(const type of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(type,event=>touches.delete(event.pointerId));
+  button.addEventListener('keydown',event=>{if(event.code==='Space'||event.code==='Enter'){event.preventDefault();keyboard.add(code);}});
+  button.addEventListener('keyup',()=>keyboard.delete(code));button.addEventListener('blur',()=>keyboard.delete(code));controls.append(button);
 }
-
-/* ---------- 帆船 ---------- */
-const boat = new THREE.Group();
-{
-  const hullMat = new THREE.MeshStandardMaterial({ color: 0x8a5a2b, roughness: 0.7 });
-  // 船体
-  const hull = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 0.5, 4.6, 8, 1), hullMat);
-  hull.rotation.z = Math.PI / 2;
-  hull.rotation.y = Math.PI / 2;
-  hull.scale.set(1, 1, 0.55);
-  boat.add(hull);
-  // 甲板
-  const deck = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.15, 1.4), new THREE.MeshStandardMaterial({ color: 0xb5894d, roughness: 0.8 }));
-  deck.position.y = 0.45;
-  boat.add(deck);
-  // 桅杆
-  const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 5.2, 6), hullMat);
-  mast.position.y = 3;
-  boat.add(mast);
-  // 主帆
-  const sailShape = new THREE.Shape();
-  sailShape.moveTo(0, 0);
-  sailShape.lineTo(2.2, 0.4);
-  sailShape.lineTo(0, 4.4);
-  sailShape.lineTo(0, 0);
-  const sail = new THREE.Mesh(
-    new THREE.ShapeGeometry(sailShape),
-    new THREE.MeshStandardMaterial({ color: 0xf5f0e0, side: THREE.DoubleSide, roughness: 0.9 })
-  );
-  sail.position.set(0.1, 0.6, 0);
-  sail.rotation.y = Math.PI / 2;
-  boat.add(sail);
-  // 船旗
-  const flag = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.4), new THREE.MeshBasicMaterial({ color: 0xe63229, side: THREE.DoubleSide }));
-  flag.position.set(0.4, 5.5, 0);
-  boat.add(flag);
-  boat.userData.flag = flag;
-}
-scene.add(boat);
-
-/* ---------- 海鸥 ---------- */
-const gulls = [];
-{
-  const gullMat = new THREE.MeshBasicMaterial({ color: 0x333333, side: THREE.DoubleSide });
-  for (let i = 0; i < 5; i++) {
-    const g = new THREE.Group();
-    const w1 = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.28), gullMat);
-    const w2 = w1.clone();
-    w1.position.x = -0.5; w2.position.x = 0.5;
-    w1.rotation.z = 0.35; w2.rotation.z = -0.35;
-    g.add(w1, w2);
-    g.userData = { r: 30 + Math.random() * 40, h: 14 + Math.random() * 12, ph: Math.random() * 6.28, sp: 0.3 + Math.random() * 0.3 };
-    scene.add(g);
-    gulls.push(g);
-  }
-}
-
-/* ---------- 控制 ---------- */
-const keys = {};
-addEventListener('keydown', (e) => (keys[e.code] = true));
-addEventListener('keyup', (e) => (keys[e.code] = false));
-let speed = 0, heading = 0;
-// 拖拽环视
-let camYaw = 0, camPitch = 0.25, dragging = false, px = 0, py = 0;
-addEventListener('pointerdown', (e) => { if (!e.target.closest('.demo-hud,.demo-back')) { dragging = true; px = e.clientX; py = e.clientY; } });
-addEventListener('pointermove', (e) => {
-  if (!dragging) return;
-  camYaw -= (e.clientX - px) * 0.006;
-  camPitch = Math.min(1.2, Math.max(0.05, camPitch + (e.clientY - py) * 0.005));
-  px = e.clientX; py = e.clientY;
+document.body.append(controls);document.querySelector('.demo-hud p').textContent='W/S 控速 · A/D 转舵 · 拖拽环视 · 也可按住方向按钮';
+addEventListener('keydown',event=>{const code=codes[event.code]||event.code;if(['KeyW','KeyA','KeyS','KeyD'].includes(code)){event.preventDefault();keyboard.add(code);}});
+addEventListener('keyup',event=>keyboard.delete(codes[event.code]||event.code));
+const clearInput=()=>{keyboard.clear();touches.clear();drag=null;};addEventListener('blur',clearInput);document.addEventListener('visibilitychange',clearInput);
+canvas.style.touchAction='none';
+canvas.addEventListener('pointerdown',event=>{canvas.setPointerCapture(event.pointerId);drag={id:event.pointerId,x:event.clientX,y:event.clientY};});
+canvas.addEventListener('pointermove',event=>{if(drag?.id!==event.pointerId)return;camYaw-=(event.clientX-drag.x)*.006;camPitch=THREE.MathUtils.clamp(camPitch+(event.clientY-drag.y)*.005,.07,1.1);drag.x=event.clientX;drag.y=event.clientY;});
+for(const type of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(type,event=>{if(drag?.id===event.pointerId)drag=null;});
+const rendering=()=>{last=performance.now();renderer.setAnimationLoop(visible&&!document.hidden?frame:null);};
+document.addEventListener('visibilitychange',rendering);
+addEventListener('message',event=>{
+  if(event.origin!==location.origin||event.source!==parent)return;
+  if(event.data?.type==='ocean-weather'&&Number.isFinite(event.data.strength))targetWind=THREE.MathUtils.clamp(event.data.strength,0,1.6);
+  if(event.data?.type==='ocean-visibility'&&typeof event.data.active==='boolean'){visible=event.data.active;rendering();}
 });
-addEventListener('pointerup', () => (dragging = false));
-
-/* ---------- 主循环 ---------- */
-const stat = document.getElementById('stat');
-const clock = new THREE.Clock();
-function loop() {
-  requestAnimationFrame(loop);
-  const dt = Math.min(clock.getDelta(), 0.05);
-  const t = clock.getElapsedTime();
-  oceanUniforms.uTime.value = t;
-
-  // 驾船
-  if (keys.KeyW) speed = Math.min(8, speed + 3 * dt);
-  if (keys.KeyS) speed = Math.max(0, speed - 4 * dt);
-  if (keys.KeyA) heading += (0.5 + speed * 0.08) * dt;
-  if (keys.KeyD) heading -= (0.5 + speed * 0.08) * dt;
-  boat.position.x += Math.sin(heading) * speed * dt;
-  boat.position.z += Math.cos(heading) * speed * dt;
-  boat.rotation.y = heading;
-
-  // 波浪贴合：高度 + 俯仰/横滚
-  const bx = boat.position.x, bz = boat.position.z;
-  // 注意：海面平面旋转过，世界坐标 (x, z) 对应平面 (x, -z)
-  const h = waveH(bx, -bz, t);
-  boat.position.y = h * 0.9;
-  const n = waveNormal(bx, -bz, t);
-  boat.rotation.x = n.z * 0.8;
-  boat.rotation.z = -n.x * 0.8;
-  boat.userData.flag.rotation.y = Math.sin(t * 4) * 0.3;
-
-  // 海鸥绕船盘旋
-  for (const g of gulls) {
-    const u = g.userData;
-    u.ph += u.sp * dt;
-    g.position.set(bx + Math.cos(u.ph) * u.r, u.h + Math.sin(t + u.ph) * 1.5, bz + Math.sin(u.ph) * u.r);
-    g.rotation.y = -u.ph;
-    g.children[0].rotation.z = 0.35 + Math.sin(t * 6 + u.ph) * 0.3;
-    g.children[1].rotation.z = -0.35 - Math.sin(t * 6 + u.ph) * 0.3;
-  }
-
-  // 跟随相机
-  const camDist = 14;
-  const tx = bx - Math.sin(heading + camYaw) * camDist * Math.cos(camPitch);
-  const tz = bz - Math.cos(heading + camYaw) * camDist * Math.cos(camPitch);
-  const ty = boat.position.y + 3 + Math.sin(camPitch) * camDist;
-  camera.position.lerp(new THREE.Vector3(tx, ty, tz), 0.06);
-  camera.lookAt(bx, boat.position.y + 2.5, bz);
-
-  stat.textContent = `航速 ${(speed * 1.94).toFixed(1)} 节 · 航向 ${(((-heading * 180 / Math.PI) % 360 + 360) % 360).toFixed(0)}°`;
-
-  renderer.render(scene, camera);
+if(parent!==window)parent.postMessage({type:'ocean-ready'},location.origin);
+const stat=document.getElementById('stat'),desired=new THREE.Vector3(),look=new THREE.Vector3();
+let samples;
+function frame(now){
+  const dt=Math.max(0,Math.min((now-last)/1000,.05));last=now;time+=dt;wind=THREE.MathUtils.lerp(wind,targetWind,1-Math.exp(-dt*3));
+  const held=code=>keyboard.has(code)||[...touches.values()].includes(code);
+  if(held('KeyW'))speed=Math.min(8,speed+3*dt);if(held('KeyS'))speed=Math.max(0,speed-4*dt);
+  if(held('KeyA'))heading+=(.5+speed*.08)*dt;if(held('KeyD'))heading-=(.5+speed*.08)*dt;
+  const x=boat.position.x+Math.sin(heading)*speed*dt,z=boat.position.z+Math.cos(heading)*speed*dt;
+  samples=floatBoat(boat,x,z,heading,time,wind,12,0,1/3);vessel.update(time,wind);
+  sea.water.position.set(x,0,z);sea.update(time,wind,x,z);crew.update(time,neutral,pointer,false,dt,grounded,time);
+  gulls.forEach((gull,i)=>{const a=time*(.10+i*.008)+i*1.7,r=22+i*5;gull.position.set(x+Math.cos(a)*r,10+i*1.7+Math.sin(a*2),z+Math.sin(a)*r);gull.rotation.y=-a;gull.children.forEach((wing,j)=>wing.rotation.z=(j?1:-1)*(.16+Math.sin(time*4+i)*.35));});
+  const distance=17;desired.set(x-Math.sin(heading+camYaw)*distance*Math.cos(camPitch),boat.position.y+2.4+Math.sin(camPitch)*distance,z-Math.cos(heading+camYaw)*distance*Math.cos(camPitch));
+  if(time===dt)camera.position.copy(desired);else camera.position.lerp(desired,1-Math.exp(-dt*5));look.set(x,boat.position.y+2.8,z);camera.lookAt(look);sky.position.copy(camera.position);
+  stat.textContent=`航速 ${(speed*1.94).toFixed(1)} 节 · 航向 ${(((-heading*180/Math.PI)%360+360)%360).toFixed(0)}°`;
+  renderer.render(scene,camera);renderedFrames++;
 }
-loop();
-
-addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-});
+renderer.setAnimationLoop(frame);
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+window.oceanExperiment={diagnostics:()=>({speed,heading,wind,targetWind,time,visible,renderedFrames,position:boat.position.toArray(),samples,held:[...keyboard,...touches.values()],calls:renderer.info.render.calls,triangles:renderer.info.render.triangles}),boat,water:sea.water};
+}

@@ -71,6 +71,7 @@ body[data-skin="brick"]{--studio-gold:#c78870}body[data-skin="forest"]{--studio-
 .record-position{font-size:9px;color:#b4bea9;margin:10px 0 0;line-height:1.7}
 .finish-controls{max-width:400px;pointer-events:auto;margin-top:2px}
 .leisure-controls{pointer-events:auto;margin:0 0 10px;max-width:390px}.leisure-intro{font-size:12px;line-height:1.7;color:#d0ceb9;margin:0 0 14px}
+.ocean-controls{pointer-events:auto;max-width:360px;font-size:12px;line-height:1.7;color:#d0ceb9}.ocean-controls>div{display:flex;gap:9px}.ocean-controls button{min-height:44px;padding:9px 17px;font:inherit;cursor:pointer;background:#c7c19f08;color:#d7ceb7;border:1px solid #7d806a66}.ocean-controls button[aria-pressed=true]{border-color:#d6c89c;color:#f1e3bf}.ocean-status{font-size:11px;color:#adb59f}.world-hero:has(.ocean-controls) .world-caption{display:none}
 .leisure-options{display:flex;gap:9px;flex-wrap:wrap}.leisure-options button{min-height:44px;padding:9px 13px;background:#c7c19f08;border:1px solid #7d806a66;color:#d7ceb7;font:inherit;font-size:12px;cursor:pointer}.leisure-options [aria-pressed=true]{border-color:#d6c89c;color:#f1e3bf}
 .leisure-status{font-size:11px;line-height:1.7;color:#adb59f;min-height:20px;margin:12px 0 0}[data-chapter="about"] .world-caption{display:none}
 [data-chapter="about"] .explore-button{margin-top:14px}
@@ -229,6 +230,7 @@ body[data-skin="brick"]{--studio-gold:#c78870}body[data-skin="forest"]{--studio-
   [data-chapter="projects"] .world-hero{min-height:900px}[data-chapter="projects"] .world-caption{display:none}
   [data-chapter="radio"] .world-hero{min-height:900px}[data-chapter="radio"] .world-caption{display:none}
   [data-chapter="about"] .world-hero{min-height:900px}
+  .world-hero:has(.ocean-controls){min-height:900px}
   [data-chapter="home"] .world-hero:before{background:linear-gradient(180deg,#10151399,#101513e6 18%,#101513db 44%,#10151322 63%,transparent 72%)}
   .hero-copy{top:135px;left:7vw;right:7vw;max-width:none}.hero-title{font-size:clamp(40px,10vw,62px);line-height:1.02}
   .eyebrow{font-size:8px;margin-bottom:22px}.hero-subtitle{margin-top:17px;font-size:12px}.hero-rule{margin-top:19px}.hero-note{font-size:9px}.hero-copy .explore-button{margin-top:15px;font-size:10px}
