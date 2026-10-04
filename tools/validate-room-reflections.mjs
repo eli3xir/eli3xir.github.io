@@ -5,7 +5,11 @@ const manifest=JSON.parse(fs.readFileSync('assets/room/reflections/manifest.json
 assert.equal(manifest.version,1);assert.equal(manifest.format,'rgbe8-planar-cubeuv-gzip');assert.equal(manifest.three,'185');
 assert.equal(packed.length,manifest.bytes);assert.equal(sha(packed),manifest.sha256);assert.equal(bytes.length,manifest.decodedBytes);assert.equal(sha(bytes),manifest.decodedSha256);
 assert.deepEqual(manifest.palettes,Object.fromEntries(Object.entries(SKINS).map(([id,skin])=>[id,skin.wall])));
-for(const [path,expected] of Object.entries(manifest.inputs))assert.equal(sha(fs.readFileSync(path)),expected,path);
+for(const [path,expected] of Object.entries(manifest.inputs)){
+ const source=fs.readFileSync(path);
+ if(/\.(?:js|mjs|json)$/.test(path))assert.equal(source.includes(13),false,`${path}: reflection inputs must use repository LF line endings before building`);
+ assert.equal(sha(source),expected,path);
+}
 assert.deepEqual(manifest.entries.map(entry=>entry.id),Object.keys(SKINS));
 manifest.entries.forEach((entry,index)=>{assert.equal(entry.width,384);assert.equal(entry.height,512);assert.equal(entry.pixels,196608);assert.equal(entry.pixelOffset,index*entry.pixels);});
 assert.equal(pixels,196608*5);assert.ok(manifest.error.maxRelativeToPixelPeak<.004);

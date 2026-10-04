@@ -95,7 +95,7 @@
     "assets/room/lightmaps/manifest.json": "f022848ff9a5a0bfcd5a634bd752f8a610cf4ba81e956f7374d00f053870fafe",
     "assets/room/lightmaps.bin": "b7064604e834e2909ba6c6c149d59fbb87c1b01f00b23031fe44f889bbcf615f",
     "assets/profile/github-avatar.png": "176c0b579f13286542dc77f8b7a2948e91e520175de3c661c240570ff8e1a3a0",
-    "assets/profile/manifest.json": "7292ecccdc092ce323603619b4a4fab50bc568898f4867c5b5ec08ae3d146496",
+    "assets/profile/manifest.json": "2d056fc28fc24391f0c7b6706030bd2d2603be913c4f1b1bb1b9ae6ad90a0ac4",
     "js/world/room-lighting.js": "03397803782232574f72a2ab44cc114ad3a6391ff1f9f1a00cf153e6eb123a2f",
     "js/world/room-artwork.js": "0b22c7195d4bb8263d07659a490e74748cd8714df2e17187a303c5dbdb963dd5",
     "tools/build-room-reflections.mjs": "b3d10d004123760c759e4504c4b3086f2b0d46820c209833d9b0431956be782b",
