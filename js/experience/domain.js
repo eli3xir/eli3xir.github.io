@@ -36,7 +36,7 @@ export function routeFor(pathname, doc = null) {
     experiment: chapter.id === 'lab' && detail, contentTitle: title || chapter.label };
   if(route.experiment){
     route.experimentId=pathname.split('/').pop().replace('.html','');
-    const titles={moon:'A softer\nkind of landing.',ocean:'Some ideas\nset sail.',fluid:'Go with\nthe flow.',trails:'Time leaves\na trace.',galaxy:'Same galaxy.\nAnother light.',glass:'Look closer.\nStill alive.',breakout:'Break things.\nBeautifully.',partext:'Words,\nin motion.',bullet:'Almost hit.\nStill here.'};
+    const titles={moon:'A softer\nkind of landing.',ocean:'Some ideas\nset sail.',fluid:'Go with\nthe flow.',trails:'Time leaves\na trace.',galaxy:'Same galaxy.\nAnother light.',glass:'Look closer.\nStill alive.',breakout:'Make room.\nKeep it moving.',partext:'Words,\nin motion.',bullet:'Almost hit.\nStill here.'};
     route.title=titles[route.experimentId]||route.title;
     route.subtitle=title||'动动手，让这个念头活起来。';
     route.note='实验 '+route.experimentId.toUpperCase()+' · 往下开始探索';

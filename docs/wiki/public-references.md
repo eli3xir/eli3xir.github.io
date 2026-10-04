@@ -87,3 +87,8 @@ Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐�
 2026-10-04 阅读并实际查看 kube 的 [Liquid Glass in the Browser: Refraction with CSS and SVG](https://kube.io/blog/liquid-glass-css-svg/) 透镜演示，参考曲面法线、折射方向、位移图边界和实时 backdrop-filter 的组织方式。本站自行生成光学场与纸面，不采用其演示图片。文章的归一化文字与标准的位移幅度表述不完全一致，实现以 [W3C Filter Effects 的 feDisplacementMap 定义](https://www.w3.org/TR/filter-effects-1/#feDisplacementMapElement) 为准：反向读取位置由 `scale × (channel − 0.5)` 给出；同时阅读 [MDN 元素说明](https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/feDisplacementMap) 核对公式与默认线性色彩空间，本站显式使用 sRGB 编码映射。
 
 同轮阅读 Chrome 官方 [HTML-in-canvas origin trial changes](https://developer.chrome.com/blog/html-in-canvas-ot-changes) 的 2026-09-29 更新，确认它仍处试用且存在版本间 API 变化。本站没有采用试用 API、启用实验标志或将 CanvasTexture 说成实际 DOM 渲染；下方实验直接使用原生 HTML 按钮和 SVG backdrop 位移。三维首屏仅折射自己的纸面纹理，两处共享内容状态。当前真实像素检查针对 Chromium，其他浏览器使用清晰模式；不由 CSS.supports 的返回值推断所有浏览器都能正确折射。
+2026-10-04 阅读 Glenn Fiedler 的 [Fix Your Timestep!](https://gafferongames.com/post/fix_your_timestep/)，采用固定步进、有限累计与负载保护的思路；超过预算时允许模拟放慢，避免无限追赶。下载并阅读 Erin Catto 的 [Continuous Collision（GDC 2013）](https://box2d.org/files/ErinCatto_ContinuousCollision_GDC2013.pdf)，实际查看第九页的接触时刻图，参考最早碰撞与剩余时间推进来避免球穿过薄砖。本站自行编写二维圆与矩形面的连续检测，并用圆角二次求交排除扩张方框的假碰撞；没有使用 Box2D 或声称实现整份讲义。
+
+同轮阅读 [Three.js InstancedMesh 文档](https://threejs.org/docs/pages/InstancedMesh.html)，核对矩阵/颜色更新、边界重算和实例释放接口，落地于本站固定 r185 依赖。四组实例在重复游玩中复用缓冲，离开时实例、几何与材质分别释放；官方文档的通用性能动机不能替代本站实测帧率。
+
+玩法沿用原实验的五行九列、三次机会和行分值，并对照 Atari 官方 [Breakout 家用版手册](https://atari.com/pages/breakout) 中移动挡板、发球与漏接的说明；该页为 1978 年家用版本，未混称为 1976 年街机规则。另阅读并实际查看 The Strong 博物馆的 [Breakout 街机藏品](https://artsandculture.google.com/asset/arcade-game-breakout/lAGqT3nqUqeBig?hl=en)，借鉴独立边框、控制位置和分层色带带来的可读性。本站为原创风格化游戏台，不复制街机外观、五球规则、参考照片或声音资产。

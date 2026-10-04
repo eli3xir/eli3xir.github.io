@@ -35,6 +35,10 @@ try{
           const samples=renderCue('reveal',rate,0),buffer=context.createBuffer(1,samples.length,rate);buffer.getChannelData(0).set(samples);
           const source=context.createBufferSource();source.buffer=buffer;source.connect(master);source.start(at);
         }
+        for(const [i,kind]of ['brick0','brick1','brick2','brick3','brick4','paddle','miss'].entries()){
+          const samples=renderCue(kind,rate,0),buffer=context.createBuffer(1,samples.length,rate);buffer.getChannelData(0).set(samples);
+          const source=context.createBufferSource();source.buffer=buffer;source.connect(master);source.start(4+i*.065);
+        }
         const rendered=await context.startRendering(),channels=[rendered.getChannelData(0),rendered.getChannelData(1)];
         let peak=0,power=0,clipped=0,finite=true;
         for(const channel of channels)for(const value of channel){finite&&=Number.isFinite(value);peak=Math.max(peak,Math.abs(value));power+=value*value;if(Math.abs(value)>=.999)clipped++;}

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { mesh,brass,glass,ring } from './materials.js';
+import { mesh,ring } from './materials.js';
 import { randomSequence } from '../audio/synth.js';
 import {createOcean} from './ocean.js';
 import {createWordMachine} from './word-machine.js';
@@ -8,6 +8,7 @@ import {createFluid} from './fluid.js';
 import {createTrails} from './trails.js';
 import {createGalaxy} from './galaxy.js';
 import {createGlass} from './glass.js';
+import {createBreakout} from './breakout.js';
 
 function starField(galaxy=false,bullet=false){
   const root=new THREE.Group();const count=galaxy?7000:bullet?1200:3200;
@@ -29,18 +30,6 @@ function starField(galaxy=false,bullet=false){
   return{root,actorPosition:[1.25,.8,.1],update(t,beat){field.rotation[galaxy?'y':'z']=t*(bullet?.12:.028);core.scale.setScalar(1+beat.pulse*.2);}};
 }
 
-function breakout(){
-  const root=new THREE.Group();root.rotation.x=.1;
-  const tiles=[];const palette=[0xdab878,0x99b7a0,0xb68e9b,0x8ea6bb];
-  for(let row=0;row<4;row++)for(let col=0;col<6;col++){
-    const tile=mesh(new THREE.BoxGeometry(.37,.16,.16),new THREE.MeshStandardMaterial({color:palette[row],metalness:.55,roughness:.3}),root,[(col-2.5)*.44,.75-row*.23,0]);
-    tiles.push({tile,x:tile.position.x,y:tile.position.y,index:row*6+col});
-  }
-  const paddle=mesh(new THREE.BoxGeometry(.7,.08,.18),brass(),root,[0,-1,0]);
-  const ball=mesh(new THREE.SphereGeometry(.07,24,16),glass(0xded6a7),root);
-  return{root,actorPosition:[1.3,.75,.1],update(t,beat){paddle.position.x=Math.sin(t*.8)*.8;ball.position.set(Math.sin(t*.8)*.8,-.5+Math.abs(Math.sin(t*1.3))*.9,.2);tiles.forEach(({tile,x,y,index})=>{const p=Math.max(0,Math.sin(t*.65-index*.07)-.86)*5;tile.position.set(x+p*(x+.1),y+p*.8,p*.3);tile.rotation.z=p*x;});}};
-}
-
 export function createExperiment(id,renderer){
-  return({moon:createMoon,ocean:createOcean,fluid:()=>createFluid(renderer),trails:createTrails,galaxy:createGalaxy,glass:createGlass,breakout,partext:createWordMachine,bullet:()=>starField(false,true)}[id]||(()=>createFluid(renderer)))();
+  return({moon:createMoon,ocean:createOcean,fluid:()=>createFluid(renderer),trails:createTrails,galaxy:createGalaxy,glass:createGlass,breakout:createBreakout,partext:createWordMachine,bullet:()=>starField(false,true)}[id]||(()=>createFluid(renderer)))();
 }

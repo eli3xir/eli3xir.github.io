@@ -18,6 +18,7 @@ import {bindFluid} from './fluid.js';
 import {bindTrails} from './trails.js';
 import {bindGalaxy} from './galaxy.js';
 import {bindGlass} from './glass.js';
+import {bindBreakout} from './breakout.js';
 
 const original=document.cloneNode(true);
 const score=new Score();
@@ -100,6 +101,7 @@ async function mount(doc,url){
   if(route.experimentId==='trails')bindTrails(section,main,{world,score,signal:contentEvents.signal});
   if(route.experimentId==='galaxy')bindGalaxy(section,main,{world,score,signal:contentEvents.signal});
   if(route.experimentId==='glass')bindGlass(section,main,{world,score,signal:contentEvents.signal});
+  if(route.experimentId==='breakout')bindBreakout(section,main,{world,score,signal:contentEvents.signal});
   if(route.id==='lab'&&!route.experiment&&world){
     const trigger=document.createElement('button');trigger.type='button';trigger.className='explore-button reaction-trigger';
     trigger.textContent='试一次反应 ↗';trigger.setAttribute('aria-label','触发药瓶反应');
@@ -139,7 +141,7 @@ addEventListener('keydown',event=>{if(event.key==='Escape'){unfocus();document.q
 addEventListener('message',event=>{
   const frame=document.querySelector('.experiment-frame');if(event.origin!==location.origin||event.source!==frame?.contentWindow)return;
   if(event.data?.type==='lab-navigate'&&typeof event.data.path==='string'&&event.data.path.startsWith('/'))router.navigate(event.data.path);
-  if(event.data?.type==='lab-interact')score.cue('hover');if(event.data?.type==='lab-reveal'){score.cue('reveal');world?.actor.react();}
+  if(event.data?.type==='lab-interact'&&route?.experimentId!=='breakout')score.cue('hover');if(event.data?.type==='lab-reveal'){score.cue('reveal');world?.actor.react();}
 });
 await mount(original,new URL(location.href));
 window.studio={world,score,router,get route(){return route;},diagnostics:()=>world?.diagnostics()||{webgl:false}};
