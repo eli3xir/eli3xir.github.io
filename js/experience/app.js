@@ -72,10 +72,10 @@ try{world=new World(stage,score,{status:sceneStatus,onHover:objectHover,onPick:o
 }});}
 catch(error){console.error(error);document.body.classList.add('no-webgl');sceneStatus(-1,'当前设备暂时无法显示 3D，文字内容和导航仍可使用。',error);}
 
-function stylesheet(href,afterExperience=false){
+function stylesheet(href){
   if([...document.querySelectorAll('link[rel="stylesheet"]')].some(link=>new URL(link.href).pathname===href))return;
   const link=document.createElement('link');link.rel='stylesheet';link.href=href;
-  if(afterExperience)document.head.append(link);else document.head.insertBefore(link,document.querySelector('link[data-experience-style]'));
+  document.head.insertBefore(link,document.querySelector('link[data-experience-style]'));
 }
 async function mount(doc,url){
   contentEvents?.abort();contentEvents=new AbortController();
@@ -89,7 +89,6 @@ async function mount(doc,url){
   if(!description){description=document.createElement('meta');description.name='description';document.head.append(description);}
   description.content=doc.querySelector('meta[name="description"]')?.content||route.subtitle;
   if(route.id==='blog')stylesheet('/css/blog.css');else if(route.id!=='home')stylesheet('/css/pages.css');
-  if(route.article)stylesheet('/css/reading.css',true);
   const section=hero(route);const main=pageContent(doc,route);view.replaceChildren(section);if(main)view.append(main);
   if(route.id==='home'){section.querySelector('.chapter-dock').id='home-navigation';section.setAttribute('role','main');skip.href='#home-navigation';}
   else{skip.href='#content';const footer=document.createElement('footer');footer.className='studio-footer';footer.innerHTML='<span>eli3xir / A CABINET OF CURIOSITIES</span><span>© 2026 · KEEP WONDERING.</span>';view.append(footer);}

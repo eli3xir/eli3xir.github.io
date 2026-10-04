@@ -98,11 +98,13 @@ try{
   const context=await browser.newContext({viewport,reducedMotion:'reduce'}),page=await context.newPage(),log=observe(page);
   let release;const gate=new Promise(resolve=>{release=resolve;});
   await page.route('**/assets/blog/transport/*.png',async route=>{await gate;await route.continue();});
+  let delayedStyle=false;
+  await page.route('**/css/experience.css',async route=>{delayedStyle=true;await new Promise(resolve=>setTimeout(resolve,1200));await route.continue();});
   try{
    await open(page,'/blog/41604.html#section-12');
    await page.waitForFunction(()=>document.activeElement.id==='section-12');
    const positions=()=>page.locator('.post-content h1,.post-content h2,.post-content h3').evaluateAll(nodes=>nodes.map(node=>node.getBoundingClientRect().top+scrollY));
-   const before=await positions(),reserved=await page.locator('.post-content img').evaluateAll(images=>images.map(img=>({height:img.getBoundingClientRect().height,width:img.width,naturalWidth:img.naturalWidth})));
+   assert.equal(delayedStyle,true);const before=await positions(),reserved=await page.locator('.post-content img').evaluateAll(images=>images.map(img=>({height:img.getBoundingClientRect().height,width:img.width,naturalWidth:img.naturalWidth})));
    assert.ok(reserved.every(img=>img.height>0&&img.naturalWidth===0),JSON.stringify(reserved));
    await page.locator('.post-content img').evaluateAll(images=>images.forEach(img=>{img.loading='eager';}));release();
    await page.locator('.post-content img').evaluateAll(images=>Promise.all(images.map(img=>img.decode())));await page.waitForTimeout(150);
