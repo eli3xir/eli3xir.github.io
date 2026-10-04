@@ -4,6 +4,10 @@ import {startServer,launchBrowser,ready,settle,observe,output} from './browser-s
 const server=process.env.BASE_URL?{base:process.env.BASE_URL,close:async()=>{}}:await startServer(),browser=await launchBrowser(),report={base:server.base,cases:[]};
 const state=page=>page.evaluate(()=>({audio:window.studio.score.time,...window.studio.world.model.diagnostics()}));
 const wind=async(page,value)=>{await page.locator(`[data-wind="${value}"]`).click();await page.waitForFunction(value=>Math.abs(window.studio.world.model.diagnostics().strength-value)<1e-7,value);};
+const sailingFrame=async page=>{
+ const handle=await page.locator('.experiment-frame').elementHandle(),frame=await handle.contentFrame();assert.ok(frame);
+ await frame.waitForURL(url=>url.searchParams.has('embedded'),{waitUntil:'domcontentloaded'});return frame;
+};
 try{
  for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
   const context=await browser.newContext({viewport,hasTouch:viewport.width<700}),page=await context.newPage(),log=observe(page);
@@ -35,8 +39,8 @@ try{
   await page.evaluate(()=>window.studio.score.context.suspend());await wind(page,1.6);assert.equal(await page.evaluate(()=>window.studio.score.audible),false);
   await page.emulateMedia({reducedMotion:'reduce'});await wind(page,0);const reduced=await state(page);await page.waitForTimeout(300);assert.deepEqual((await state(page)).position,reduced.position);
   await page.emulateMedia({reducedMotion:'no-preference'});await wind(page,1.6);
-  await page.locator('.hero-copy .explore-button').click();await page.waitForTimeout(700);
-  const frame=page.frames().find(frame=>frame.url().includes('embedded=1'));assert.ok(frame);await frame.waitForFunction(()=>window.oceanExperiment);
+  await page.locator('.hero-copy .explore-button').click();
+  const frame=await sailingFrame(page);await frame.waitForFunction(()=>window.oceanExperiment);
   await frame.waitForFunction(()=>window.oceanExperiment.diagnostics().targetWind===1.6);const boatBefore=await frame.evaluate(()=>window.oceanExperiment.diagnostics());
   await frame.locator('[data-helm="KeyW"]').focus();await page.keyboard.down('Enter');await page.waitForTimeout(650);await page.keyboard.up('Enter');
   const accelerated=await frame.evaluate(()=>window.oceanExperiment.diagnostics());assert.ok(accelerated.speed>1);assert.notDeepEqual(accelerated.position,boatBefore.position);
@@ -80,14 +84,14 @@ try{
  {
   const context=await browser.newContext({reducedMotion:'reduce'}),page=await context.newPage(),log=observe(page);
   await page.goto(server.base+'/lab/ocean.html');await ready(page);await wind(page,1.6);const before=await state(page);await page.waitForTimeout(300);assert.deepEqual((await state(page)).position,before.position);
-  await page.locator('.hero-copy .explore-button').click();const frame=page.frames().find(f=>f.url().includes('embedded=1'));assert.ok(frame);await frame.locator('.experiment-gate button').waitFor();assert.equal(await frame.evaluate(()=>Boolean(window.oceanExperiment)),false);
+  await page.locator('.hero-copy .explore-button').click();const frame=await sailingFrame(page);await frame.locator('.experiment-gate button').waitFor();assert.equal(await frame.evaluate(()=>Boolean(window.oceanExperiment)),false);
   await frame.locator('.experiment-gate button').click();await frame.waitForFunction(()=>window.oceanExperiment?.diagnostics().targetWind===1.6&&window.oceanExperiment.diagnostics().renderedFrames>2);assert.equal(await frame.locator('[data-helm]').count(),4);
   assert.deepEqual(log.errors,[]);assert.deepEqual(log.failed,[]);report.cases.push({name:'reduced motion keeps explicit sailing opt-in and selected weather'});console.log('PASS ocean reduced gate');await context.close();
  }
  {
   const context=await browser.newContext(),page=await context.newPage(),log=observe(page);await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return /webgl/i.test(type)?null:original.call(this,type,...args);};});
   await page.goto(server.base+'/lab/ocean.html');await ready(page);assert.equal(await page.locator('[data-wind]').count(),0);await page.locator('.hero-copy .explore-button').click();
-  const frame=page.frames().find(f=>f.url().includes('embedded=1'));assert.ok(frame);await frame.locator('.ocean-unavailable').waitFor();assert.equal(await page.locator('.experiment-page>a[href="/lab/"]').count(),1);assert.deepEqual(log.errors,[]);
+  const frame=await sailingFrame(page);await frame.locator('.ocean-unavailable').waitFor();assert.equal(await page.locator('.experiment-page>a[href="/lab/"]').count(),1);assert.deepEqual(log.errors,[]);
   report.cases.push({name:'no WebGL keeps explanation and return route'});console.log('PASS ocean no WebGL');await context.close();
  }
 }finally{fs.mkdirSync(output,{recursive:true});fs.writeFileSync(`${output}/ocean-audit.json`,JSON.stringify(report,null,2));await browser.close();await server.close();}
