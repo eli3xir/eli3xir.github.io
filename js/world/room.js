@@ -9,6 +9,7 @@ import { downloadRoom } from './room-download.js';
 import { createRoomLightmaps } from './room-lightmaps.js';
 import {loadRoomReflections,bindRoomReflection} from './room-reflections.js';
 import {roomFocusBounds} from './room-framing.js';
+import {loadRoomProfile,installRoomArtwork,roomPaletteX} from './room-artwork.js';
 
 const ZONES = {
   lab: [4.7,7.1,.25,1.6,-1.2,.15], blog: [3,4.7,.25,1.4,-1.2,.15],
@@ -20,7 +21,7 @@ export const ROOM_VIEWS = {
   radio: { camera:[-1.55,.4,-2.4], target:[-1.55,.05,-.45] },
   about: { camera:[-3.38,.72,-2.4], target:[-3.38,.52,-.05] },
   projects:{camera:[-2.75,.95,-2.65],target:[-2.75,.92,-.05]},
-  skin: { camera:[-2.8,.15,-2.2], target:[-2.8,-.05,-.06] },
+  skin: { camera:[-2.8,.15,-2.2], target:[-2.8,-.05,-.06],actor:[-2.42,.65,-.25] },
 };
 let cached = null;
 
@@ -42,6 +43,7 @@ export function createRoom(status,renderer) {
   const report=(progress,message,error)=>{model.progress=progress;model.message=message;model.onStatus(progress,message,error);};
   model.applySkin = id => {
     model.reflections?.set(id);
+    if(model.artwork?.cursor)model.artwork.cursor.position.x=roomPaletteX(id);
     room.traverse(object => {
       if (!object.isMesh) return;
       for (const mat of [object.material].flat()) {
@@ -65,6 +67,7 @@ export function createRoom(status,renderer) {
     model.failed=false;
     report(.05,'正在点亮工作室');
     const reflections=renderer?loadRoomReflections(renderer).catch(error=>{model.reflectionError=error.message;return null;}):Promise.resolve(null);
+    const profile=loadRoomProfile();
     const loader = new GLTFLoader();
     const bytes=await downloadRoom(progress=>report(.05+progress*.55,progress?`正在搬入工作室 · ${Math.round(progress*100)}%`:'正在搬入工作室'));
     const gltf=await loader.parseAsync(bytes,'/assets/room/');
@@ -103,8 +106,10 @@ export function createRoom(status,renderer) {
       }
     });
     const results=await Promise.allSettled(pending);
+    model.artwork=installRoomArtwork(gltf.scene,await profile,renderer);
     model.reflections=await reflections;
     if(model.reflections)materials.forEach(material=>bindRoomReflection(material,model.reflections.texture));
+    if(model.reflections&&model.artwork.cursor)bindRoomReflection(model.artwork.cursor.material,model.reflections.texture);
     // Keep the turntable independent; merge the hundreds of tiny static lamp details.
     gltf.scene.updateWorldMatrix(true,true);const center=new THREE.Vector3(2.39,1.155,-.45);
     const parts=[];const box=new THREE.Box3();const point=new THREE.Vector3();

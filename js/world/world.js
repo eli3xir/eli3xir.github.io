@@ -16,7 +16,7 @@ import { composeHero } from './composition.js';
 import { nextBeatDelay } from '../experience/domain.js';
 import {visualQuality,qualityRatio} from '../experience/visual-quality.js';
 import { BPM } from '../audio/composition.js';
-import {frameRoomCorner} from './room-framing.js';
+import {frameRoomCorner,roomFocusActor} from './room-framing.js';
 
 export class World {
   constructor(container,score,{status,onHover,onPick,onPortal}={}) {
@@ -280,7 +280,7 @@ export class World {
       this.model.afterTransform?.();
     }
     this.actor.update(t,rhythm,this.pointer,this.route?.id==='about',dt,this.model?.actorMotion,reduced?0:now/1000);
-    const actorPos=this.route?.id==='home'&&this.focused?ROOM_VIEWS[this.focused].target.map((value,i)=>value+(i===1?.4:i===2?-.18:0)):((this.compact&&this.model?.actorMobilePosition)||this.model?.actorPosition||[0,0,0]);
+    const actorPos=this.route?.id==='home'&&this.focused?roomFocusActor(ROOM_VIEWS[this.focused]):((this.compact&&this.model?.actorMobilePosition)||this.model?.actorPosition||[0,0,0]);
     const actorScale=this.layoutScale||1;
     const journey=this.transition*this.transition*(3-2*this.transition);
     const idleScale=(this.model?.actorScale||1)*(this.route?.id==='home'&&this.focused?.5:1);

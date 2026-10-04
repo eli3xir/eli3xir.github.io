@@ -9,6 +9,8 @@
     "validate:reflections": "node tools/validate-room-reflections.mjs",
     "test:reflections": "node tools/room-reflections-audit.mjs",
     "test:room-explorer": "node tools/room-explorer-audit.mjs",
+    "test:room-artwork": "node tools/room-artwork-audit.mjs",
+    "validate:room-artwork": "node tools/validate-room-artwork.mjs",
     "validate": "node tools/validate.mjs",
     "test": "node --test tools/tests/*.test.mjs",
     "test:browser": "node tools/browser-audit.mjs",

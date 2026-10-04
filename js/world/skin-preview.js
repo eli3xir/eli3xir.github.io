@@ -5,11 +5,12 @@ import {ROOM_FINISH,roomSkinColor} from './room-palette.js';
 import {brass,ink,mesh} from './materials.js';
 import {casing} from './hardware.js';
 import {bindRoomReflection} from './room-reflections.js';
+import {roomPaletteX} from './room-artwork.js';
 
 export function createSkinPreview(renderer){
   const root=new THREE.Group(),display=new THREE.Group();root.add(display);display.rotation.x=.2;
   const keys=Object.keys(SKINS),tiles=[],materials=new Map(),surfaces=[];
-  let selected='default',flight=null,preview=null,disposed=false,generation=0,reflections=null;
+  let selected='default',flight=null,preview=null,disposed=false,generation=0,reflections=null,artworkCursor=null;
   const reflectionRotation=new THREE.Matrix3(),rotationMatrix=new THREE.Matrix4();
   const base=mesh(casing(3.18,.18,2.42,.07),ink(),display,[0,-.95,.08]);base.name='finish-table';
   mesh(casing(3.1,.025,2.34,.055),brass(),display,[0,-.845,.08]);
@@ -22,7 +23,7 @@ export function createSkinPreview(renderer){
   });
   const marker=mesh(new THREE.SphereGeometry(.016,16,10),new THREE.MeshBasicMaterial({color:0xe4d59c}),display,[-1.12,-.81,1.28]);
   function setColors(){surfaces.forEach(s=>{roomSkinColor(s.material,selected,s.to);s.material.color.copy(s.to);s.from.copy(s.to);});}
-  function setTiles(){tiles.forEach((tile,i)=>{tile.position.y=-.69+(keys[i]===selected?.075:0);});marker.position.x=(keys.indexOf(selected)-2)*.56;}
+  function setTiles(){tiles.forEach((tile,i)=>{tile.position.y=-.69+(keys[i]===selected?.075:0);});marker.position.x=(keys.indexOf(selected)-2)*.56;if(artworkCursor)artworkCursor.position.x=roomPaletteX(selected);}
   const model={root,bakedLighting:true,actorPosition:[1.24,.91,.1],actorScale:.85,previewStatus:'loading',selected,
     pick(ray){root.updateMatrixWorld(true);return ray.intersectObjects(tiles,false)[0]?.object.userData.skin??null;},
     applySkin(id,options){
@@ -30,7 +31,7 @@ export function createSkinPreview(renderer){
       if(!options||options.reduced){flight=null;setColors();setTiles();reflections?.set(id);return;}
       reflections?.begin(id);
       surfaces.forEach(s=>{s.from.copy(s.material.color);roomSkinColor(s.material,id,s.to);});
-      flight={start:options.now+options.delay,duration:options.duration,from:tiles.map(tile=>tile.position.y),marker:marker.position.x};
+      flight={start:options.now+options.delay,duration:options.duration,from:tiles.map(tile=>tile.position.y),marker:marker.position.x,artwork:artworkCursor?.position.x};
     },
     update(t,beat,scroll,now=0,reduced=false){
       if(!flight||disposed)return;
@@ -39,6 +40,7 @@ export function createSkinPreview(renderer){
       reflections?.blend(ease);
       tiles.forEach((tile,i)=>{tile.position.y=THREE.MathUtils.lerp(flight.from[i],-.69+(keys[i]===selected?.075:0),ease);});
       marker.position.x=THREE.MathUtils.lerp(flight.marker,(keys.indexOf(selected)-2)*.56,ease);
+      if(artworkCursor)artworkCursor.position.x=THREE.MathUtils.lerp(flight.artwork,roomPaletteX(selected),ease);
       if(p===1)flight=null;
     },
     afterTransform(){if(preview&&reflections){preview.updateWorldMatrix(true,false);rotationMatrix.extractRotation(preview.matrixWorld);reflectionRotation.setFromMatrix4(rotationMatrix).invert();}},
@@ -67,6 +69,8 @@ export function createSkinPreview(renderer){
           };
           object.material=Array.isArray(object.material)?object.material.map(copy):copy(object.material);
         });
+        artworkCursor=asset.getObjectByName('room-palette-pointer');model.artworkCursor=artworkCursor;
+        if(flight)flight.artwork=roomPaletteX(selected);
         const bounds=new THREE.Box3().setFromObject(asset),center=bounds.getCenter(new THREE.Vector3()),size=bounds.getSize(new THREE.Vector3());
         asset.position.sub(center);preview=new THREE.Group();preview.name='same-room-preview';preview.add(asset);
         preview.scale.setScalar(.345);preview.rotation.y=Math.PI+.10;preview.position.y=-.795+size.y*.345/2;

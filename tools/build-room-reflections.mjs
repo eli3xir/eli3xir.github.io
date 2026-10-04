@@ -41,7 +41,7 @@ try{
  const errors=log.drain();if(errors.errors.length||errors.failed.length)throw new Error(JSON.stringify(errors));
  await page.evaluate(()=>window.reflectionBake.pmrem.dispose());
  const {packed:raw,error}=encodeReflections(chunks),compressed=gzipSync(raw,{level:9});
- const inputs=['assets/room/room.glb','assets/room/lightmaps/manifest.json','assets/room/lightmaps.bin','js/world/room-lighting.js','tools/build-room-reflections.mjs','tools/reflection-encoding.mjs'];
+ const inputs=['assets/room/room.glb','assets/room/lightmaps/manifest.json','assets/room/lightmaps.bin','assets/profile/github-avatar.png','assets/profile/manifest.json','js/world/room-lighting.js','js/world/room-artwork.js','tools/build-room-reflections.mjs','tools/reflection-encoding.mjs'];
  const manifest={version:1,format:'rgbe8-planar-cubeuv-gzip',...metadata,file:'probes.bin',bytes:compressed.length,decodedBytes:raw.length,sha256:sha(compressed),decodedSha256:sha(raw),entries,error,
   inputs:Object.fromEntries(inputs.map(file=>[file,sha(fs.readFileSync(file))])),notes:'One static room probe per palette; excludes the character and particles. Baked diffuse is not added twice. No parallax correction or live-object reflection.'};
  fs.writeFileSync(`${output}/probes.bin`,compressed);fs.writeFileSync(`${output}/manifest.json`,JSON.stringify(manifest,null,2)+'\n');console.log(JSON.stringify({output,bytes:compressed.length,decodedBytes:raw.length,entries:entries.length}));

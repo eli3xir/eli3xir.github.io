@@ -121,3 +121,9 @@ Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐�
 MTCNN 级联与图像金字塔的两张时间戳图片尚未确认。已检索到 OpenCV 学堂的级联说明及 [码农的后花园文章](https://www.cnblogs.com/xiamuzi/p/13637756.html)，但相似段落不足以确认原图或裁切，未将候选图发布为恢复结果。此次恢复只用于既有技术文章，不用于网站品牌、3D 美术或原创署名。
 
 2026-10-04 阅读 MDN 的 [dialog 元素](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog) 与 [showModal](https://developer.mozilla.org/en-US/docs/Web/API/HTMLDialogElement/showModal)，核对顶层模态框、背景不可交互、初始焦点及可见关闭入口；没有依赖较新的 closedby 或声明式调用属性。继续阅读 [WAI-ARIA APG 模态框模式](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/)，按其键盘行为实现双向焦点循环、Escape 和返回入口。实际 Chromium 检查中第五次 Tab 曾落到 BODY，因此补充了显式首尾循环；这不等于已完成全部浏览器或辅助技术验证。
+
+## 房间里的个人资料与配色
+
+2026-10-05 核对原关于页已链接的 [eli3xir GitHub 资料](https://github.com/eli3xir)，下载该页使用的[账户头像](https://avatars.githubusercontent.com/u/307186276?s=256&v=4)并实际查看。文件为 420×420 的几何图案，保留 1,569 字节原文件；来源、日期、尺寸与 SHA-256 记录在 [清单](../../assets/profile/manifest.json)。没有从头像推断个人身份或新增经历。画框色样直接取本站既有五种配色，文字、纸纹与指针由本仓库绘制。
+
+同轮阅读 Three.js 官方 [Texture](https://threejs.org/docs/pages/Texture.html) 和 [CanvasTexture](https://threejs.org/docs/pages/CanvasTexture.html)，核对 channel、颜色空间和纹理更新；结合实际 GLB 的属性与顶点，选择新增 uv2 而保留原烘焙坐标。最初尝试让头像旋转对齐纸卡，但实际查看原 photo_card 光照图后确认阴影已烘焙在原位置，最终恢复原变换。采用依据来自原资产和真实截图，没有把文档接口说明当作成品视觉验证。
