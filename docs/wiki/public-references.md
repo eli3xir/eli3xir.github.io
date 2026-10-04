@@ -45,6 +45,10 @@
 
 ## 实际查看与采用
 
+2026-10-04 对照 [Three.js BufferAttribute](https://threejs.org/docs/pages/BufferAttribute.html) 的动态缓冲使用与更新规则、[Canvas measureText](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/measureText) 的文本测量和 [Intl.Segmenter](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter) 的字素簇分割。粒子文字按本地字体采样、复用同一位置/目标数组，12 字限制不会截断组合表情；不引入字形图片。
+
+同轮阅读 Ryan Juckett 的 [Damped Springs（2012）](https://www.ryanjuckett.com/damped-springs/) 临界阻尼推导，核对固定目标下的位置与速度解析步进。本站使用该数学形式实现重排，加入原创的有界打散、指针斥力和三维排字台，未复制文章的 C++ 实现。30/120 Hz 等时长对照仅覆盖无外力、无边界碰撞的归位，不能据此宣称所有输入或设备帧率完全一致。
+
 2026-10-04 阅读 Mark Finch 的 [GPU Gems 水面章节](https://developer.nvidia.com/gpugems/gpugems/part-i-natural-effects/chapter-1-effective-water-simulation-physical-models)，采用几何波动与细小表面扰动分层、由同一高度函数求取姿态的思路。本站实现为四组方向正弦波和四点浮动近似，没有使用 Gerstner 水平位移或完整流体解算。另核对 [Three.js r185 Water 源码](https://github.com/mrdoob/three.js/blob/r185/examples/jsm/objects/Water.js) 的反射/水面组织方式；当前使用原创程序天空的 PMREM 环境与物理材质，没有复制该示例的平面反射代码、法线图片或外部船模。
 
 同轮查看 r185 官方 [Material 源码](https://github.com/mrdoob/three.js/blob/r185/src/materials/Material.js)：默认自定义程序缓存键来自 `onBeforeCompile` 的函数字符串，闭包里的不同帆尺寸不会自动形成不同键。主帆/前帆及其深度材质显式提供尺寸和方向键，并用实际画面检查两片帆。
@@ -57,7 +61,7 @@
 
 玻璃金箔马赛克视频的公开下载副本时长 80.04 秒。使用 Blender 4.5.12 LTS 解码观察第 8、30、62 秒：同一组块体组成海面与太阳，局部破裂，随后整体卷曲。这提供了持续元素、材质和变形承载叙事的参考；下载副本与内容观察不能直接证明原帖的模型归属或生成方式。视频与参考帧仅存于临时研究目录，没有作为本站资产发布。
 
-Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐字节一致；采用需要的 addon 闭包，MIT 许可随代码本地保留。KaTeX 0.16.22 来自官方 npm 包，MIT 许可及字体本地保留。Cormorant Garamond 和 Space Grotesk 从 Google Fonts 官方仓库取得，SIL OFL 文本随字体保留。既有 PixiJS 依赖用于原实验，未改写为另一套玩法。
+Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐字节一致；采用需要的 addon 闭包，MIT 许可随代码本地保留。KaTeX 0.16.22 来自官方 npm 包，MIT 许可及字体本地保留。Cormorant Garamond 和 Space Grotesk 从 Google Fonts 官方仓库取得，SIL OFL 文本随字体保留。既有 PixiJS 依赖继续保留；粒子文字现改用与首屏共用的 Three.js 装置，五句预设、指针拨动与重组玩法保留，并加入自由输入。
 
 本站没有发布第三方参考视频、音频、下载的新外部模型或 AI 图片。新的模型与声音来自本仓库原创代码，房间使用既有 model-studio 资产。
 

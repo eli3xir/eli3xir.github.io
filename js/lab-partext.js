@@ -1,118 +1,35 @@
-/* 粒子文字：PixiJS ParticleContainer 承载 3 万粒子，文字成形 / 鼠标炸开 / 弹簧重组 */
-import * as PIXI from 'pixi.js';
+import * as THREE from 'three';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {createWordMachine} from './world/word-machine.js';
+import {wordControls} from './experience/word-controls.js';
+import {cleanWords} from './world/glyph-cloud.js';
+import {createCharacter} from './world/character.js';
 
-const app = new PIXI.Application();
-await app.init({ background: 0x050510, resizeTo: window, antialias: false });
-document.body.prepend(app.canvas);
-app.canvas.style.cssText = 'position:fixed;inset:0;z-index:0';
-
-const stat = document.getElementById('stat');
-
-/* ---------- 从文字采样目标点 ---------- */
-const TEXTS = ['eli3xir', '姜 山', '北 邮', '代码人生', 'VIBE'];
-let textIdx = 0;
-
-function sampleText(text) {
-  const c = document.createElement('canvas');
-  c.width = 1200; c.height = 320;
-  const x = c.getContext('2d');
-  x.fillStyle = '#fff';
-  x.font = '700 200px "Space Grotesk", "Noto Sans SC", sans-serif';
-  x.textAlign = 'center';
-  x.textBaseline = 'middle';
-  x.fillText(text, 600, 170);
-  const data = x.getImageData(0, 0, 1200, 320).data;
-  const pts = [];
-  const gap = 5;
-  for (let j = 0; j < 320; j += gap)
-    for (let i = 0; i < 1200; i += gap)
-      if (data[(j * 1200 + i) * 4 + 3] > 128) pts.push([i, j]);
-  return pts;
+document.body.classList.add('word-playing');const events=new AbortController(),signal=events.signal,reduced=matchMedia('(prefers-reduced-motion: reduce)');
+let renderer=null,model=null,selected='eli3xir',active=true,visible=true,last=performance.now(),frames=0,pointer=null,down=null;
+const notify=()=>{if(parent!==window)parent.postMessage({type:'word-changed',text:selected},location.origin);};
+const setText=(text,echo=true)=>{selected=text;model?.setText(text,{reduced:reduced.matches});document.getElementById('stat').textContent=model?`30,000 粒子 ·「${text}」`:`「${text}」· 当前设备显示文字预览`;if(echo)notify();};
+const controls=wordControls({signal,onText:setText,onScatter:()=>model?.scatter({reduced:reduced.matches})});document.body.append(controls.element);
+try{renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});}catch{const fallback=document.createElement('p');fallback.className='word-unavailable';fallback.textContent='当前设备无法显示 3D 粒子，仍可输入和切换文字。';document.body.append(fallback);controls.element.querySelector('[data-word-scatter]').hidden=true;}
+const updateLoop=()=>{active=visible&&!document.hidden;pointer=null;down=null;last=performance.now();renderer?.setAnimationLoop(active?render:null);};
+addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==parent)return;
+ if(event.data?.type==='word-text'&&typeof event.data.text==='string'){const text=cleanWords(event.data.text);if(text&&text!==selected){setText(text,false);controls.setText(text);}}
+ if(event.data?.type==='word-visibility'){visible=event.data.active===true;updateLoop();}
+},{signal});document.addEventListener('visibilitychange',updateLoop,{signal});
+let scene,camera,crew;const idlePointer=new THREE.Vector2();
+function render(now){const dt=Math.max(0,Math.min((now-last)/1000,.05));last=now;model.pointer=pointer;model.update(0,{},0,now/1000,reduced.matches);crew.update(reduced.matches?0:now/1000,{pulse:0,energy:.3},idlePointer,false,dt,{grounded:true},reduced.matches?0:now/1000);renderer.render(scene,camera);frames++;}
+if(renderer){
+ renderer.setPixelRatio(Math.min(devicePixelRatio,innerWidth<700?1.25:1.6));renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;renderer.outputColorSpace=THREE.SRGBColorSpace;document.body.prepend(renderer.domElement);renderer.domElement.className='word-canvas';renderer.domElement.style.touchAction='none';
+ scene=new THREE.Scene();scene.background=new THREE.Color(0x101e1c);const pmrem=new THREE.PMREMGenerator(renderer),environment=new RoomEnvironment();scene.environment=pmrem.fromScene(environment,.04).texture;scene.environmentIntensity=.6;environment.dispose();pmrem.dispose();
+ scene.add(new THREE.HemisphereLight(0xe4d8b4,0x12392f,1.7));const key=new THREE.DirectionalLight(0xffd8a4,3);key.position.set(-3,4,4);scene.add(key);const fill=new THREE.DirectionalLight(0x91c8c3,2);fill.position.set(3,1,-1);scene.add(fill);
+ model=createWordMachine({count:30000});scene.add(model.root);crew=createCharacter();crew.root.scale.setScalar(model.actorScale);crew.root.position.copy(model.actorAnchor.position);model.root.add(crew.root);
+ camera=new THREE.PerspectiveCamera(34,1,.1,40);const resize=()=>{const height=Math.max(170,innerHeight-230);renderer.setSize(innerWidth,height);camera.aspect=innerWidth/height;camera.position.set(.06,.35,Math.max(4.3,3.7/(2*Math.tan(17*Math.PI/180)*camera.aspect)));camera.lookAt(0,-.1,0);camera.updateProjectionMatrix();};resize();addEventListener('resize',resize,{signal});
+ const ray=new THREE.Raycaster(),plane=new THREE.Plane(new THREE.Vector3(0,0,1),0),hit=new THREE.Vector3(),ndc=new THREE.Vector2();
+ const move=event=>{if(event.pointerType==='touch'&&!down)return;const box=renderer.domElement.getBoundingClientRect();ndc.set((event.clientX-box.left)/box.width*2-1,1-(event.clientY-box.top)/box.height*2);ray.setFromCamera(ndc,camera);if(ray.ray.intersectPlane(plane,hit)&&Math.abs(hit.x)<1.48&&Math.abs(hit.y-.1)<.58)pointer={x:hit.x,y:hit.y-.1};else pointer=null;};
+ const canvas=renderer.domElement;canvas.addEventListener('pointermove',move,{signal});canvas.addEventListener('pointerdown',event=>{down={id:event.pointerId,x:event.clientX,y:event.clientY};canvas.setPointerCapture(event.pointerId);move(event);},{signal});
+ canvas.addEventListener('pointerup',event=>{const tap=down?.id===event.pointerId&&Math.hypot(event.clientX-down.x,event.clientY-down.y)<8;down=null;pointer=null;if(tap)controls.element.querySelector('[data-word-next]').click();},{signal});
+ for(const type of ['pointerleave','pointercancel','lostpointercapture'])canvas.addEventListener(type,()=>{pointer=null;down=null;},{signal});addEventListener('blur',()=>{pointer=null;down=null;},{signal});
+ document.fonts.load('700 180px "Cabinet Sans"').then(()=>model.setText(selected,{reduced:reduced.matches}));updateLoop();
 }
-
-/* ---------- 粒子纹理（共享） ---------- */
-const dot = new PIXI.Graphics().circle(4, 4, 3).fill(0xffffff);
-const tex = app.renderer.generateTexture(dot);
-
-const container = new PIXI.ParticleContainer({
-  dynamicProperties: { position: true, vertex: false, rotation: false, color: true },
-});
-app.stage.addChild(container);
-
-/* ---------- 粒子初始化 ---------- */
-const COUNT = 30000;
-const parts = [];
-for (let i = 0; i < COUNT; i++) {
-  const p = new PIXI.Particle({
-    texture: tex,
-    x: Math.random() * app.screen.width,
-    y: Math.random() * app.screen.height,
-    anchorX: 0.5,
-    anchorY: 0.5,
-  });
-  container.addParticle(p);
-  parts.push({ p, vx: 0, vy: 0, tx: 0, ty: 0 });
-}
-
-/* ---------- 布局：把采样点映射到屏幕 ---------- */
-// 纯 JS 颜色插值（v8 Color API 已变，不依赖它）
-function lerpColor(c1, c2, t) {
-  const r1 = (c1 >> 16) & 255, g1 = (c1 >> 8) & 255, b1 = c1 & 255;
-  const r2 = (c2 >> 16) & 255, g2 = (c2 >> 8) & 255, b2 = c2 & 255;
-  return ((r1 + (r2 - r1) * t) << 16) | ((g1 + (g2 - g1) * t) << 8) | ((b1 + (b2 - b1) * t) | 0);
-}
-function layout() {
-  const pts = sampleText(TEXTS[textIdx]);
-  const sw = app.screen.width, sh = app.screen.height;
-  const scale = Math.min((sw * 0.86) / 1200, (sh * 0.5) / 320);
-  const ox = (sw - 1200 * scale) / 2, oy = (sh - 320 * scale) / 2;
-  for (let i = 0; i < COUNT; i++) {
-    const p = parts[i];
-    const [sx, sy] = pts[i % pts.length];
-    p.tx = ox + sx * scale;
-    p.ty = oy + sy * scale;
-    p.p.tint = lerpColor(0x7c5cff, 0x00e5c0, sx / 1200);
-  }
-}
-layout();
-
-/* ---------- 交互 ---------- */
-let mx = -9999, my = -9999;
-app.stage.eventMode = 'static';
-app.stage.hitArea = app.screen;
-app.stage.on('pointermove', (e) => { mx = e.global.x; my = e.global.y; });
-app.stage.on('pointerdown', () => { textIdx = (textIdx + 1) % TEXTS.length; layout(); });
-addEventListener('resize', layout);
-
-/* ---------- 主循环 ---------- */
-let fps = 60, frames = 0, fpsT = performance.now();
-const REPEL_R = 110, REPEL_R2 = REPEL_R * REPEL_R;
-app.ticker.add(() => {
-  for (let i = 0; i < COUNT; i++) {
-    const p = parts[i];
-    const s = p.p;
-    // 弹簧回位
-    p.vx += (p.tx - s.x) * 0.012;
-    p.vy += (p.ty - s.y) * 0.012;
-    // 鼠标斥力
-    const dx = s.x - mx, dy = s.y - my;
-    const d2 = dx * dx + dy * dy;
-    if (d2 < REPEL_R2) {
-      const d = Math.sqrt(d2) || 1;
-      const f = (1 - d / REPEL_R) * 3.2;
-      p.vx += (dx / d) * f;
-      p.vy += (dy / d) * f;
-    }
-    p.vx *= 0.9; p.vy *= 0.9;
-    s.x += p.vx;
-    s.y += p.vy;
-  }
-  // FPS
-  frames++;
-  const now = performance.now();
-  if (now - fpsT > 500) {
-    fps = Math.round(frames * 1000 / (now - fpsT));
-    frames = 0; fpsT = now;
-    stat.textContent = `${COUNT.toLocaleString()} 粒子 · ${fps} FPS · 当前「${TEXTS[textIdx]}」`;
-  }
-});
+setText(selected,false);if(parent!==window)parent.postMessage({type:'word-ready'},location.origin);
+window.wordExperiment={model,camera,actor:crew,diagnostics:()=>({text:selected,frames,active,visible,pointer,cloud:model?.cloud.diagnostics(),resources:renderer?{...renderer.info.memory}:null})};

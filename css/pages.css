@@ -318,3 +318,4 @@ a:hover { text-decoration: underline; }
 @media (max-width: 640px) {
   .page-nav nav { gap: 10px; font-size: 0.85rem; }
 }
+.word-playing{background:#101e1c!important}.word-canvas{position:absolute;left:0;top:78px}.word-playing .demo-hud{top:14px;left:20px;right:20px;background:none;color:#e1d4b9}.word-playing .demo-hud h1{font-size:16px;margin-bottom:3px}.word-playing .demo-hud p{font-size:10px;margin:2px 0}.word-playing>.word-controls{position:absolute;bottom:13px;left:50%;transform:translateX(-50%);width:calc(100% - 36px);max-width:550px;z-index:3}.word-playing .word-status{margin:6px 0 0}.word-unavailable{position:absolute;top:36%;left:8%;right:8%;text-align:center;color:#eee1ba}

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mesh,brass,ink,glass,liquidMaterial,labelTexture,ring } from './materials.js';
 import { randomSequence } from '../audio/synth.js';
 import {createOcean} from './ocean.js';
+import {createWordMachine} from './word-machine.js';
 
 function moon(){
   const root=new THREE.Group();
@@ -85,18 +86,6 @@ function breakout(){
   return{root,actorPosition:[1.3,.75,.1],update(t,beat){paddle.position.x=Math.sin(t*.8)*.8;ball.position.set(Math.sin(t*.8)*.8,-.5+Math.abs(Math.sin(t*1.3))*.9,.2);tiles.forEach(({tile,x,y,index})=>{const p=Math.max(0,Math.sin(t*.65-index*.07)-.86)*5;tile.position.set(x+p*(x+.1),y+p*.8,p*.3);tile.rotation.z=p*x;});}};
 }
 
-function words(){
-  const root=new THREE.Group();const canvas=document.createElement('canvas');canvas.width=512;canvas.height=220;
-  const ctx=canvas.getContext('2d');ctx.font='bold 102px Georgia';ctx.fillStyle='white';ctx.textAlign='center';ctx.fillText('eli3xir',256,143);
-  const pixels=ctx.getImageData(0,0,512,220).data;const positions=[];const seeds=[];
-  for(let y=0;y<220;y+=3)for(let x=0;x<512;x+=3)if(pixels[(y*512+x)*4+3]>90){positions.push((x-256)*.007,(110-y)*.007,0);seeds.push(Math.sin(x+y)*.5+.5);}
-  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geo.setAttribute('aSeed',new THREE.Float32BufferAttribute(seeds,1));
-  const mat=new THREE.ShaderMaterial({uniforms:{uTime:{value:0}},vertexShader:`attribute float aSeed;uniform float uTime;varying float vAlpha;void main(){float p=max(0.,sin(uTime*.65)-.4);vec3 v=position+vec3(sin(aSeed*50.+uTime),cos(aSeed*22.+uTime),sin(aSeed*19.))*p*.6;vec4 mv=modelViewMatrix*vec4(v,1.);gl_Position=projectionMatrix*mv;gl_PointSize=3.;vAlpha=.6+aSeed*.4;}`,
-    fragmentShader:`varying float vAlpha;void main(){float d=length(gl_PointCoord-.5)*2.;if(d>1.)discard;gl_FragColor=vec4(.75,.68,.45,vAlpha*(1.-d));}`,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false});
-  root.add(new THREE.Points(geo,mat));
-  return{root,actorPosition:[1.3,.7,.1],update(t){mat.uniforms.uTime.value=t;}};
-}
-
 export function createExperiment(id){
-  return({moon,ocean:createOcean,fluid,trails:()=>starField(),galaxy:()=>starField(true),glass:lens,breakout,partext:words,bullet:()=>starField(false,true)}[id]||fluid)();
+  return({moon,ocean:createOcean,fluid,trails:()=>starField(),galaxy:()=>starField(true),glass:lens,breakout,partext:createWordMachine,bullet:()=>starField(false,true)}[id]||fluid)();
 }

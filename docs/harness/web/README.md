@@ -69,3 +69,5 @@
 首版已合并并推送 `main`，GitHub Pages 的 `55ea138` [发布任务](https://github.com/eli3xir/eli3xir.github.io/actions/runs/37092164788) 成功，55 个线上页面及入口已实际核对。发布以远端提交和 GitHub Pages 实际访问核对，不能只依据本地提交声明上线。
 
 线上浏览器复查设置 `BASE_URL=https://eli3xir.github.io`；有代理需求时设置 `BROWSER_PROXY=http://127.0.0.1:7897`。报告的 `base` 和 `scope` 记录实际目标与范围，本地、入口与全量结果应分别说明。
+
+`npm run test:partext` 检查粒子文字输入、中文输入法组合、空白、字素簇限制、快速重排与实体打散、暂停/半拍/系统中断、双向交接、鼠标拨动/移出和触控取消。核对 30/120 Hz 固定目标的等时长状态、同一几何/数组、反复操作的资源数与离开释放；另覆盖四种紧凑尺寸的打散范围、减少动态显式开始和无 WebGL。输出 `partext-audit.json` 与静止/打散/实验截图，支持 `BASE_URL` 线上复核。手机与触控是电脑模拟，数值步进检查不代替视觉与真机验收。
