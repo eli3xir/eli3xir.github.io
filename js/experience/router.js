@@ -1,6 +1,13 @@
 import { nextBeatDelay } from './domain.js';
 import { BPM } from '../audio/composition.js';
 
+export function scrollToAnchor(hash){
+  let id;try{id=decodeURIComponent(hash.replace(/^#/,''));}catch{return false;}
+  const target=document.getElementById(id);if(!target)return false;
+  if(!target.hasAttribute('tabindex'))target.setAttribute('tabindex','-1');
+  target.focus({preventScroll:true});target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});return true;
+}
+
 export class Router {
   constructor({mount,transition,score,announce,onIntent=()=>{}}) {
     this.mount=mount;this.transition=transition;this.score=score;this.announce=announce;
@@ -19,8 +26,7 @@ export class Router {
     const url=new URL(link.href,location.href);
     if(url.origin!==location.origin||url.protocol!=='http:'&&url.protocol!=='https:')return;
     if(url.pathname===location.pathname&&url.search===location.search&&url.hash){
-      const target=document.getElementById(decodeURIComponent(url.hash.slice(1)));
-      if(target){event.preventDefault();history.replaceState(null,'',url);this.currentURL=url;target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
+      if(scrollToAnchor(url.hash)){event.preventDefault();history.replaceState(null,'',url);this.currentURL=url;}
       return;
     }
     if(!/\/$|\.html$/.test(url.pathname)&&url.pathname!=='/')return;
@@ -73,7 +79,7 @@ export class Router {
       this.score.cue('reveal');
       await this.animate(1,0,this.score.audible?120000/BPM:760);
       const h1=document.querySelector('.hero-title');h1?.setAttribute('tabindex','-1');h1?.focus({preventScroll:true});
-      if(url.hash)document.getElementById(decodeURIComponent(url.hash.slice(1)))?.scrollIntoView();
+      if(url.hash)scrollToAnchor(url.hash);
     }catch(error){
       if(!push)history.replaceState({studio:true},'',this.currentURL);
       this.announce(`暂时无法进入这个页面：${error.message}。可以重试或直接打开。`,url.href);

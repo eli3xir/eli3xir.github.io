@@ -55,7 +55,7 @@ try{
     assert.equal(cues[1].delay,0);await page.locator('.sound-toggle').click();
     await page.emulateMedia({reducedMotion:'reduce'});
     const target=await link.getAttribute('href');await link.click();await settle(page);
-    assert.equal(new URL(page.url()).pathname,target);assert.equal(await page.locator('.reading-choice').count(),0);
+    assert.equal(new URL(page.url()).pathname,target);assert.equal(await page.locator('.reading-choice').count(),1);
     assert.equal(await page.locator('.post-content').count(),1);
     await page.evaluate(()=>window.studio.router.navigate('/projects/'));await settle(page);
     await page.evaluate(()=>window.studio.router.navigate('/blog/'));await settle(page);

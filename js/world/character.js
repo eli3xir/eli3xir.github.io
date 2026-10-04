@@ -19,13 +19,15 @@ export function createCharacter() {
   }
   const antenna = mesh(new THREE.CylinderGeometry(.008, .013, .15, 12), brass(), head, [0, .24, 0]);
   const lamp = mesh(new THREE.SphereGeometry(.028, 16, 12), new THREE.MeshBasicMaterial({ color: 0xa5e8ac }), head, [0, .32, 0]);
-  const limbs = [],feet=[];
+  const limbs = [],feet=[],armParts=[];
   for (const sign of [-1, 1]) {
     const arm = new THREE.Group(); head.add(arm); arm.position.set(sign * .19, -.04, 0);
-    const tube = mesh(new THREE.CapsuleGeometry(.012, .14, 4, 10), brass(), arm, [sign * .065, -.025, .025]);
-    tube.rotation.z = sign * -.75;
+    const end=new THREE.Vector3(sign*.12,-.08,.03);
+    const tube = mesh(new THREE.CapsuleGeometry(.012, end.length()-.024, 4, 10), brass(), arm, end.clone().multiplyScalar(.5).toArray());
+    tube.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),end.clone().normalize());
     const hand=mesh(new THREE.SphereGeometry(.024, 12, 8), brass(), arm, [sign * .12, -.08, .03]);hand.name=sign===1?'mote-right-hand':'mote-left-hand';
     limbs.push(arm);
+    armParts.push({tube,hand});
     const foot = mesh(new THREE.SphereGeometry(.035, 16, 12), brass(), head, [sign * .085, -.215, .055]);
     foot.scale.set(1, .5, 1.5);
     feet.push(foot);
@@ -57,6 +59,9 @@ export function createCharacter() {
         gripRotation.setFromUnitVectors(handDirection,gripDirection.normalize());arm.quaternion.slerp(gripRotation,motion.reach);
         arm.scale.setScalar(THREE.MathUtils.lerp(1,length/handLength,motion.reach));
       }
+      // Reach changes the limb's length, while the tube and palm retain their
+      // thickness. Both tube ends lie on the actual shoulder-to-hand segment.
+      const inverse=1/arm.scale.x;armParts[i].tube.scale.set(inverse,1,inverse);armParts[i].hand.scale.setScalar(inverse);
       feet[i].position.y=-.215+Math.max(0,-swing)*run*.06;
       feet[i].rotation.x=-swing*(run*.5+swim*.8);
     });

@@ -3,7 +3,7 @@ import { World } from '../world/world.js';
 import { CHAPTERS, routeFor, nextBeatDelay, readSetting } from './domain.js';
 import { createChrome, hero } from './chrome.js';
 import { pageContent, enhanceContent } from './content.js';
-import { Router } from './router.js';
+import { Router,scrollToAnchor } from './router.js';
 import { BPM } from '../audio/composition.js';
 import { readingEntries, bindReading } from './reading.js';
 import {createMessageRelay} from './message-relay.js';
@@ -72,10 +72,10 @@ try{world=new World(stage,score,{status:sceneStatus,onHover:objectHover,onPick:o
 }});}
 catch(error){console.error(error);document.body.classList.add('no-webgl');sceneStatus(-1,'当前设备暂时无法显示 3D，文字内容和导航仍可使用。',error);}
 
-function stylesheet(href){
+function stylesheet(href,afterExperience=false){
   if([...document.querySelectorAll('link[rel="stylesheet"]')].some(link=>new URL(link.href).pathname===href))return;
   const link=document.createElement('link');link.rel='stylesheet';link.href=href;
-  document.head.insertBefore(link,document.querySelector('link[data-experience-style]'));
+  if(afterExperience)document.head.append(link);else document.head.insertBefore(link,document.querySelector('link[data-experience-style]'));
 }
 async function mount(doc,url){
   contentEvents?.abort();contentEvents=new AbortController();
@@ -89,11 +89,12 @@ async function mount(doc,url){
   if(!description){description=document.createElement('meta');description.name='description';document.head.append(description);}
   description.content=doc.querySelector('meta[name="description"]')?.content||route.subtitle;
   if(route.id==='blog')stylesheet('/css/blog.css');else if(route.id!=='home')stylesheet('/css/pages.css');
+  if(route.article)stylesheet('/css/reading.css',true);
   const section=hero(route);const main=pageContent(doc,route);view.replaceChildren(section);if(main)view.append(main);
   if(route.id==='home'){section.querySelector('.chapter-dock').id='home-navigation';section.setAttribute('role','main');skip.href='#home-navigation';}
   else{skip.href='#content';const footer=document.createElement('footer');footer.className='studio-footer';footer.innerHTML='<span>eli3xir / A CABINET OF CURIOSITIES</span><span>© 2026 · KEEP WONDERING.</span>';view.append(footer);}
   world?.show(route);world?.applySkin(readSetting('room-skin','default'));score.scene(route.id);chrome.update(route);
-  bindReading(section,route.readingEntries,{world,signal:contentEvents.signal});
+  const reading=bindReading(section,route.readingEntries,{world,signal:contentEvents.signal,article:route.article});
   if(route.relay)bindProjectSignal(section,doc,{world,score,relay:route.relay,signal:contentEvents.signal});
   if(route.id==='radio')bindRadio(section,main,{world,score,signal:contentEvents.signal,announce});
   if(route.id==='skin')bindSkin(section,main,{world,score,signal:contentEvents.signal,announce});
@@ -112,12 +113,13 @@ async function mount(doc,url){
     trigger.textContent='试一次反应 ↗';trigger.setAttribute('aria-label','触发药瓶反应');
     section.querySelector('.explore-button').before(trigger);trigger.addEventListener('click',()=>world.interact(),{signal:contentEvents.signal});
   }
-  enhanceContent(main,route,{signal:contentEvents.signal,score,world,announce});
+  enhanceContent(main,route,{signal:contentEvents.signal,score,world,announce,reading});
   section.querySelector('[data-explore]')?.addEventListener('click',()=>{if(world?.model.loaded){world.focus('lab');objectFocus('lab');score.cue('hover');}else announce('移动鼠标或轻轻拖动，点击桌上与墙上的物件。也可以使用下方入口。');},{signal:contentEvents.signal});
   if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
     const delay=score.audible?nextBeatDelay(score.time)*1000:80;
     section.querySelectorAll('.hero-word').forEach((word,i)=>{
-      const animation=word.animate([{transform:'translateY(108%) rotate(2deg)',opacity:0},{transform:'translateY(0) rotate(0)',opacity:1}],{duration:score.audible?90000/BPM:780,delay:delay+i*(60000/BPM/4),easing:'cubic-bezier(.18,.75,.2,1)',fill:'both'});
+      const stagger=route.article?Math.min(i,12)*(60000/BPM/16):i*(60000/BPM/4);
+      const animation=word.animate([{transform:'translateY(108%) rotate(2deg)',opacity:0},{transform:'translateY(0) rotate(0)',opacity:1}],{duration:score.audible?90000/BPM:780,delay:delay+stagger,easing:'cubic-bezier(.18,.75,.2,1)',fill:'both'});
       contentEvents.signal.addEventListener('abort',()=>animation.cancel(),{once:true});
     });
   }
@@ -151,4 +153,4 @@ addEventListener('message',event=>{
 });
 await mount(original,new URL(location.href));
 window.studio={world,score,router,get route(){return route;},diagnostics:()=>world?.diagnostics()||{webgl:false}};
-if(location.hash)setTimeout(()=>document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView(),50);
+if(location.hash)setTimeout(()=>scrollToAnchor(location.hash),50);

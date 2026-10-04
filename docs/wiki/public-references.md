@@ -99,3 +99,9 @@ Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐�
 2026-10-04 从失效图的时间戳 alt 和原文句子找到猫猫子在博客园的[传输层-Transport Layer（上）](https://www.cnblogs.com/maomaozi/p/14111386.html)。正文与本站既有笔记的相关段落、十二张图的名称/顺序一致，全部图像实际查看后按原字节保存，包含原作者水印。文章展示出处链接；旧 CDN 字节不可取回，因此对应依据是名称和语境，不声称旧文件哈希一致。来源与新文件摘要记录在 [图片清单](../../assets/blog/transport/manifest.json)。此次为恢复既有文章图示，未把第三方图像用于网站 3D 或品牌视觉。
 
 2026-10-04 核对 [Three.js WebGLRenderer](https://threejs.org/docs/pages/WebGLRenderer.html) 的像素比与画布尺寸接口，并对照本站固定 r185 的实现使用；画质切换复用渲染器。阅读 [MDN storage 事件](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event)，区分同页选择通知与其他同源文档的存储通知；阅读 [MDN postMessage](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage)，子实验握手同时验证来源、窗口和数值范围。文档说明用于接口设计，具体状态与资源不重建的结论来自本站浏览器审计。
+
+## 文章章节与稳定阅读布局
+
+2026-10-04 阅读 [CommonMark 0.31.2 强调规则](https://spec.commonmark.org/0.31.2/#emphasis-and-strong-emphasis)，核对标点后、中文字符前的双星号无法满足右侧分隔条件；仅把两篇中的三处既有强调改为明确 strong 元素，保持字词与标点。阅读 [Typography Handbook](https://typographyhandbook.com/) 的行宽与行距建议作为排版参考，中文正文实际采用桌面 17 px、窄屏 16 px 与独立行宽检查；没有把拉丁字符行长建议当作中文硬指标，也未声称实际查看该站截图。
+
+阅读 [MDN scrollIntoView](https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView) 的 scroll-margin 说明与 [img 尺寸说明](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/img)，用于章节定位和图片加载前的比例预留。构建从真实源文件提取元数据，浏览器解码另核对全部 70 张本地图；其中一张扩展名为 PNG 的历史文件实际为有损 WebP，按 [Google WebP 容器规范](https://developers.google.com/speed/webp/docs/riff_container) 识别内容而非后缀。阅读 [Three.js CapsuleGeometry](https://threejs.org/docs/pages/CapsuleGeometry.html)，并核对本地 r185 的 height 为中段长度，修复手臂几何与手掌连接。没有新增第三方视觉资产。

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 // The canvas follows the physical page ratio, so type keeps its proportions.
-export function bookPage({title='A curious mind.',kicker='FIELD NOTES / ELI3XIR',date='',tags='',number='01'}={}) {
+export function bookPage({title='A curious mind.',kicker='FIELD NOTES / ELI3XIR',date='',tags='',number='01',excerpt=''}={}) {
   const canvas=document.createElement('canvas');canvas.width=768;canvas.height=1062;
   const ctx=canvas.getContext('2d'),left=64,width=640;
   ctx.fillStyle='#e7d7b4';ctx.fillRect(0,0,768,1062);
@@ -24,9 +24,17 @@ export function bookPage({title='A curious mind.',kicker='FIELD NOTES / ELI3XIR'
   if(date)ctx.fillText(date,left,y+20);
   if(tags){ctx.font='20px "Microsoft YaHei",sans-serif';ctx.fillText(tags,left,y+60,width);}
   const baseline=Math.max(640,y+115);ctx.strokeStyle='#a8a08a';
-  for(let row=0;row<7&&baseline+row*29<930;row++){
+  if(excerpt){
+    ctx.font='27px "PingFang SC","Microsoft YaHei",sans-serif';ctx.fillStyle='#525746';let row='',y=baseline;
+    for(const character of Array.from(excerpt)){
+      if(ctx.measureText(row+character).width>width){ctx.fillText(row,left,y);y+=43;row=character;if(y>915){row='…';break;}}
+      else row+=character;
+    }
+    if(row&&y<=958)ctx.fillText(row,left,y);
+  }else for(let row=0;row<7&&baseline+row*29<930;row++){
     ctx.beginPath();ctx.moveTo(left,baseline+row*29);ctx.lineTo(left+width*(row===6?.67:1),baseline+row*29);ctx.stroke();
   }
+  canvas.dataset.title=title;canvas.dataset.excerpt=excerpt;
   ctx.fillStyle='#74715e';ctx.font='16px monospace';ctx.fillText('KEEP WONDERING.',left,998);
   const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=4;
   return texture;

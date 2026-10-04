@@ -1,0 +1,48 @@
+/* The chapter on the physical page is the chapter reached in the article. */
+.article-view .hero-copy{top:clamp(145px,22vh,240px);max-width:min(39vw,560px)}
+.article-view .hero-title{font:500 clamp(32px,3.3vw,52px)/1.35 var(--font);letter-spacing:-.025em;text-wrap:pretty}
+.article-view .title-line{white-space:normal;overflow:visible;padding:0}
+.article-view .hero-title .hero-word{max-width:100%;text-wrap:balance;line-break:strict}
+.article-view .hero-subtitle{font-size:11px;line-height:1.9;letter-spacing:.025em;color:#b4baa8}
+.article-view .reading-title{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:3.4em;line-height:1.7}
+.article-view .reading-actions{margin-top:10px;min-height:40px}
+.article-view .reading-position{font-size:10px}
+[data-experience] #content.post{display:grid;grid-template-columns:minmax(0,720px) 200px;column-gap:72px;padding:80px max(6vw,calc((100vw - 992px)/2)) 120px}
+[data-experience] #content.post>*{min-width:0;grid-column:1}
+[data-experience] #content .post-head h2{font-size:clamp(27px,3vw,44px);font-weight:500;line-height:1.45;margin:0 0 16px}
+[data-experience] #content .post-content{font-size:17px;line-height:1.95;max-width:720px}
+[data-experience] #content .post-content :is(h1,h2,h3){scroll-margin-top:62px}
+[data-experience] #content .post-content img{border-radius:2px;box-shadow:0 4px 18px #17201814}
+[data-experience] #content .post-content code{font-size:.84em}
+[data-experience] #content .reading-outline{grid-column:2;grid-row:1 / span 4;position:sticky;top:46px;align-self:start;border-top:1px solid #aaa98f;border-bottom:1px solid #ccc6af;color:#46543b}
+.reading-outline summary{display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer;min-height:48px;font-size:13px;list-style:none}
+.reading-outline summary::-webkit-details-marker{display:none}
+.reading-outline summary:after{content:'+';font:20px Georgia,serif}
+.reading-outline[open] summary:after{content:'−'}
+.reading-outline summary small{font:10px monospace;color:#687457;margin-left:auto;white-space:nowrap}
+[data-experience] #content .studio-toc{display:block;position:static;width:auto;max-height:calc(100svh - 210px);padding:10px 0 20px;border:0;overflow:auto;scrollbar-width:thin}
+[data-experience] #content .studio-toc a{font-size:12px;line-height:1.75;color:#657059;padding:8px 12px;margin:0;border-left:2px solid transparent;overflow-wrap:anywhere}
+[data-experience] #content .studio-toc a[data-level="2"]{padding-left:20px}
+[data-experience] #content .studio-toc a[data-level="3"]{padding-left:30px}
+[data-experience] #content .studio-toc a.active{color:#263e2a;border-left-color:#718758;background:#dddcc333}
+[data-experience] #content .studio-toc a:hover{color:#263e2a;background:#dddcc355}
+[data-experience] #content .reading-outline:not([open]) .studio-toc{display:none}
+@media(max-width:1250px){
+  [data-experience] #content.post{grid-template-columns:minmax(0,720px);justify-content:center;padding:65px 7vw 110px}
+  [data-experience] #content .reading-outline{grid-column:1;grid-row:auto;position:static;margin:0 0 30px}
+  [data-experience] #content .studio-toc{max-height:55svh}
+}
+@media(max-width:850px){
+  .article-view .hero-copy{top:135px;left:7vw;right:7vw;max-width:none}
+  .article-view .hero-title{font-size:clamp(28px,7.7vw,40px);line-height:1.35}
+  .article-view .world-hero{min-height:940px;max-height:none}
+  .article-view .hero-subtitle{font-size:11px;margin-top:17px}
+  .article-view .eyebrow{margin-bottom:20px}
+}
+@media(max-width:700px){
+  [data-experience] #content .post-content{font-size:16px;line-height:1.95}
+  [data-experience] #content .post-head h2{font-size:26px}
+  [data-experience] #content .studio-toc a{font-size:14px;min-height:44px}
+  .article-view .hero-copy{top:125px}
+}
+@media(min-width:851px) and (max-height:800px){.article-view .hero-copy{top:145px}.article-view .hero-title{font-size:clamp(29px,3.1vw,44px)}}

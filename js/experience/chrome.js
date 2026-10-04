@@ -66,6 +66,12 @@ export function hero(route) {
     <div class="world-caption"><span class="caption-line"></span><span>FIG. ${route.number} / <b></b></span></div>
     <div class="hero-bottom"><span>CRAFTED WITH CURIOSITY.</span><span class="live-indicator"><i></i> 灵感仍在亮着</span></div>`;
   section.querySelector('.hero-subtitle').textContent=route.article?route.contentTitle:route.subtitle;
+  if(route.article){
+    const line=document.createElement('span');line.className='title-line';
+    const text=document.createElement('span');text.className='hero-word';text.textContent=route.contentTitle;line.append(text);
+    section.querySelector('.hero-title').replaceChildren(line);
+    section.querySelector('.hero-subtitle').textContent=[route.readingMeta?.date,route.readingMeta?.tags].filter(Boolean).join(' · ');
+  }
   section.querySelector('.hero-note').textContent=route.note;
   section.querySelector('.world-caption b').textContent=({home:'THE ROOM',lab:'A SMALL REACTION',blog:'THOUGHTS IN MOTION',radio:'SOUND TAKES SHAPE',projects:'IDEA → SIGNAL',about:'MEET MOTE',skin:'LIGHT, RECONSIDERED'})[route.id];
   if(route.id==='home'){

@@ -16,6 +16,7 @@
     "test:loading": "node tools/room-loading-audit.mjs",
     "test:lightmaps": "node tools/lightmap-audit.mjs",
     "test:reading": "node tools/reading-audit.mjs",
+    "test:article-reading": "node tools/article-reading-audit.mjs",
     "test:signal": "node tools/signal-audit.mjs",
     "test:radio": "node tools/radio-audit.mjs",
     "test:potion": "node tools/potion-audit.mjs",

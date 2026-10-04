@@ -1,5 +1,6 @@
 import { SKINS, readSetting } from './domain.js';
 import { MOVEMENTS } from '../audio/composition.js';
+import {bindArticleNavigation} from './article-navigation.js';
 
 export function pageContent(doc,route) {
   if(route.id==='home')return null;
@@ -28,6 +29,7 @@ export function pageContent(doc,route) {
   const original=doc.querySelector('main');
   const main=original?document.importNode(original,true):document.createElement('main');
   main.id='content';
+  if(route.article){const title=main.querySelector('.post-head h1');if(title){const heading=document.createElement('h2');heading.textContent=title.textContent;title.replaceWith(heading);}}
   main.querySelectorAll('script').forEach(script=>script.remove());
   if(route.id==='radio'){
     const score=document.createElement('section');score.className='score-card';
@@ -45,7 +47,7 @@ export function pageContent(doc,route) {
   return main;
 }
 
-export function enhanceContent(main,route,{signal,score,world,announce}) {
+export function enhanceContent(main,route,{signal,score,world,announce,reading}) {
   if(!main)return;
   const options={signal};
   const search=main.querySelector('#search');
@@ -65,7 +67,7 @@ export function enhanceContent(main,route,{signal,score,world,announce}) {
       apply();score.cue('hover');
     },options));
   }
-  if(route.article)enhancePost(main,{signal,announce});
+  if(route.article){enhancePost(main,{signal,announce});bindArticleNavigation(main,route.readingEntries,{signal,reading});}
   const revealElements=[...main.querySelectorAll('.lab-card,.pcard,.ep,.fact-num,.post-item')];
   const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('in-view');observer.unobserve(entry.target);}}),{threshold:.08});
   revealElements.forEach(element=>{element.classList.add('reveal-item');observer.observe(element);});
@@ -90,14 +92,5 @@ function enhancePost(main,{signal,announce}) {
     button.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(pre.querySelector('code')?.textContent||'');button.textContent='已复制';announce('代码已复制');}catch{announce('复制未成功，请选择代码手动复制');}},{signal});
     bar.append(language,button);pre.prepend(bar);pre.classList.add('has-bar');
   });
-  const headings=[...article.querySelectorAll('h1,h2,h3')];if(headings.length<2)return;
-  const toc=document.createElement('nav');toc.className='studio-toc';toc.setAttribute('aria-label','文章目录');
-  const title=document.createElement('p');title.textContent='IN THIS NOTE';toc.append(title);
-  headings.forEach((heading,i)=>{heading.id||=`section-${i}`;const a=document.createElement('a');a.href='#'+heading.id;a.textContent=heading.textContent;a.dataset.level=heading.tagName.slice(1);toc.append(a);});
-  main.append(toc);
-  const observer=new IntersectionObserver(entries=>{
-    for(const entry of entries)if(entry.isIntersecting){toc.querySelectorAll('a').forEach(a=>a.classList.toggle('active',a.hash==='#'+entry.target.id));}
-  },{rootMargin:'-90px 0px -65% 0px'});
-  headings.forEach(h=>observer.observe(h));signal.addEventListener('abort',()=>observer.disconnect(),{once:true});
   if(window.renderMathInElement)window.renderMathInElement(article,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]});
 }

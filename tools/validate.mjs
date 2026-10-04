@@ -1,8 +1,10 @@
 import fs from 'node:fs';import path from 'node:path';import { fileURLToPath } from 'node:url';import { execFileSync } from 'node:child_process';
 import {createHash} from 'node:crypto';
+import imageMetadata from './image-dimensions.js';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const failures=[];const warnings=[];
 const restored=JSON.parse(fs.readFileSync(path.join(root,'assets/blog/transport/manifest.json'),'utf8'));
+const formatting=JSON.parse(fs.readFileSync(path.join(root,'tools/article-formatting.json'),'utf8'));
 for(const image of restored.images){
   const bytes=fs.readFileSync(path.join(root,image.local));
   if(createHash('sha256').update(bytes).digest('hex')!==image.sha256)failures.push(`Restored article image changed: ${image.local}`);
@@ -42,9 +44,21 @@ for(const file of articles){
   const relative=path.relative(root,file).replaceAll('\\','/');
   const current=fs.readFileSync(file,'utf8').match(/<article class="post-content">([\s\S]*?)<\/article>/)?.[1];
   const baseline=execFileSync('git',['show',`8485a72:${relative}`],{cwd:root,encoding:'utf8'}).match(/<article class="post-content">([\s\S]*?)<\/article>/)?.[1];
+  const emphasis=formatting.filter(fix=>fix.article===relative);
+  const dimensioned=new Map();
+  for(const match of current.matchAll(/<img\b[^>]*>/g)){
+    const tag=match[0],src=tag.match(/\bsrc="([^"]+)"/)?.[1];
+    if(!src?.startsWith('/'))continue;
+    const size=imageMetadata.imageDimensions(root,src),attributes=`width="${size.width}" height="${size.height}" `;
+    if(!tag.startsWith(`<img ${attributes}`))failures.push(`${relative}: image dimensions differ from source bytes: ${src}`);
+    else dimensioned.set(tag,tag.replace(`<img ${attributes}`,'<img '));
+  }
+  for(const fix of emphasis)if(!current?.includes(`<strong>${fix.strong}</strong>`))failures.push(`${relative}: documented emphasis missing`);
   const normalize=html=>{
     let content=html?.replace(/\r/g,'').replace('https://repo.openeuler.org/openEuler-20.03-LTS/ISO/x86_64/openEuler-20.03-LTS-x86_64-dvd.iso','/download/openEuler-20.03-LTS-x86_64-dvd.iso');
+    for(const [tag,original] of dimensioned)content=content?.replaceAll(tag,original);
     if(relative===restored.article.slice(1))for(const image of restored.images)content=content?.replaceAll(image.local,image.original);
+    for(const fix of emphasis)content=content?.replace(`<strong>${fix.strong}</strong>`,`**${fix.strong}**`);
     return content;
   };
   if(normalize(current)!==normalize(baseline))failures.push(`${relative}: article content changed`);

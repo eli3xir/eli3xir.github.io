@@ -287,7 +287,7 @@
 <p>深度可分离卷积块由两个部分组成，分别是深度可分离卷积和1x1普通卷积，深度可分离卷积的卷积核大小一般是3x3的，便于理解的话我们可以把它当作是特征提取，1x1的普通卷积可以完成通道数的调整。</p>
 <p><img loading="lazy" src="https://gitee.com/sg2019/picgo/raw/master/20191030154355407.png" alt="20191030154355407"></p>
 <blockquote>
-<p>**深度可分离卷积块的目的是使用更少的参数来代替普通的3x3卷积。**与普通卷积相比，深度可分离卷积结构块可以减少模型的参数。</p>
+<p><strong>深度可分离卷积块的目的是使用更少的参数来代替普通的3x3卷积。</strong>与普通卷积相比，深度可分离卷积结构块可以减少模型的参数。</p>
 </blockquote>
 <pre class="hljs"><code><span class="hljs-keyword">import</span> math
 <span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
@@ -358,7 +358,7 @@
     x = _depthwise_conv_block(x, <span class="hljs-number">1024</span>, depth_multiplier, strides=(<span class="hljs-number">2</span>, <span class="hljs-number">2</span>), block_id=<span class="hljs-number">12</span>)
     x = _depthwise_conv_block(x, <span class="hljs-number">1024</span>, depth_multiplier, block_id=<span class="hljs-number">13</span>)
 </code></pre>
-<p><img loading="lazy" src="/assets/img/236bd9d67c24.png" alt="img"></p>
+<p><img width="468" height="175" loading="lazy" src="/assets/img/236bd9d67c24.png" alt="img"></p>
 <p>FaceNet总体训练流程如下：</p>
 <ul>
 <li>将图像通过深度卷积神经网络映射到128维的特征空间（欧几里得空间）中，得到对应的128维特征向量</li>

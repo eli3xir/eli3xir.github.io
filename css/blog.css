@@ -169,6 +169,7 @@ a:hover { text-decoration: underline; }
 .post-content strong { color: #fff; }
 .post-content img {
   max-width: 100%;
+  height: auto;
   border-radius: 10px;
   border: 1px solid var(--border);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);

@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const MarkdownIt = require('markdown-it');
 const hljs = require('highlight.js');
+const { imageDimensions } = require('./image-dimensions.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const POSTS_DIR = path.join(__dirname, 'posts');
@@ -131,7 +132,12 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
 for (const p of posts) {
   const { body: protectedBody, maths } = protectMath(p.body);
   const html = restoreMath(md.render(protectedBody), maths)
-    .replace(/<img /g, '<img loading="lazy" ');
+    .replace(/<img\b[^>]*>/g, tag => {
+      const src = tag.match(/\bsrc="([^"]+)"/)?.[1];
+      const size = src && imageDimensions(ROOT, src);
+      const dimensions = size ? `width="${size.width}" height="${size.height}" ` : '';
+      return tag.replace('<img ', `<img ${dimensions}loading="lazy" `);
+    });
   const katexHead = p.hasMath
     ? `<link rel="stylesheet" href="/vendor/katex/katex.min.css">
   <script defer src="/vendor/katex/katex.min.js"></script>
