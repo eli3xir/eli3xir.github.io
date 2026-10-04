@@ -8,13 +8,15 @@ tags:
 abbrlink: 41604
 date: 2021-06-20 04:06:18
 description:
+source_url: https://www.cnblogs.com/maomaozi/p/14111386.html
+source_name: 猫猫子 · 传输层-Transport Layer（上）
 ---
 
 ## 6.1 传输层概述
 
 这一篇文章会介绍一下传输层的功能、提供给上层的服务，以及传输层是如何完成差错控制、流量控制、拥塞控制等任务的。
 
-![image-20201130223407352](https://articlecdn.lmonkey.com/upload/img/088cd95f86ddbe97bdc3f43cfd7af1a2.png)
+![image-20201130223407352](/assets/blog/transport/image-20201130223407352.png)
 
 ### 6.1.1 传输层概述
 
@@ -26,7 +28,7 @@ description:
 2. 发送**数据段segment**
 3. 区分属于不同进程的segment
 
-![image-20201130223416156](https://articlecdn.lmonkey.com/upload/img/0ee0072d217154df02fb1a04ff4c70a3.png)
+![image-20201130223416156](/assets/blog/transport/image-20201130223416156.png)
 
 同时，传输层还决定了究竟提供哪种类型的服务。
 
@@ -40,7 +42,7 @@ description:
 
 ### 6.1.3 传输服务原语
 
-![image-20201201202034298](https://articlecdn.lmonkey.com/upload/img/93968d70b798ed528dd4bcbc5ba9f58d.png)
+![image-20201201202034298](/assets/blog/transport/image-20201201202034298.png)
 
 ## 6.2 传输协议的要素
 
@@ -56,11 +58,11 @@ description:
 
 连接建立的过程是一个很经典的**三次握手**的过程如下：
 
-![image-20201201210722137](https://articlecdn.lmonkey.com/upload/img/e1c4de94952a9a97bbf108b6c0e2e34a.png)
+![image-20201201210722137](/assets/blog/transport/image-20201201210722137.png)
 
 简单的三次握手其实包含了很多考量，如在连接建立时发送的序列号（是为了防止早先发送的数据包超时到达导致重复接受），以及设置的计时器，等等。主机发送一个连接建立请求（CR），接收方收到后返回一个ACK表示已经收到，并返回一个自己的起始需要y（Host2的后续数据包将从y开始发送），最后主机一把对于这一消息的确认夹带在需要发送的数据中。下面我们考虑几种特殊的情况（其实在实际的操作过程中是很容易发生的）
 
-![image-20201201212125705](https://articlecdn.lmonkey.com/upload/img/f3288630ae8adc1ac05f4f3247ed7875.png)
+![image-20201201212125705](/assets/blog/transport/image-20201201212125705.png)
 
 首先考虑上图的情况。主机1在很久之前向主机2发送了一个连接请求，而当这个请求真正到达的时候H1已经不再需要这个连接了。在这种情况下，尽管主机2并不知道到达的这个请求是否是真心实意的需要建立，H2仍旧可以通过确认机制实现对于数据包的判断（如，H1已经不需要这个连接，就会向H2发送拒绝的数据）
 
@@ -72,7 +74,7 @@ description:
 
 连接释放的问题相对复杂。一个典型的例子是**两军对垒问题**（感兴趣的同学可以搜索一下，这里不再花费大量篇幅展开）。总之，不存在一种两方都完全确认并做好准备的释放连接。现在的释放连接方法分成两种，**对称释放与非对称释放**
 
-![image-20201201215820238](https://articlecdn.lmonkey.com/upload/img/2953c50c4bb91e45da1220ca9b48db4b.png)
+![image-20201201215820238](/assets/blog/transport/image-20201201215820238.png)
 
 ###### **非对称释放**
 
@@ -100,7 +102,7 @@ description:
 
 除了在网络层讲到了的三种解决方案之外，在传输层还有一个方法可以用于缓解地址匮乏问题，那就是多路复用（multiplexing）。
 
-![image-20201201223636997](https://articlecdn.lmonkey.com/upload/img/c118c43fe35d30c7757b9fb266745c20.png)
+![image-20201201223636997](/assets/blog/transport/image-20201201223636997.png)
 
 上图中左图使用的方法就是多路复用。同一个地址上到达的端，分给不同的进程（前面已经讲过传输层和网络层接入点的问题）。相对应的，另一种方法称为逆向多路复用，即把一个连接的流量分给多条路径。通过逆向多路复用，传输层可以合并多条低速链路，把他们当作一条高速链路来使用。
 
@@ -112,7 +114,7 @@ description:
 
 ### 6.3.1 最大-最小公平
 
-![image-20201201225303356](https://articlecdn.lmonkey.com/upload/img/c1a670cf09caa218d3cb5b61308bdb9c.png)
+![image-20201201225303356](/assets/blog/transport/image-20201201225303356.png)
 
 上图很形象的阐述了最大最小公平的原则：如果分配给一个流的带宽，在不减少分配给另一个流带宽的前提下，无法得到进一步增长，那么就不分配给这个流更多带宽。
 
@@ -124,11 +126,11 @@ description:
 
 在传输层，**发送速率会受到两个因素的影响。分别是流量控制和拥塞控制。**当接收端没有足够的缓冲区，据必须进行流量控制；而拥塞控制针对的是网络层容量不足的情况，如下图。
 
-![image-20201202161631678](https://articlecdn.lmonkey.com/upload/img/ac07ca0255fcf4330a7a177564ac9f2d.png)
+![image-20201202161631678](/assets/blog/transport/image-20201202161631678.png)
 
 ###### **加法递增与乘法递减：AIMD-additive increase and multiplicative decrease**
 
-![image-20201202162808486](https://articlecdn.lmonkey.com/upload/img/4cb0c1a442246cb383993b801ca6c3e4.png)
+![image-20201202162808486](/assets/blog/transport/image-20201202162808486.png)
 
 我们还是通过图片来理解。假设在某一条网络上存在两个用户（或着说，两个数据流）同时需要占用带宽。我们构建一个坐标系，横轴是用户1的实际带宽，纵轴是用户2的带宽，网络的总容量为C。由于两个用户处于一个网络下，易知对于任意的x，y，一定存在：
 
@@ -146,11 +148,11 @@ $$
 
 而之所以加法只用在增加，乘法只用在减少，是由于TCP拥塞控制中的**稳定性观点：**驱使网络拥堵非常容易，而想要使其恢复，则相对困难。因此，**递增策略应相对温柔，递减策略应相对积极**。
 
-![image-20201202165453828](https://articlecdn.lmonkey.com/upload/img/eb051b8efc37a94a45d6a33bc2271e9e.png)
+![image-20201202165453828](/assets/blog/transport/image-20201202165453828.png)
 
 对于刚才的网络，我们假设当前网络的效率处在A点。（即用户1 的带宽位x1，用户2的带宽为x2）
 
-![image-20201202205405024](https://articlecdn.lmonkey.com/upload/img/2cc1a9f15a24faa94457e64879f108f0.png)
+![image-20201202205405024](/assets/blog/transport/image-20201202205405024.png)
 
 从A点开始，首先进行加法递增（蓝紫色实线）。当X+Y到达1号点，超出了网络的容量之后，网络层会向用户发送一个拥塞信号，这是各个用户开始使用乘法递减原则，共同减少自己占用的带宽，到达2号点（路径为途中红色实线）。反复执行这一流程多次后，系统会慢慢趋近最优点。
 

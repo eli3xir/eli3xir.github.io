@@ -72,6 +72,8 @@ const posts = fs.readdirSync(POSTS_DIR).filter((f) => f.endsWith('.md')).map((fi
     tags: (Array.isArray(data.tags) ? data.tags : []).filter((t) => t && t !== 'null'),
     categories: (Array.isArray(data.categories) ? data.categories : []).filter((c) => c && c !== 'null'),
     description: typeof data.description === 'string' ? data.description : '',
+    sourceUrl: /^https?:\/\//.test(data.source_url || '') ? data.source_url : '',
+    sourceName: data.source_name || '',
     slug: String(data.abbrlink || file.replace(/\.md$/, '')),
     body,
     hasMath: /\$\$|\\\(|\\frac|\\sum|\\int/.test(body),
@@ -151,7 +153,7 @@ for (const p of posts) {
         ${p.tags.map((t) => `<span class="chip">${esc(t)}</span>`).join('')}
       </div>
     </div>
-    <article class="post-content">${html}</article>
+    <article class="post-content">${html}</article>${p.sourceUrl ? `\n    <p class="post-source">文章与图示出处：<a href="${esc(p.sourceUrl)}" target="_blank" rel="noopener">${esc(p.sourceName || p.sourceUrl)}</a>。配图保留原署名。</p>` : ''}
     <a class="back-link" href="./index.html">← 返回文章列表</a>
   </main>
   `;

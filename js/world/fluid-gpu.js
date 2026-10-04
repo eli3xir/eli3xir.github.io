@@ -30,5 +30,8 @@ export function createGpuFluid(renderer){
  };
  // An advertised extension alone does not prove this framebuffer format works.
  const complete=withState(()=>{const gl=renderer.getContext();renderer.setRenderTarget(dye.read);return gl.checkFramebufferStatus(gl.FRAMEBUFFER)===gl.FRAMEBUFFER_COMPLETE;});
- if(!complete){api.dispose();return null;}reset();return api;
+ if(!complete){api.dispose();return null;}reset();
+ // Prime the first pointer/drop kernel in scratch storage without touching the
+ // velocity, pressure, dye or simulation clock that will be handed off.
+ withState(()=>{uniforms.amount.value=0;run('splat',forward,dye.read.texture);uniforms.amount.value=1;});return api;
 }

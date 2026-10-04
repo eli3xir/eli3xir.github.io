@@ -46,12 +46,7 @@ try{
         });
         const issues=log.drain();report.routes.push({route,viewport,...metrics,...issues});
         assert.equal(metrics.path,route);assert.equal(metrics.overflow,false);assert.equal(metrics.continuous,true);
-        const failures=issues.failed.filter(issue=>{
-          if(new URL(issue.url).hostname==='articlecdn.lmonkey.com'){
-            report.knownExternalFailures.push({route,...issue});return false;
-          }return true;
-        });
-        assert.equal(metrics.canvasCount,1);assert.deepEqual(issues.errors,[]);assert.deepEqual(failures,[]);
+        assert.equal(metrics.canvasCount,1);assert.deepEqual(issues.errors,[]);assert.deepEqual(issues.failed,[]);
         console.log(`ROUTE ${viewport.width} ${route}: ${metrics.drawCalls} calls / ${metrics.triangles} triangles`);
       }catch(error){report.failures.push(`${viewport.width} ${route}: ${error.message}`);console.log(`FAIL ${viewport.width} ${route}: ${error.message}`);}
     }

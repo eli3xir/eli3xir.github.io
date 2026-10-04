@@ -36,5 +36,15 @@ addEventListener('message',event=>{if(event.origin!==location.origin||event.sour
  if(active){if(data.snapshot)model.restore(data.snapshot);else{if(Number.isInteger(data.color))model.select(data.color);model.setPaused(data.paused);}}
  rendering();if(!active){const snapshot=model.snapshot(),f=snapshot.field;parent.postMessage({type:'fluid-state',epoch,snapshot},location.origin,[f.velocity.buffer,f.pressure.buffer,f.dye.buffer]);}else draw(performance.now());
 });
-resize();rendering();if(parent!==window)parent.postMessage({type:'fluid-ready'},location.origin);
+// Include the hidden drop and keyboard target before the first interaction.
+if(renderer)await renderer.compileAsync(scene,camera);
+resize();
+if(renderer){
+ // Transmission renders a second shader variant. Prime the real render passes
+ // synchronously, then restore the idle frame before the browser can paint.
+ const objects=[model.cell.drop,model.cell.target],visible=objects.map(object=>object.visible);
+ objects.forEach(object=>{object.visible=true;});renderer.render(scene,camera);
+ objects.forEach((object,i)=>{object.visible=visible[i];});draw(performance.now());
+}
+rendering();if(parent!==window)parent.postMessage({type:'fluid-ready'},location.origin);
 window.fluidExperiment={model,renderer,actor,camera,diagnostics:()=>({...model.diagnostics(),frames,drag,epoch,point:[...point],resources:renderer?{...renderer.info.memory}:null})};

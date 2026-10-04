@@ -1,6 +1,12 @@
 import fs from 'node:fs';import path from 'node:path';import { fileURLToPath } from 'node:url';import { execFileSync } from 'node:child_process';
+import {createHash} from 'node:crypto';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const failures=[];const warnings=[];
+const restored=JSON.parse(fs.readFileSync(path.join(root,'assets/blog/transport/manifest.json'),'utf8'));
+for(const image of restored.images){
+  const bytes=fs.readFileSync(path.join(root,image.local));
+  if(createHash('sha256').update(bytes).digest('hex')!==image.sha256)failures.push(`Restored article image changed: ${image.local}`);
+}
 try{execFileSync(process.execPath,['tools/pack-room-lightmaps.mjs','--check'],{cwd:root,stdio:'pipe'});}catch(error){failures.push(`Lightmap bundle: ${error.stderr||error.message}`);}
 function files(dir,excluded=new Set(['.git','node_modules','temp-docs','.playwright-cli'])){
   return fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>excluded.has(entry.name)?[]:entry.isDirectory()?files(path.join(dir,entry.name),excluded):[path.join(dir,entry.name)]);
@@ -36,7 +42,11 @@ for(const file of articles){
   const relative=path.relative(root,file).replaceAll('\\','/');
   const current=fs.readFileSync(file,'utf8').match(/<article class="post-content">([\s\S]*?)<\/article>/)?.[1];
   const baseline=execFileSync('git',['show',`8485a72:${relative}`],{cwd:root,encoding:'utf8'}).match(/<article class="post-content">([\s\S]*?)<\/article>/)?.[1];
-  const normalize=html=>html?.replace(/\r/g,'').replace('https://repo.openeuler.org/openEuler-20.03-LTS/ISO/x86_64/openEuler-20.03-LTS-x86_64-dvd.iso','/download/openEuler-20.03-LTS-x86_64-dvd.iso');
+  const normalize=html=>{
+    let content=html?.replace(/\r/g,'').replace('https://repo.openeuler.org/openEuler-20.03-LTS/ISO/x86_64/openEuler-20.03-LTS-x86_64-dvd.iso','/download/openEuler-20.03-LTS-x86_64-dvd.iso');
+    if(relative===restored.article.slice(1))for(const image of restored.images)content=content?.replaceAll(image.local,image.original);
+    return content;
+  };
   if(normalize(current)!==normalize(baseline))failures.push(`${relative}: article content changed`);
 }
 console.log(JSON.stringify({pages:html.length,articles:articles.length,warnings,failures},null,2));
