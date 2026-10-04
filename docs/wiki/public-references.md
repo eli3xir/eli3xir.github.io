@@ -117,3 +117,5 @@ Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐�
 组成原理的七份 CSDN 文件名与原 alt 时间戳一致，实际查看系统、运算、存储、指令、CPU、总线和 I/O 架构图，保留原文八次展示；扫描图作者仍未知，不能把存储平台写成作者。Python 笔记的 [Vim 键位图](https://doc.shiyanlou.com/document-uid731737labid7100timestamp1531381084391.png) 与旧文件名一致，图内标明 ViEmu、fdl 汉化；源内容实际是 JPEG，按 JPEG 保存。人脸项目的 [深度可分离卷积图](https://img-blog.csdnimg.cn/20191030154355407.png) 与原 alt 同名且内容相符。上述九份唯一文件均实际查看并保留原字节。
 
 MTCNN 级联与图像金字塔的两张时间戳图片尚未确认。已检索到 OpenCV 学堂的级联说明及 [码农的后花园文章](https://www.cnblogs.com/xiamuzi/p/13637756.html)，但相似段落不足以确认原图或裁切，未将候选图发布为恢复结果。此次恢复只用于既有技术文章，不用于网站品牌、3D 美术或原创署名。
+
+2026-10-04 阅读 MDN 的 [dialog 元素](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog) 与 [showModal](https://developer.mozilla.org/en-US/docs/Web/API/HTMLDialogElement/showModal)，核对顶层模态框、背景不可交互、初始焦点及可见关闭入口；没有依赖较新的 closedby 或声明式调用属性。继续阅读 [WAI-ARIA APG 模态框模式](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/)，按其键盘行为实现双向焦点循环、Escape 和返回入口。实际 Chromium 检查中第五次 Tab 曾落到 BODY，因此补充了显式首尾循环；这不等于已完成全部浏览器或辅助技术验证。

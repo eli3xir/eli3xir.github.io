@@ -1,6 +1,7 @@
 import { SKINS, readSetting } from './domain.js';
 import { MOVEMENTS } from '../audio/composition.js';
 import {bindArticleNavigation} from './article-navigation.js';
+import {bindArticleImages} from './article-images.js';
 
 export function pageContent(doc,route) {
   if(route.id==='home')return null;
@@ -76,14 +77,7 @@ export function enhanceContent(main,route,{signal,score,world,announce,reading})
 
 function enhancePost(main,{signal,announce}) {
   const article=main.querySelector('.post-content');if(!article)return;
-  article.querySelectorAll('img').forEach(img=>{
-    const fallback=()=>{
-      if(img.dataset.fallback)return;img.dataset.fallback='true';
-      const link=document.createElement('a');link.className='image-fallback';link.href=img.src;link.target='_blank';link.rel='noopener';
-      link.textContent=`${img.alt||'文章配图'} · 原始图片暂时无法加载，查看来源 ↗`;img.hidden=true;img.after(link);
-    };
-    img.addEventListener('error',fallback,{signal});if(img.complete&&img.naturalWidth===0)fallback();
-  });
+  bindArticleImages(article,{signal});
   article.querySelectorAll('pre').forEach(pre=>{
     const oldBar=pre.querySelector('.code-bar');if(oldBar)oldBar.remove();
     const bar=document.createElement('div');bar.className='code-bar';

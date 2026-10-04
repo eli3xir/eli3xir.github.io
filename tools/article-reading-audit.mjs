@@ -3,6 +3,7 @@ import {startServer,launchBrowser,ready,settle,observe,output,publicRoutes} from
 const server=process.env.BASE_URL?{base:process.env.BASE_URL,close:async()=>{}}:await startServer(),browser=await launchBrowser();
 const report={base:server.base,pages:[],cases:[],failures:[]};fs.mkdirSync(output,{recursive:true});
 const routes=publicRoutes().filter(route=>/^\/blog\/\d+/.test(route));
+const unavailable=JSON.parse(fs.readFileSync('assets/blog/recovered/manifest.json','utf8')).articles.flatMap(article=>article.unresolved.map(image=>image.original));
 async function open(page,path='/blog/41604.html'){await page.goto(server.base+path);await ready(page);await settle(page);await page.waitForFunction(()=>getComputedStyle(document.querySelector('#content')).display==='grid');await page.evaluate(()=>document.fonts.ready);}
 async function layout(page,advance=true){return page.evaluate(async advance=>{
  const T=await import('three'),w=window.studio.world;if(advance)w.frame(performance.now());w.model.root.updateMatrixWorld(true);w.actor.root.updateMatrixWorld(true);w.camera.updateMatrixWorld(true);
@@ -13,7 +14,9 @@ async function layout(page,advance=true){return page.evaluate(async advance=>{
   left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);
   if(x>copy.left-4&&x<copy.right+4&&y>copy.top-4&&y<copy.bottom+4)overlap++;
  }});
+ const localImages=[...document.querySelectorAll('.post-content img[src^="/"]')],imageButtons=[...document.querySelectorAll('.article-image-open')];
  return{left,right,top,bottom,overlap,copyBottom:copy.bottom,heroBottom:hero.bottom,overflow:document.documentElement.scrollWidth-innerWidth,
+  localImages:localImages.length,imageButtons:imageButtons.length,imageTargets:imageButtons.every(button=>{const rect=button.getBoundingClientRect();return rect.width>=44&&rect.height>=44;}),
   font:parseFloat(getComputedStyle(document.querySelector('.post-content')).fontSize),title:document.querySelector('.hero-title').textContent,
   entries:w.route.readingEntries.length,headings:document.querySelectorAll('.post-content h1,.post-content h2,.post-content h3').length,
   validLinks:w.route.readingEntries.every(entry=>document.getElementById(decodeURIComponent(new URL(entry.href,location.href).hash.slice(1)))),book:w.model.diagnostics()};
@@ -31,18 +34,24 @@ try{
   report.cases.push({name:'full page-turn geometry clears long title',viewport,poses});await context.close();console.log(`PASS continuous chapter composition ${viewport.width}`);
  }
  if(!process.env.ARTICLE_INTERACTION_ONLY)for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
-  const context=await browser.newContext({viewport,reducedMotion:'reduce'}),page=await context.newPage(),log=observe(page);await open(page,routes[0]);
+  const context=await browser.newContext({viewport,reducedMotion:'reduce'}),page=await context.newPage(),log=observe(page);
+  // The source audit established these two exact originals as unavailable.
+  // Reproduce their 404 UI deterministically; keep every other failure fatal.
+  for(const url of unavailable)await page.route(url,route=>route.fulfill({status:404,contentType:'text/plain',body:'Not found'}));
+  await open(page,routes[0]);
   for(const path of routes){
    if(new URL(page.url()).pathname!==path){await page.evaluate(path=>window.studio.router.navigate(path),path);await settle(page);}
    const result=await layout(page);assert.equal(result.overflow,0,path);assert.equal(result.overlap,0,`${path}: book crosses copy ${JSON.stringify(result)}`);
    assert.ok(result.left>=-1&&result.right<=viewport.width+1,`${path}: book is cropped ${JSON.stringify(result)}`);
    assert.ok(result.bottom<result.heroBottom-60,path);assert.ok(result.font>=16);assert.equal(result.entries,Math.max(1,result.headings));assert.equal(result.validLinks,true);
+   assert.equal(result.imageButtons,result.localImages,path);assert.equal(result.imageTargets,true,path);
    assert.equal(await page.locator('.hero-title').textContent(),await page.evaluate(()=>window.studio.route.contentTitle));
    if(result.headings){assert.equal(await page.locator('.studio-toc a').count(),result.headings);assert.equal(await page.locator('.reading-outline').evaluate(e=>e.open),viewport.width>1250);}
    report.pages.push({path,viewport,...result});
    if(['41604','59698','65374','39544'].some(id=>path.includes(id)))await page.screenshot({path:`${output}/article-hero-${path.split('/').pop()}-${viewport.width}.png`});
   }
-  assert.deepEqual(log.errors,[]);assert.deepEqual(log.failed,[]);await context.close();console.log(`PASS all 39 article titles, chapters and composed scenes ${viewport.width}`);
+  assert.deepEqual(log.errors,[]);assert.ok(log.failed.every(item=>unavailable.includes(item.url)&&item.status===404),JSON.stringify(log.failed));
+  report.simulatedUnavailable=unavailable;await context.close();console.log(`PASS all 39 article titles, chapters and composed scenes ${viewport.width}`);
  }
  for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
   const context=await browser.newContext({viewport,recordVideo:process.env.RECORD_VIDEO?{dir:output,size:viewport}:undefined}),page=await context.newPage(),log=observe(page);await open(page);
