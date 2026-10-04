@@ -10,6 +10,7 @@
     "test:browser": "node tools/browser-audit.mjs",
     "test:performance": "node tools/performance-audit.mjs",
     "test:first-interaction": "node tools/first-interaction-audit.mjs",
+    "test:quality": "node tools/quality-audit.mjs",
     "test:article-images": "node tools/article-images-audit.mjs",
     "test:audio": "node tools/audio-audit.mjs",
     "test:loading": "node tools/room-loading-audit.mjs",

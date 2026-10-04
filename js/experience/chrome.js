@@ -1,4 +1,5 @@
-import { CHAPTERS, readSetting, writeSetting } from './domain.js';
+import { CHAPTERS } from './domain.js';
+import {visualQuality,setVisualQuality,watchVisualQuality} from './visual-quality.js';
 
 const mark = `<svg viewBox="0 0 32 38" aria-hidden="true"><path d="M12 2h8M14 3v10L5 29q-2 7 6 7h10q8 0 6-7L18 13V3" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M9 26q6-4 14 0M12 30h1m5 1h1" stroke="currentColor" fill="none"/></svg>`;
 
@@ -18,8 +19,9 @@ export function createChrome(score, callbacks) {
       <label>画面质量<select aria-label="画面质量"><option value="auto">自动</option><option value="high">精细</option><option value="low">省电</option></select></label>
       <p>原创配乐 · AFTER HOURS<br>每一个声音都从代码里长出来。</p></div></details>`;
   dock.querySelector('input').addEventListener('input',e=>score.setVolume(e.target.value));
-  const quality=dock.querySelector('select');quality.value=readSetting('visual-quality','auto');
-  quality.addEventListener('change',e=>{writeSetting('visual-quality',e.target.value);callbacks.quality();});
+  const quality=dock.querySelector('select');quality.value=visualQuality();
+  quality.addEventListener('change',e=>setVisualQuality(e.target.value));
+  watchVisualQuality(value=>{quality.value=value;});
   const button=dock.querySelector('.sound-toggle');
   const bars=[...dock.querySelectorAll('.sound-bars i')];let meterFrame=0;
   const motion=matchMedia('(prefers-reduced-motion: reduce)');

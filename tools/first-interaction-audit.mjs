@@ -2,12 +2,13 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {startServer,launchBrowser,ready,settle,observe,output} from './browser-support.mjs';
 const server=process.env.BASE_URL?{base:process.env.BASE_URL,close:async()=>{}}:await startServer(),browser=await launchBrowser();
-const report={base:server.base,note:'Fresh browser contexts; measurements include the first control activation. Frame cadence is desktop emulation, not physical-phone GPU time.',cases:[],failures:[]};
+const report={base:server.base,quality:process.env.QUALITY_MODE||'auto',note:'Fresh browser contexts; measurements include the first control activation. Frame cadence is desktop emulation, not physical-phone GPU time.',cases:[],failures:[]};
 fs.mkdirSync(output,{recursive:true});
 try{
  for(const viewport of [{width:1440,height:1000},{width:390,height:844}])for(const id of ['fluid','breakout']){
   const context=await browser.newContext({viewport,deviceScaleFactor:viewport.width<700?3:2}),page=await context.newPage(),log=observe(page);
   await page.goto(server.base+`/lab/${id}.html`);await ready(page);await settle(page);
+  if(process.env.QUALITY_MODE){await page.locator('.sound-settings summary').click();await page.getByLabel('画面质量',{exact:true}).selectOption(process.env.QUALITY_MODE);await page.locator('.sound-settings summary').click();}
   await page.locator('.hero-copy .explore-button').click();const frame=await(await page.locator('.experiment-frame').elementHandle()).contentFrame();
   await frame.waitForFunction(id=>window[id+'Experiment']?.diagnostics().active,id);
   await page.evaluate(()=>document.querySelector('.experiment-frame').scrollIntoView({block:'center',behavior:'instant'}));await page.waitForTimeout(220);

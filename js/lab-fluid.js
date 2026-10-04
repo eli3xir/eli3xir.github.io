@@ -1,3 +1,4 @@
+import {configureLabQuality} from './experience/lab-quality.js';
 import * as THREE from 'three';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {createFluid} from './world/fluid.js';
@@ -5,6 +6,7 @@ import {createCharacter} from './world/character.js';
 import {fluidControls} from './experience/fluid-controls.js';
 let canvas=document.getElementById('scene'),renderer=null;
 try{renderer=new THREE.WebGLRenderer({canvas,antialias:true});}catch{const replacement=canvas.cloneNode();canvas.replaceWith(replacement);canvas=replacement;}
+const redrawQuality=renderer?configureLabQuality(renderer,{mobile:1.3,desktop:1.6,shadows:false}):()=>{};
 document.body.classList.add('fluid-playing');canvas.classList.add('fluid-canvas');canvas.tabIndex=0;canvas.setAttribute('aria-label','混色玻璃：按住拖动，方向键移动滴色点，空格滴色');canvas.style.touchAction='none';
 const model=createFluid(renderer),events=new AbortController(),reduced=matchMedia('(prefers-reduced-motion: reduce)');let active=parent===window,epoch=0,frames=0,drag=null,point=[.58,.74],scene,camera,actor,ctx,image,small,smallContext;
 model.setActive(active);
@@ -12,7 +14,7 @@ const notify=()=>{if(parent!==window){const d=model.diagnostics();parent.postMes
 const controls=fluidControls({signal:events.signal,onColor:value=>model.select(value),onDrop:()=>model.addDrop({uv:point,reduced:reduced.matches}),onClear:()=>{model.clear();controls.announce('清水已备好，再给一点颜色。');},onPause:value=>model.setPaused(value)});document.body.append(controls.element);
 model.onState=state=>{controls.set(state);notify();};model.onDrop=()=>{controls.announce('这一滴已融入，拖动看看它的去向。');if(parent!==window)parent.postMessage({type:'lab-reveal'},location.origin);};controls.set(model.diagnostics());
 if(renderer){
- renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.96;renderer.setPixelRatio(Math.min(devicePixelRatio,innerWidth<700?1.3:1.6));scene=new THREE.Scene();scene.background=new THREE.Color(0x13251e);
+ renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.96;scene=new THREE.Scene();scene.background=new THREE.Color(0x13251e);
  const environmentScene=new RoomEnvironment(),generator=new THREE.PMREMGenerator(renderer),environment=generator.fromScene(environmentScene,.04);scene.environment=environment.texture;scene.environmentIntensity=.4;environmentScene.dispose();generator.dispose();scene.add(new THREE.HemisphereLight(0xd9e6ce,0x302714,.7));const key=new THREE.DirectionalLight(0xffe7c3,1.7);key.position.set(-3,4,5);scene.add(key);camera=new THREE.PerspectiveCamera(38,1,.05,30);scene.add(model.root);
  actor=createCharacter();actor.root.scale.setScalar(.55);model.actorAnchor.add(actor.root);
 }else{
@@ -47,4 +49,5 @@ if(renderer){
  objects.forEach((object,i)=>{object.visible=visible[i];});draw(performance.now());
 }
 rendering();if(parent!==window)parent.postMessage({type:'fluid-ready'},location.origin);
+if(renderer)redrawQuality(()=>renderer.render(scene,camera));
 window.fluidExperiment={model,renderer,actor,camera,diagnostics:()=>({...model.diagnostics(),frames,drag,epoch,point:[...point],resources:renderer?{...renderer.info.memory}:null})};

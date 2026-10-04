@@ -20,6 +20,7 @@ import {bindGalaxy} from './galaxy.js';
 import {bindGlass} from './glass.js';
 import {bindBreakout} from './breakout.js';
 import {bindBullet} from './bullet.js';
+import {visualQuality,watchVisualQuality} from './visual-quality.js';
 
 const original=document.cloneNode(true);
 const score=new Score();
@@ -41,7 +42,9 @@ function announce(message,href=null){
   if(href){const a=document.createElement('a');a.href=href;a.target='_self';a.textContent='直接打开';live.append(a);}
   live.classList.add('show');toastTimer=setTimeout(()=>live.classList.remove('show'),href?15000:3200);
 }
-const chrome=createChrome(score,{quality:()=>world?.resize(),announce});
+const chrome=createChrome(score,{announce});
+const sendQuality=()=>document.querySelector('.experiment-frame')?.contentWindow?.postMessage({type:'visual-quality',value:visualQuality()},location.origin);
+watchVisualQuality(()=>{world?.applyQuality();sendQuality();});
 document.body.append(skip,stage,chrome.header,view,chrome.dock,chrome.corner,status,live,tooltip,preview,curtain);
 
 function sceneStatus(progress,message,error){
@@ -142,6 +145,7 @@ router=new Router({score,mount,announce,onIntent:url=>{
 addEventListener('keydown',event=>{if(event.key==='Escape'){unfocus();document.querySelector('.sound-settings').open=false;}});
 addEventListener('message',event=>{
   const frame=document.querySelector('.experiment-frame');if(event.origin!==location.origin||event.source!==frame?.contentWindow)return;
+  if(event.data?.type==='visual-quality-request')sendQuality();
   if(event.data?.type==='lab-navigate'&&typeof event.data.path==='string'&&event.data.path.startsWith('/'))router.navigate(event.data.path);
   if(event.data?.type==='lab-interact'&&!['breakout','bullet'].includes(route?.experimentId))score.cue('hover');if(event.data?.type==='lab-reveal'){score.cue('reveal');world?.actor.react();}
 });

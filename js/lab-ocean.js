@@ -1,3 +1,4 @@
+import {configureLabQuality} from './experience/lab-quality.js';
 /* Sailing shares the miniature's boat and height field; W/S, A/D and orbit remain. */
 import * as THREE from 'three';
 import {createSailboat} from './world/sailboat.js';
@@ -11,8 +12,9 @@ try{renderer=new THREE.WebGLRenderer({canvas,antialias:true});}catch{
   const message=document.createElement('p');message.className='ocean-unavailable';message.textContent='当前设备无法显示 3D 海面。可以返回实验室，继续探索其他内容。';canvas.replaceWith(message);
 }
 if(renderer){
+const redrawQuality=configureLabQuality(renderer,{mobile:1.25,desktop:1.6,shadows:false});
 document.body.classList.add('ocean-playing');
-renderer.setPixelRatio(Math.min(devicePixelRatio,innerWidth<700?1.25:1.6));renderer.setSize(innerWidth,innerHeight);
+renderer.setSize(innerWidth,innerHeight);
 renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.93;
 const scene=new THREE.Scene();scene.fog=new THREE.Fog(new THREE.Color().setRGB(.61,.68,.62),85,240);
 scene.add(new THREE.HemisphereLight(0xc4d5d1,0x24433d,1.1));
@@ -75,5 +77,6 @@ function frame(now){
 }
 renderer.setAnimationLoop(frame);
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
-window.oceanExperiment={diagnostics:()=>({speed,heading,wind,targetWind,time,visible,renderedFrames,position:boat.position.toArray(),samples,held:[...keyboard,...touches.values()],calls:renderer.info.render.calls,triangles:renderer.info.render.triangles}),boat,water:sea.water};
+redrawQuality(()=>renderer.render(scene,camera));
+window.oceanExperiment={renderer,diagnostics:()=>({speed,heading,wind,targetWind,time,visible,renderedFrames,position:boat.position.toArray(),samples,held:[...keyboard,...touches.values()],calls:renderer.info.render.calls,triangles:renderer.info.render.triangles}),boat,water:sea.water};
 }

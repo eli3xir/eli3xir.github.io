@@ -13,7 +13,8 @@ import { disposeGroup } from './materials.js';
 import { FilmShader } from './film.js';
 import { createStage } from './stage.js';
 import { composeHero } from './composition.js';
-import { readSetting, nextBeatDelay } from '../experience/domain.js';
+import { nextBeatDelay } from '../experience/domain.js';
+import {visualQuality,qualityRatio} from '../experience/visual-quality.js';
 import { BPM } from '../audio/composition.js';
 
 export class World {
@@ -77,23 +78,28 @@ export class World {
     },options);
     this.reduced.addEventListener('change',()=>{
       if(this.reduced.matches){this.focusJourney=null;this.offsetCamera();this.camera.position.copy(this.desiredCamera);this.target.copy(this.desiredTarget);}
-      this.moving=1;
+      this.applyQuality();
     },options);
     this.resize();this.start();
   }
 
   resize() {
     this.focusJourney=null;
-    const quality=readSetting('visual-quality','auto');
-    const ratio=quality==='low'?1:quality==='high'?Math.min(devicePixelRatio,2):Math.min(devicePixelRatio,innerWidth<700?1.25:1.6);
-    this.renderer.setPixelRatio(ratio);this.renderer.setSize(innerWidth,innerHeight);
-    this.composer.setPixelRatio(ratio);this.composer.setSize(innerWidth,innerHeight);
+    this.applyQuality();this.renderer.setSize(innerWidth,innerHeight);
+    this.composer.setSize(innerWidth,innerHeight);
     this.camera.aspect=innerWidth/innerHeight;
-    this.bloom.enabled=quality!=='low'&&!this.reduced.matches;
-    this.key.castShadow=quality!=='low'&&this.route?.id!=='home';
     this.setRig();
     if(this.model){this.camera.position.copy(this.desiredCamera);this.camera.lookAt(this.desiredTarget);composeHero(this);}
     this.offsetCamera();this.camera.updateProjectionMatrix();this.moving=1;this.updateVisibility();
+  }
+
+  applyQuality(){
+    const quality=visualQuality(),ratio=qualityRatio();
+    if(this.renderer.getPixelRatio()!==ratio){this.renderer.setPixelRatio(ratio);this.composer.setPixelRatio(ratio);}
+    this.bloom.enabled=quality!=='low'&&!this.reduced.matches;
+    this.renderer.shadowMap.enabled=quality!=='low';
+    this.key.castShadow=quality!=='low'&&this.route?.id!=='home';
+    this.moving=1;this.updateVisibility();
   }
 
   offsetCamera() {
@@ -134,7 +140,7 @@ export class World {
     this.bloom.threshold=this.bakedLighting?8:1.35;
     this.key.intensity=this.bakedLighting?2:16;this.rim.intensity=this.bakedLighting?3:22;
     this.fill.intensity=this.bakedLighting?.35:2;
-    this.key.castShadow=readSetting('visual-quality','auto')!=='low'&&route.id!=='home';
+    this.key.castShadow=visualQuality()!=='low'&&route.id!=='home';
     this.scene.background.setRGB(...(this.model.background||[16/255,21/255,19/255]));
     this.floor.visible=route.id!=='home'&&this.model.floor!==false;
     this.offsetCamera();this.setRig();

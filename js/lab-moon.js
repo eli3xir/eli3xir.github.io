@@ -1,3 +1,4 @@
+import {configureLabQuality} from './experience/lab-quality.js';
 import * as THREE from 'three';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {createLander} from './world/lunar-lander.js';
@@ -12,8 +13,9 @@ try{renderer=new THREE.WebGLRenderer({canvas,antialias:true});}catch{
  const message=document.createElement('p');message.className='ocean-unavailable';message.textContent='当前设备无法显示 3D 月面。可以返回实验室继续探索。';canvas.replaceWith(message);button.disabled=true;stat.textContent='3D 暂不可用';
 }
 if(renderer){
+const redrawQuality=configureLabQuality(renderer,{mobile:1.4,desktop:1.75,shadows:true});
  document.body.classList.add('moon-playing');canvas.tabIndex=0;canvas.setAttribute('aria-label','月面视角：拖拽或用方向键环视，Home 恢复视角');canvas.style.touchAction='none';
- renderer.setPixelRatio(Math.min(devicePixelRatio,innerWidth<700?1.4:1.75));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+ renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
  const scene=new THREE.Scene();scene.background=new THREE.Color(0x05070b);scene.add(new THREE.HemisphereLight(0xa6b6c5,0x5e5545,.48));
  const sun=new THREE.DirectionalLight(0xfff0d7,3.2);sun.position.set(-20,19,15);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=sun.shadow.camera.bottom=-13;sun.shadow.camera.right=sun.shadow.camera.top=13;sun.shadow.camera.near=.5;sun.shadow.camera.far=80;sun.shadow.normalBias=.022;sun.shadow.bias=-.00006;scene.add(sun);
  const environmentScene=new RoomEnvironment(),generator=new THREE.PMREMGenerator(renderer),environment=generator.fromScene(environmentScene,.08);scene.environment=environment.texture;scene.environmentIntensity=.28;environmentScene.dispose();generator.dispose();
@@ -53,5 +55,6 @@ if(renderer){
  });
  addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);if(!active)draw(performance.now());});
  draw(performance.now());rendering();if(parent!==window)parent.postMessage({type:'moon-ready'},location.origin);
- window.moonExperiment={flight,lander,terrain,effects,renderer,scene,camera,crew,diagnostics:()=>({...flight.sample(),...effects.diagnostics(),active,epoch,frames,drag,yaw,pitch,zoom,resources:{...renderer.info.memory},calls:renderer.info.render.calls})};
+ redrawQuality(()=>renderer.render(scene,camera));
+window.moonExperiment={flight,lander,terrain,effects,renderer,scene,camera,crew,diagnostics:()=>({...flight.sample(),...effects.diagnostics(),active,epoch,frames,drag,yaw,pitch,zoom,resources:{...renderer.info.memory},calls:renderer.info.render.calls})};
 }
