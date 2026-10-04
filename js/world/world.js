@@ -248,7 +248,7 @@ export class World {
         this.model.root.scale.setScalar((this.model.displayScale||1)*(this.layoutScale||1)*(1-this.transition*.08));
       }
     }
-    this.actor.update(t,rhythm,this.pointer,this.route?.id==='about',dt,this.model?.actorMotion);
+    this.actor.update(t,rhythm,this.pointer,this.route?.id==='about',dt,this.model?.actorMotion,reduced?0:now/1000);
     const actorPos=this.route?.id==='home'&&this.focused?ROOM_VIEWS[this.focused].target.map((value,i)=>value+(i===1?.4:i===2?-.18:0)):((this.compact&&this.model?.actorMobilePosition)||this.model?.actorPosition||[0,0,0]);
     const actorScale=this.layoutScale||1;
     const journey=this.transition*this.transition*(3-2*this.transition);

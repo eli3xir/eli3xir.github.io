@@ -35,14 +35,16 @@ export function createCharacter() {
   let surprise = 0;
   const handDirection=new THREE.Vector3(.12,-.08,.03).normalize(),gripDirection=new THREE.Vector3(),gripRotation=new THREE.Quaternion(),headInverse=new THREE.Matrix4();
   const handLength=Math.hypot(.12,.08,.03);
-  return { root, beacon:lamp, react() { surprise = 1; }, update(time, rhythm, pointer, large = false,dt=1/60,motion=null) {
+  return { root, beacon:lamp, react() { surprise = 1; }, update(time, rhythm, pointer, large = false,dt=1/60,motion=null,expressionTime=time) {
     surprise *= Math.exp(-dt*2.2);
     const beat=rhythm.beat||0,mood=rhythm.energy??.55;
     head.position.y = (motion?.grounded?0:Math.sin(beat*Math.PI) * .026 + rhythm.pulse * .015) + surprise * .07;
     const action=Math.min(1,(motion?.run||0)+(motion?.swim||0)+(motion?.reach||0));
     head.rotation.y = (pointer.x * .35 + Math.sin(time * .5) * .12)*(1-action);
     head.rotation.z = Math.sin(beat*Math.PI) * .04*(.5+mood*.5);
-    const blink = time % 5.3 > 5.15 ? .12 : 1;
+    // A resting expression finishes even while the musical timeline is paused.
+    const closing=(expressionTime%5.3-5.1)/.2;
+    const blink=closing>0&&closing<1?1-.88*Math.sin(closing*Math.PI)**2:1;
     eyes.forEach(eye => { eye.scale.y = blink + surprise * .4; });
     limbs.forEach((arm,i)=>{
       const swing=Math.sin((motion?.phase||0)+i*Math.PI),run=motion?.run||0,swim=motion?.swim||0;
