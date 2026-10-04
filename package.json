@@ -22,7 +22,8 @@
     "test:ocean": "node tools/ocean-audit.mjs",
     "test:partext": "node tools/partext-audit.mjs",
     "test:moon": "node tools/moon-audit.mjs",
-    "test:fluid": "node tools/fluid-audit.mjs"
+    "test:fluid": "node tools/fluid-audit.mjs",
+    "test:trails": "node tools/trails-audit.mjs"
   },
   "engines": {
     "node": ">=22"

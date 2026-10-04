@@ -15,6 +15,7 @@ import {bindOcean} from './ocean.js';
 import {bindPartext} from './partext.js';
 import {bindMoon} from './moon.js';
 import {bindFluid} from './fluid.js';
+import {bindTrails} from './trails.js';
 
 const original=document.cloneNode(true);
 const score=new Score();
@@ -94,6 +95,7 @@ async function mount(doc,url){
   if(route.experimentId==='partext')bindPartext(section,main,{world,score,signal:contentEvents.signal});
   if(route.experimentId==='moon')bindMoon(section,main,{world,score,signal:contentEvents.signal});
   if(route.experimentId==='fluid')bindFluid(section,main,{world,score,signal:contentEvents.signal});
+  if(route.experimentId==='trails')bindTrails(section,main,{world,score,signal:contentEvents.signal});
   if(route.id==='lab'&&!route.experiment&&world){
     const trigger=document.createElement('button');trigger.type='button';trigger.className='explore-button reaction-trigger';
     trigger.textContent='试一次反应 ↗';trigger.setAttribute('aria-label','触发药瓶反应');

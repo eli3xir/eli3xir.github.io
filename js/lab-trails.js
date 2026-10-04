@@ -1,97 +1,29 @@
-/* 星轨实验：长曝光星轨（绕北极星旋转累积轨迹）+ 流星 */
-(function () {
-  const canvas = document.getElementById('scene');
-  const ctx = canvas.getContext('2d');
-  let W, H, dpr;
-
-  // 中心（北极星位置），可拖动
-  let cx, cy;
-
-  const stars = [];
-  const N = 900;
-
-  function init() {
-    dpr = Math.min(devicePixelRatio, 2);
-    W = canvas.width = innerWidth * dpr;
-    H = canvas.height = innerHeight * dpr;
-    if (cx === undefined) { cx = W * 0.5; cy = H * 0.42; }
-    stars.length = 0;
-    const maxR = Math.hypot(W, H) * 0.55;
-    for (let i = 0; i < N; i++) {
-      const r = 20 + Math.pow(Math.random(), 0.7) * maxR;
-      stars.push({
-        r,
-        a: Math.random() * Math.PI * 2,
-        // 亮度 & 色相：多数白蓝，少数暖色
-        mag: 0.3 + Math.random() * 1.6,
-        hue: Math.random() < 0.75 ? 210 + Math.random() * 30 : 30 + Math.random() * 20,
-        sat: 20 + Math.random() * 40,
-      });
-    }
-    // 初始黑底
-    ctx.fillStyle = '#02020a';
-    ctx.fillRect(0, 0, W, H);
-  }
-  init();
-  addEventListener('resize', init);
-
-  // 拖动改变环绕中心
-  let dragging = false;
-  canvas.addEventListener('pointerdown', (e) => { dragging = true; cx = e.clientX * dpr; cy = e.clientY * dpr; });
-  canvas.addEventListener('pointermove', (e) => { if (dragging) { cx = e.clientX * dpr; cy = e.clientY * dpr; } });
-  addEventListener('pointerup', () => (dragging = false));
-
-  const meteors = [];
-  function spawnMeteor() {
-    const a = Math.random() * Math.PI * 2;
-    meteors.push({
-      x: Math.random() * W, y: Math.random() * H * 0.4,
-      vx: Math.cos(a) * 8 * dpr, vy: Math.abs(Math.sin(a)) * 6 * dpr,
-      life: 1,
-    });
-  }
-
-  const SPEED = 0.00045; // 每帧角度增量（模拟地球自转）
-
-  function loop() {
-    requestAnimationFrame(loop);
-    // 半透明覆盖，形成轨迹
-    ctx.fillStyle = 'rgba(2, 2, 10, 0.06)';
-    ctx.fillRect(0, 0, W, H);
-
-    ctx.lineCap = 'round';
-    for (const s of stars) {
-      const a0 = s.a;
-      s.a += SPEED * (28 / Math.sqrt(s.r)); // 近快远慢的微分，更像真实星轨
-      const x0 = cx + Math.cos(a0) * s.r, y0 = cy + Math.sin(a0) * s.r;
-      const x1 = cx + Math.cos(s.a) * s.r, y1 = cy + Math.sin(s.a) * s.r;
-      ctx.strokeStyle = `hsla(${s.hue}, ${s.sat}%, ${70 + s.mag * 10}%, ${0.35 + s.mag * 0.25})`;
-      ctx.lineWidth = s.mag * dpr * 0.8;
-      ctx.beginPath();
-      ctx.moveTo(x0, y0);
-      ctx.lineTo(x1, y1);
-      ctx.stroke();
-    }
-
-    // 北极星亮点
-    ctx.fillStyle = 'rgba(255, 250, 230, 0.9)';
-    ctx.beginPath();
-    ctx.arc(cx, cy, 2.2 * dpr, 0, 6.29);
-    ctx.fill();
-
-    // 流星
-    if (Math.random() < 0.004 && meteors.length < 3) spawnMeteor();
-    for (let i = meteors.length - 1; i >= 0; i--) {
-      const m = meteors[i];
-      m.x += m.vx; m.y += m.vy; m.life -= 0.015;
-      if (m.life <= 0) { meteors.splice(i, 1); continue; }
-      ctx.strokeStyle = `rgba(255, 255, 255, ${m.life * 0.8})`;
-      ctx.lineWidth = 1.5 * dpr;
-      ctx.beginPath();
-      ctx.moveTo(m.x, m.y);
-      ctx.lineTo(m.x - m.vx * 6, m.y - m.vy * 6);
-      ctx.stroke();
-    }
-  }
-  loop();
-})();
+import * as THREE from 'three';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {createTrails} from './world/trails.js';
+import {createExposure} from './world/star-exposure.js';
+import {createCharacter} from './world/character.js';
+import {trailsControls} from './experience/trails-controls.js';
+import {createTrailsCanvas} from './experience/trails-canvas.js';
+let canvas=document.getElementById('scene'),renderer=null;try{renderer=new THREE.WebGLRenderer({canvas,antialias:true});}catch{const replacement=canvas.cloneNode();canvas.replaceWith(replacement);canvas=replacement;}
+document.body.classList.add('trails-playing');canvas.classList.add('trails-canvas');canvas.tabIndex=0;canvas.setAttribute('aria-label','星轨观测台：拖动或方向键移动天极，空格开始曝光');canvas.style.touchAction='none';
+const model=renderer?createTrails():null,exposure=model?.exposure||createExposure(),reduced=matchMedia('(prefers-reduced-motion: reduce)'),events=new AbortController();let active=parent===window,epoch=0,frames=0,drag=null,last=null,scene,camera,actor,flat=renderer?null:createTrailsCanvas(canvas);
+let sent='';const send=()=>{if(parent===window||!active)return;const snapshot=exposure.snapshot(),key=JSON.stringify(snapshot);if(key!==sent){sent=key;parent.postMessage({type:'trails-settings',epoch,snapshot},location.origin);}};
+const changed=()=>{controls.set(exposure.state);send();},launch=options=>{if(!active)return;if(model?model.launch({reduced:reduced.matches,...options}):exposure.launch({reduced:reduced.matches,...options})){changed();if(!model&&exposure.state.mode==='complete')complete();}};
+const controls=trailsControls({signal:events.signal,onSelect:hours=>{if(!active)return;exposure.select(hours);changed();},onLaunch:()=>launch(),onPause:value=>{if(!active)return;exposure.pause(value);changed();},onReset:()=>{if(!active)return;exposure.reset();changed();}});document.body.append(controls.element);controls.set(exposure.state);
+const complete=()=>{if(!reduced.matches)actor?.react();if(parent!==window)parent.postMessage({type:'lab-reveal'},location.origin);};if(model){model.onState=changed;model.onComplete=complete;model.setActive(active);}
+if(renderer){renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.92;renderer.setPixelRatio(Math.min(devicePixelRatio,innerWidth<700?1.3:1.6));scene=new THREE.Scene();scene.background=new THREE.Color(0x13201f);const room=new RoomEnvironment(),generator=new THREE.PMREMGenerator(renderer),environment=generator.fromScene(room,.04);scene.environment=environment.texture;scene.environmentIntensity=.6;room.dispose();generator.dispose();scene.add(new THREE.HemisphereLight(0xdbe2d1,0x242414,.65));const key=new THREE.DirectionalLight(0xffdfb2,2.1);key.position.set(-3,4,5);scene.add(key);camera=new THREE.PerspectiveCamera(38,1,.05,30);scene.add(model.root);actor=createCharacter();actor.root.scale.setScalar(.55);model.actorAnchor.add(actor.root);}
+else document.querySelector('.demo-hud p').textContent='平面观测图 · 拖动取景，方向键与空格也可操作。';
+const ray=new THREE.Raycaster(),mouse=new THREE.Vector2(),neutral={beat:0,pulse:0,energy:.5};
+function locate(event){if(flat)return flat.locate(event);const box=canvas.getBoundingClientRect();mouse.set((event.clientX-box.left)/box.width*2-1,1-(event.clientY-box.top)/box.height*2);ray.setFromCamera(mouse,camera);const p=model.hitSky(ray);return p?[p[0]/1.42,p[1]/1.42]:null;}
+canvas.addEventListener('pointerdown',event=>{if(!active||drag!==null)return;const p=locate(event);if(!p){if(model?.pick(ray)?.kind==='shutter')launch();return;}canvas.setPointerCapture(event.pointerId);canvas.focus({preventScroll:true});drag=event.pointerId;exposure.aim(...p);send();});canvas.addEventListener('pointermove',event=>{if(drag!==event.pointerId)return;const p=locate(event);if(p){exposure.aim(...p);send();}});for(const name of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(name,event=>{if(drag===event.pointerId)drag=null;});addEventListener('blur',()=>{drag=null;});
+canvas.addEventListener('keydown',event=>{if(!active||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' ','Enter','Home'].includes(event.key))return;event.preventDefault();if(event.key===' '||event.key==='Enter')launch();else if(event.key==='Home')exposure.aim(0,0);else{const p=exposure.state.target;exposure.aim(p[0]+(event.key==='ArrowLeft'?-.1:event.key==='ArrowRight'?.1:0),p[1]+(event.key==='ArrowUp'?.1:event.key==='ArrowDown'?-.1:0));}send();});
+function draw(now){const dt=last===null?0:Math.max(0,(now-last)/1000);last=now;if(renderer){model.update(0,neutral,0,now/1000,false);actor.update(0,neutral,mouse,false,reduced.matches?0:Math.min(dt,.05),{grounded:true},reduced.matches?0:now/1000);renderer.render(scene,camera);frames++;}else{if(active&&!document.hidden&&exposure.update(dt))complete();controls.set(exposure.state);if(flat.draw(exposure.state))frames++;}send();}
+function resize(){const width=innerWidth,height=Math.max(140,Math.floor(controls.element.getBoundingClientRect().top-76));canvas.style.width=width+'px';canvas.style.height=height+'px';if(renderer){renderer.setSize(width,height,false);camera.aspect=width/height;camera.position.set(0,.15,Math.max(7,6.5/camera.aspect));camera.lookAt(0,-.04,0);camera.updateProjectionMatrix();}else flat.resize(width,height);draw(performance.now());}
+let handle=0,drawn=0;function cpuFrame(now){if(!active||document.hidden)return;if(now-drawn>32){draw(now);drawn=now;}handle=requestAnimationFrame(cpuFrame);}
+function rendering(){last=null;model?.setActive(active&&!document.hidden);if(renderer)renderer.setAnimationLoop(active&&!document.hidden?draw:null);else{cancelAnimationFrame(handle);if(active&&!document.hidden)handle=requestAnimationFrame(cpuFrame);}}
+document.addEventListener('visibilitychange',()=>{drag=null;rendering();});addEventListener('resize',resize);
+addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==parent)return;const data=event.data;if(data?.type==='trails-owner'&&Number.isSafeInteger(data.epoch)&&typeof data.active==='boolean'){epoch=data.epoch;active=data.active;drag=null;if(active&&data.snapshot)exposure.restore(data.snapshot);rendering();controls.set(exposure.state);if(!active)parent.postMessage({type:'trails-state',epoch,snapshot:exposure.snapshot()},location.origin);else draw(performance.now());}
+ else if(data?.type==='trails-action'&&data.epoch===epoch&&active){if(data.action==='launch')launch(data.value);if(data.action==='select')exposure.select(data.value);if(data.action==='pause')exposure.pause(data.value);if(data.action==='reset')exposure.reset();if(data.action==='aim'&&Array.isArray(data.value)&&data.value.length===2&&data.value.every(Number.isFinite))exposure.aim(...data.value);changed();}
+});resize();rendering();if(parent!==window)parent.postMessage({type:'trails-ready'},location.origin);
+window.trailsExperiment={model,exposure,renderer,camera,actor,diagnostics:()=>({...exposure.state,active,frames,drag,epoch,resources:renderer?{...renderer.info.memory}:null})};

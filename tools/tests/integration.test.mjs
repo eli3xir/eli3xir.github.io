@@ -15,8 +15,8 @@ test('repeated integration preserves ES module experiments and the classic boots
 });
 
 test('a classic canvas experiment stays classic and gets one bootstrap',()=>{
-  const result=integrate('<html><head></head><body><script src="/js/lab-trails.js"></script></body></html>',true);
-  assert.ok(result.includes('data-src="/js/lab-trails.js" data-module="false"'));
+  const result=integrate('<html><head></head><body><script src="/js/lab-glass.js"></script></body></html>',true);
+  assert.ok(result.includes('data-src="/js/lab-glass.js" data-module="false"'));
   assert.equal((result.match(/<script src="\/js\/experience\/lab-host.js">/g)||[]).length,1);
 });
 

@@ -1,0 +1,12 @@
+import {starSeeds,rotateStar,meteorProgress} from '../world/star-exposure.js';
+export function createTrailsCanvas(canvas){
+ const ctx=canvas.getContext('2d'),stars=starSeeds(),colors=stars.map(s=>s.warm?'237,197,142':'173,205,229');let width=1,height=1,ratio=1,last='';
+ function location(){return{x:width*.5,y:height*.48,r:Math.min(width*.44,height*.47)};}
+ return{resize(w,h){width=w;height=h;ratio=Math.min(devicePixelRatio,1.3);canvas.width=Math.round(w*ratio);canvas.height=Math.round(h*ratio);last='';},
+  locate(event){const b=canvas.getBoundingClientRect(),l=location(),x=(event.clientX-b.left-l.x)/l.r,y=(l.y-event.clientY+b.top)/l.r;return x*x+y*y<=1?[x,y]:null;},
+  draw(state){const key=[state.start,state.angle,...state.pole].join(':');if(key===last)return false;last=key;ctx.setTransform(ratio,0,0,ratio,0,0);ctx.fillStyle='#13201f';ctx.fillRect(0,0,width,height);const l=location();ctx.fillStyle='#08121c';ctx.beginPath();ctx.arc(l.x,l.y,l.r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#b89b65';ctx.lineWidth=1;ctx.stroke();ctx.save();ctx.clip();
+   const steps=Math.max(1,Math.ceil(state.angle/.065));stars.forEach((star,i)=>{const facing=Math.max(0,rotateStar(star,state.start+state.angle*.5,state.pole)[2]);ctx.strokeStyle=`rgba(${colors[i]},${(.11+star.brightness*.26)*facing**1.5})`;ctx.lineWidth=.55+star.size*.25;ctx.beginPath();let drawing=false;for(let j=0;j<=steps;j++){const p=rotateStar(star,state.start+state.angle*j/steps,state.pole),x=l.x+p[0]*l.r,y=l.y-p[1]*l.r;if(p[2]<0){drawing=false;continue;}if(drawing)ctx.lineTo(x,y);else ctx.moveTo(x,y);drawing=true;}if(state.angle>.001)ctx.stroke();const p=rotateStar(star,state.start+state.angle,state.pole);if(p[2]>0){ctx.fillStyle=`rgba(${colors[i]},${(.25+star.brightness*.55)*Math.min(1,p[2]/.13)})`;ctx.beginPath();ctx.arc(l.x+p[0]*l.r,l.y-p[1]*l.r,Math.max(.45,star.size*.65),0,Math.PI*2);ctx.fill();}});
+   const meteor=meteorProgress(state);if(meteor>0){ctx.strokeStyle='#d4cdb1';ctx.globalAlpha=.35;ctx.beginPath();let drawing=false;for(let i=0;i<=Math.floor(meteor*24);i++){const x=-.88+i/24*1.4,y=.9-i/24*.42,p=rotateStar({r:Math.hypot(x,y)/1.43,z:Math.sqrt(1.43**2-x*x-y*y)/1.43,angle:Math.atan2(y,x)},0,state.pole);if(p[2]<0){drawing=false;continue;}if(drawing)ctx.lineTo(l.x+p[0]*l.r,l.y-p[1]*l.r);else ctx.moveTo(l.x+p[0]*l.r,l.y-p[1]*l.r);drawing=true;}ctx.stroke();ctx.globalAlpha=1;}ctx.restore();return true;
+  }
+ };
+}

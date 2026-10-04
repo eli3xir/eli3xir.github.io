@@ -75,3 +75,7 @@ Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐�
 染料校正对照 Selle 等的 [An Unconditionally Stable MacCormack Method](https://yingjie.math.gatech.edu/publications/SFKLR.pdf) 及 [作者书目页](https://andyselle.com/papers/7/)，阅读前向/反向误差估计与限制器，保留局部极值约束；没有将当前实现描述为已证明二阶精度。Stanford 镜像本次返回 404，已通过作者提供的 Georgia Tech PDF 核对正文。
 
 同时核对固定 [Three.js r185 WebGLRenderer](https://github.com/mrdoob/three.js/blob/r185/src/renderers/WebGLRenderer.js) 的目标切换/浮点回读和 [WebGLCapabilities](https://github.com/mrdoob/three.js/blob/r185/src/renderers/webgl/WebGLCapabilities.js) 的类型支持。当前以 RGBA32F 附件与手工双线性取样避免依赖浮点线性过滤，检测扩展后再检查帧缓冲完整性；交接使用同步回读，未宣称完全没有主线程停顿。所有混色器几何、染料、玻璃和输入动作由本站代码产生，没有引入外部流体视频或图片。
+
+2026-10-04 阅读 IAU [Startrails — First Place](https://iauarchive.eso.org/public/images/detail/ann21047m/) 的说明，并下载、实际查看该页星轨照片：地球自转轴定义天极，北极星靠近天极但不是严格重合；前景树木与固定背景提供尺度。本站采用共同角速度和稳定装置的构图关系，页面称“天极”，未把参考图片发布为资产。
+
+同轮阅读 ESO [A hypnotising view of Paranal](https://www.eso.org/public/images/potw2546a/) 关于长曝光和叠加固定画面、天极旋转的文字；图片请求失败，没有将该图记为已观看。数值核对 NASA [Earth Fact Sheet](https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html) 的 23.9345 小时恒星自转周期，以及 USNO [Sidereal Time](https://aa.usno.navy.mil/data/siderealtime) 对约 23 小时 56 分恒星日的解释。本站将一至六小时加速为数秒并标注示意星空；颜色、星位、相机与曝光弧线均由原创代码生成，不推断实际观测日期或地点。
