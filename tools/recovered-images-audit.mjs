@@ -5,11 +5,12 @@ import {startServer,launchBrowser,ready,settle,observe,output} from './browser-s
 const articles=JSON.parse(fs.readFileSync('assets/blog/recovered/manifest.json','utf8')).articles;
 const server=process.env.BASE_URL?{base:process.env.BASE_URL,close:async()=>{}}:await startServer();
 const browser=await launchBrowser(),report={base:server.base,cases:[],failures:[]};
+const layoutOnly=process.env.RECOVERED_LAYOUT_ONLY==='1';
 fs.mkdirSync(output,{recursive:true});
 try{
  for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
   const context=await browser.newContext({viewport,reducedMotion:'reduce'}),page=await context.newPage();
-  for(const article of articles){
+  if(!layoutOnly)for(const article of articles){
    const unresolved=new Set(article.unresolved.map(image=>image.original));
    // Explicitly exercise the existing failed-image UI for the two unresolved
    // originals. Their real HTTP 404 responses are recorded in the source audit.
@@ -43,6 +44,9 @@ try{
   try{
    await page.goto(server.base+'/blog/59698.html#section-10',{waitUntil:'domcontentloaded'});await ready(page);await settle(page);
    await page.waitForFunction(()=>document.activeElement.id==='section-10');
+   // Compare image-induced movement after typography has settled. A late
+   // font may reflow the title while native scroll anchoring holds the target.
+   await page.evaluate(()=>document.fonts.ready);
    const positions=()=>page.locator('.post-content h1,.post-content h2,.post-content h3').evaluateAll(nodes=>nodes.map(node=>node.getBoundingClientRect().top+scrollY));
    const before=await positions(),reserved=await page.locator('.post-content img[src^="/assets/blog/recovered/"]').evaluateAll(images=>images.map(image=>({height:image.getBoundingClientRect().height,naturalWidth:image.naturalWidth})));
    assert.equal(reserved.length,26);assert.ok(reserved.every(image=>image.height>0&&image.naturalWidth===0));
@@ -54,8 +58,23 @@ try{
    report.cases.push({name:'26 recovered images preserve direct chapter link',viewport,reserved,before,after});
    console.log(`PASS delayed restored figures and direct chapter ${viewport.width}`);
   }finally{release();await context.close();}
+  const fontContext=await browser.newContext({viewport,reducedMotion:'reduce'}),fontPage=await fontContext.newPage();
+  let releaseFont,intercepted=false;const fontGate=new Promise(resolve=>{releaseFont=resolve;});
+  await fontPage.route('**/assets/fonts/SpaceGrotesk.ttf',async route=>{intercepted=true;await fontGate;await route.continue();});
+  const position=()=>fontPage.evaluate(()=>({top:document.querySelector('#section-10').getBoundingClientRect().top,scroll:scrollY,
+   titleHeight:document.querySelector('.post-head h2').getBoundingClientRect().height,active:document.activeElement.id,index:window.studio.world.model.index,
+   fonts:document.fonts.status,overflow:document.documentElement.scrollWidth>innerWidth}));
+  try{
+   await fontPage.goto(server.base+'/blog/59698.html#section-10',{waitUntil:'domcontentloaded'});await ready(fontPage);await settle(fontPage);
+   await fontPage.waitForFunction(()=>document.activeElement.id==='section-10');
+   const before=await position();assert.equal(intercepted,true);assert.equal(before.fonts,'loading');releaseFont();
+   await fontPage.evaluate(()=>document.fonts.ready);await fontPage.waitForTimeout(150);const after=await position();
+   assert.equal(after.fonts,'loaded');assert.equal(after.active,'section-10');assert.equal(after.index,10);assert.equal(after.overflow,false);
+   assert.ok(Math.abs(before.top-62)<1&&Math.abs(after.top-62)<1,JSON.stringify({before,after}));
+   report.cases.push({name:'late font preserves viewport reading position',viewport,before,after});console.log(`PASS delayed font and viewport reading position ${viewport.width}`);
+  }finally{releaseFont();await fontContext.close();}
  }
- assert.equal(report.cases.reduce((count,result)=>count+(result.images?.length||0),0),130);
+ assert.equal(report.cases.reduce((count,result)=>count+(result.images?.length||0),0),layoutOnly?0:130);
 }catch(error){report.failures.push(error.stack);process.exitCode=1;}
 finally{fs.writeFileSync(`${output}/recovered-images-audit.json`,JSON.stringify(report,null,2));await browser.close();await server.close();}
 console.log(JSON.stringify({cases:report.cases.length,failures:report.failures}));
