@@ -12,17 +12,17 @@ description:
 
 ## 1. 基本概念
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616174517.png)
+![在这里插入图片描述](/assets/blog/recovered/db034ec0177a3466.png)
 
 ## 2. 数据通信基本知识
 
 ### 2.1 一个数据通信例子
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616174512.png)
+![在这里插入图片描述](/assets/blog/recovered/19cbf2019eead2fa.png)
 
 ### 2.2 相关术语
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616174528.png)
+![在这里插入图片描述](/assets/blog/recovered/97f1cbbb3acdf0bd.png)
 
 ### 2.3 三种通讯方式
 
@@ -39,7 +39,7 @@ description:
 | 串行传输 | 速度慢，省钱，适合远距离 |
 | 并行传输 | 速度快，耗钱，适合近距离 |
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616174815.png)
+![在这里插入图片描述](/assets/blog/recovered/06f221fb335db2a2.png)
 
 ## 2.5 码元（Symbol）
 
@@ -65,19 +65,19 @@ $码元所带信息量（比特数）=log_2(码元进制数)$
 ### 2.9 奈式准则（Nyquist）
 
 是在**理想状态下**得出的结论
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616175143.png)
+![在这里插入图片描述](/assets/blog/recovered/3eae4e421061ad73.png)
 
 ### 2.10 香农公式（Shannon）
 
 是在**有噪声的信道中**得出的结论
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616175302.png)
+![在这里插入图片描述](/assets/blog/recovered/8b2b59bc2fab53d7.png)
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616175314.png)
+![在这里插入图片描述](/assets/blog/recovered/42be0549f6901324.png)
 
 ### 2.11 基带信号和宽带/带通信号（Base band，pass band）
 
 计算机网络中用的基带信号是**数字信号**
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616175253.png)
+![在这里插入图片描述](/assets/blog/recovered/6ad1515ef65ea02b.png)
 
 ### 2.12 编码
 
@@ -85,11 +85,11 @@ $码元所带信息量（比特数）=log_2(码元进制数)$
 
 数字数据（digital data）通过 数字发送器（digit emitter）转化为 数字信号（digital signal）
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616175353.png)
+![在这里插入图片描述](/assets/blog/recovered/03ecc45179b83846.png)
 
 模拟数据（analog data）通过 PCM编码器（PCM coder)）转化为 数字信号 （digital signal）
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616175357.png)
+![在这里插入图片描述](/assets/blog/recovered/884f13bd431bc451.png)
 
 - **单极性不归零编码**：只使用一个电压值，高电平表示1，低电平表示0。
 
@@ -99,7 +99,7 @@ $码元所带信息量（比特数）=log_2(码元进制数)$
 
 - **双极性归零编码**：正负零三个电平，信号本身携带同步信息。
 
-  ![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616175523.png)
+  ![在这里插入图片描述](/assets/blog/recovered/23bfa5cc5f317453.png)
 
 - **曼彻斯特编码**：单极性编码的缺点是没有办法区分此时是没有信号，还是有信号，但是信号是0。
 
@@ -107,21 +107,21 @@ $码元所带信息量（比特数）=log_2(码元进制数)$
 
 - **差分曼彻斯特编码**：抗干扰能力比曼彻斯特编码更强。bit与bit之间有信号跳变，表示下一个bit为0，bit与bit之间没有信号跳变，表示下一个bit为1。
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616175615.png)
+![在这里插入图片描述](/assets/blog/recovered/fea715abdbb69ad1.png)
 
 ### 2.13 调制：数据转化为模拟信号（了解）
 
 常用的调制方法：调频（AM），调频（FM），调相（PM）
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616175638.png)
+![在这里插入图片描述](/assets/blog/recovered/afda57783aad2dd2.png)
 
 模拟数据（analog data）通过调制器（modulator）转化为模拟信号（analog signal）
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616175645.png)
+![在这里插入图片描述](/assets/blog/recovered/9ced39b86f3f57e8.png)
 
 数字数据（digital data）通过调制器（modulator）转化为模拟信号（analog signal）
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616180008.png)
+![在这里插入图片描述](/assets/blog/recovered/9d7aec2621372021.png)
 
 ## 3. 物理层传输介质
 
@@ -137,25 +137,25 @@ $码元所带信息量（比特数）=log_2(码元进制数)$
 
 根据有无屏蔽层分为**屏蔽双绞线（STP）**和**无屏蔽双绞线（UTP）**
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616180249.png)
+![在这里插入图片描述](/assets/blog/recovered/c64b4ce79a366450.png)
 
 #### 3.1.2 同轴电缆（Coaxial Cable）
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616180253.png)
+![在这里插入图片描述](/assets/blog/recovered/a10b7ab7637f9620.png)
 
 #### 3.1.3 光纤（Optical fiber）
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616180258.png)
+![在这里插入图片描述](/assets/blog/recovered/f9c8762fb03f4078.png)
 
 根据**入射角**不同，又分为单模光纤和多模光纤
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616180352.png)
+![在这里插入图片描述](/assets/blog/recovered/724d4dc9dea9796a.png)
 
 ### 3.2 常见的非导向性传输介质
 
 包括**无线电波**，**微波**，**红外线**和**激光**等
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616180409.png)
+![在这里插入图片描述](/assets/blog/recovered/f173ea3a09e8e741.png)
 
 ## 4. 物理层设备
 
@@ -167,17 +167,17 @@ $码元所带信息量（比特数）=log_2(码元进制数)$
 - 4是指在这些网段中的物理层网络设备（中继器，集线器）最多不超过4个
 - 3是指这些网段中最多只有三个网段挂有计算机
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616180516.png)
+![在这里插入图片描述](/assets/blog/recovered/923681cd71421d7c.png)
 
 ## 4.2 集线器（Hub）
 
 集线器是个大的冲突域，同时**只能有两个设备进行通讯**，只会传输信号，没有智能。
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616180507.png)
+![在这里插入图片描述](/assets/blog/recovered/53a6abc6ff3e5dbd.png)
 
 # 5. 本章思维导图
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210616180504.png)
+![在这里插入图片描述](/assets/blog/recovered/4e4690b77a01dcc4.png)
 
 ---
 

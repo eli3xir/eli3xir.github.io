@@ -11,6 +11,7 @@ const { imageDimensions } = require('./image-dimensions.js');
 const ROOT = path.resolve(__dirname, '..');
 const POSTS_DIR = path.join(__dirname, 'posts');
 const OUT_DIR = path.join(ROOT, 'blog');
+const recoveredFigures = require('../assets/blog/recovered/manifest.json').articles;
 
 /* ---------- front matter 解析（YAML 子集：标量 + 列表） ---------- */
 function parseFrontMatter(src) {
@@ -75,6 +76,7 @@ const posts = fs.readdirSync(POSTS_DIR).filter((f) => f.endsWith('.md')).map((fi
     description: typeof data.description === 'string' ? data.description : '',
     sourceUrl: /^https?:\/\//.test(data.source_url || '') ? data.source_url : '',
     sourceName: data.source_name || '',
+    imageSources: recoveredFigures.find(article => article.article === `/blog/${data.abbrlink}.html`)?.credits || [],
     slug: String(data.abbrlink || file.replace(/\.md$/, '')),
     body,
     hasMath: /\$\$|\\\(|\\frac|\\sum|\\int/.test(body),
@@ -159,7 +161,7 @@ for (const p of posts) {
         ${p.tags.map((t) => `<span class="chip">${esc(t)}</span>`).join('')}
       </div>
     </div>
-    <article class="post-content">${html}</article>${p.sourceUrl ? `\n    <p class="post-source">文章与图示出处：<a href="${esc(p.sourceUrl)}" target="_blank" rel="noopener">${esc(p.sourceName || p.sourceUrl)}</a>。配图保留原署名。</p>` : ''}
+    <article class="post-content">${html}</article>${p.sourceUrl ? `\n    <p class="post-source">文章与图示出处：<a href="${esc(p.sourceUrl)}" target="_blank" rel="noopener">${esc(p.sourceName || p.sourceUrl)}</a>。配图保留原署名。</p>` : ''}${p.imageSources.length ? `\n    <p class="post-source post-image-sources">配图参考与存档：${p.imageSources.map(source => `<a href="${esc(source.url)}" target="_blank" rel="noopener">${esc(source.label)}</a>`).join('；')}。</p>` : ''}
     <a class="back-link" href="./index.html">← 返回文章列表</a>
   </main>
   `;

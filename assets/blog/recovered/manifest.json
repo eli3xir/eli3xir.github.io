@@ -1,0 +1,1025 @@
+{
+  "reviewed": "2026-10-04",
+  "basis": "Public archive/source-file recovery. All 67 old Gitee URLs returned HTTP 404; their bytes are unavailable for comparison. Original text, figure positions and alt labels are preserved. Source bytes and visible watermarks are unmodified.",
+  "articles": [
+    {
+      "article": "/blog/19721.html",
+      "credits": [
+        {
+          "label": "网络笔记原文 · weixin_45067603",
+          "url": "https://blog.csdn.net/weixin_45067603/article/details/106974036"
+        },
+        {
+          "label": "配图公开存档（保留王道考研等原署名）",
+          "url": "https://geekdaxue.co/read/cessstudy@eygo6g/gdrwok"
+        }
+      ],
+      "images": [
+        {
+          "index": 0,
+          "alt": "img",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616173721.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/bc08cada501d249345c95ca61f153c8f.png",
+          "local": "/assets/blog/recovered/c8de0caebfe97806.png",
+          "sha256": "c8de0caebfe97806d02357b3f858c228e9c87a815888bc73df54a212898bff26",
+          "width": 312,
+          "height": 198,
+          "bytes": 23194,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 1,
+          "section": "2.4.3 时延和利用率的关系图"
+        },
+        {
+          "index": 1,
+          "alt": "img",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616173705.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/9a7e39bdb325feb6632ffc94b81f41e9.png",
+          "local": "/assets/blog/recovered/352040b4f3eb697f.png",
+          "sha256": "352040b4f3eb697ff7eed95df66f8efbaff986021460b8e37dd9be855048f1e2",
+          "width": 1262,
+          "height": 667,
+          "bytes": 408102,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 2,
+          "section": "3.2 正式认识分层结构"
+        },
+        {
+          "index": 2,
+          "alt": "img",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616174151.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/9c2dc1fdbb51a442f4190136e8671e59.png",
+          "local": "/assets/blog/recovered/b81de6d2504b9003.png",
+          "sha256": "b81de6d2504b900315747a0043672a19b4c3bc2450b7b1a1542577ae60e1f612",
+          "width": 1255,
+          "height": 674,
+          "bytes": 279221,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 3,
+          "section": "4.1 OSI流程简介"
+        },
+        {
+          "index": 3,
+          "alt": "img",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616174201.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/f862b598b751c528be2236298c45b177.png",
+          "local": "/assets/blog/recovered/7453c03d9022bcec.png",
+          "sha256": "7453c03d9022bcec93eb849974c135cc22cd41dda06090c55a0e1c49ec96c6cf",
+          "width": 1124,
+          "height": 466,
+          "bytes": 156363,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 4,
+          "section": "4.2 TCP/IP参考模型"
+        },
+        {
+          "index": 4,
+          "alt": "img",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616174240.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/1ebd288c2baf9516370eecdcfae25da0.png",
+          "local": "/assets/blog/recovered/597b6f0cc6fca4d2.png",
+          "sha256": "597b6f0cc6fca4d2508d37130c80a1025fb42562f2b23558625ff20fdda625c9",
+          "width": 1117,
+          "height": 478,
+          "bytes": 246628,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 5,
+          "section": "4.3 五层参考模型及其传输过程简介"
+        },
+        {
+          "index": 5,
+          "alt": "img",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616174324.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/468d638a850856fe297b544e92edc91c.png",
+          "local": "/assets/blog/recovered/47f49308964fa3bf.png",
+          "sha256": "47f49308964fa3bf28d9c5774563a2d6527517357f2938704c21cba7c98a708c",
+          "width": 1229,
+          "height": 478,
+          "bytes": 178604,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 6,
+          "section": "4.3 五层参考模型及其传输过程简介"
+        }
+      ],
+      "unresolved": []
+    },
+    {
+      "article": "/blog/10892.html",
+      "credits": [
+        {
+          "label": "网络笔记原文 · weixin_45067603",
+          "url": "https://blog.csdn.net/weixin_45067603/article/details/106974965"
+        },
+        {
+          "label": "配图公开存档（保留王道考研等原署名）",
+          "url": "https://geekdaxue.co/read/cessstudy@eygo6g/ap71m3"
+        }
+      ],
+      "images": [
+        {
+          "index": 0,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616174517.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/e5b2332f93b3a1405c6af3bc2d8dddde.png",
+          "local": "/assets/blog/recovered/db034ec0177a3466.png",
+          "sha256": "db034ec0177a346695b03e0cd042590a56f67b0750a6e8f720f53a0e15973c11",
+          "width": 1240,
+          "height": 653,
+          "bytes": 505830,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 1,
+          "section": "1. 基本概念"
+        },
+        {
+          "index": 1,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616174512.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/f0d7f631664c5c9b23bda039125db1e7.png",
+          "local": "/assets/blog/recovered/19cbf2019eead2fa.png",
+          "sha256": "19cbf2019eead2fac4cfa9bce3ec80ef3cf366cb1b45cf434e5806669acd3f95",
+          "width": 1234,
+          "height": 417,
+          "bytes": 238173,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 2,
+          "section": "2.1 一个数据通信例子"
+        },
+        {
+          "index": 2,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616174528.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/23318dbdb86062e0d359ba8168e90006.png",
+          "local": "/assets/blog/recovered/97f1cbbb3acdf0bd.png",
+          "sha256": "97f1cbbb3acdf0bd202ae794326f391a694ae7211315e60ddf8f4b27faac3d7c",
+          "width": 1112,
+          "height": 570,
+          "bytes": 334540,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 3,
+          "section": "2.2 相关术语"
+        },
+        {
+          "index": 3,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616174815.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/6a8d26c12861f6c8e31563237a6d5e5b.png",
+          "local": "/assets/blog/recovered/06f221fb335db2a2.png",
+          "sha256": "06f221fb335db2a2b8c6198209e8f82f961ae64ad9097bf30bb84b2b3e6503fe",
+          "width": 532,
+          "height": 244,
+          "bytes": 54933,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 4,
+          "section": "2.4 两种数据传输方式"
+        },
+        {
+          "index": 4,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616175143.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/422a185597f0818e54931770c91cb1dc.png",
+          "local": "/assets/blog/recovered/3eae4e421061ad73.png",
+          "sha256": "3eae4e421061ad73b4edf837b40c24190e878592b5dedf19b37bcf065b1d2dbc",
+          "width": 1247,
+          "height": 647,
+          "bytes": 460866,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 5,
+          "section": "2.9 奈式准则（Nyquist）"
+        },
+        {
+          "index": 5,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616175302.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/56061e36ef988728f541864a570c81d9.png",
+          "local": "/assets/blog/recovered/8b2b59bc2fab53d7.png",
+          "sha256": "8b2b59bc2fab53d7cffaae74943a1f5d380fa74cd6f48da4f485f8408e34eaa1",
+          "width": 1207,
+          "height": 527,
+          "bytes": 316455,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 6,
+          "section": "2.10 香农公式（Shannon）"
+        },
+        {
+          "index": 6,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616175314.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/c74b040cf274d1b21cfba5ec7262635e.png",
+          "local": "/assets/blog/recovered/42be0549f6901324.png",
+          "sha256": "42be0549f6901324d6a1004d7cb0a6adf4fb08f8648cc2e5ceebf2fc50fa9063",
+          "width": 1209,
+          "height": 609,
+          "bytes": 369659,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 7,
+          "section": "2.10 香农公式（Shannon）"
+        },
+        {
+          "index": 7,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616175253.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/97049d27eaa12544671d43e27e887dee.png",
+          "local": "/assets/blog/recovered/6ad1515ef65ea02b.png",
+          "sha256": "6ad1515ef65ea02b7f7f426a515b707242c06fe64f6d1025719bba5c8dc218e3",
+          "width": 877,
+          "height": 223,
+          "bytes": 140701,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 8,
+          "section": "2.11 基带信号和宽带/带通信号（Base band，pass band）"
+        },
+        {
+          "index": 8,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616175353.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/b3957a68cca8a8597d728181ea04da67.png",
+          "local": "/assets/blog/recovered/03ecc45179b83846.png",
+          "sha256": "03ecc45179b838467297b97ef052bf611425ccec08c70cb8513e3fdcd02bc51a",
+          "width": 428,
+          "height": 70,
+          "bytes": 10443,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 9,
+          "section": "2.12 编码"
+        },
+        {
+          "index": 9,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616175357.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/7bbda953240daa8f526d0f70d273ad29.png",
+          "local": "/assets/blog/recovered/884f13bd431bc451.png",
+          "sha256": "884f13bd431bc451060c2a6070f88abd3f613d51d70f3159041f4ac66f977aa0",
+          "width": 447,
+          "height": 66,
+          "bytes": 12062,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 10,
+          "section": "2.12 编码"
+        },
+        {
+          "index": 10,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616175523.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/7706721883595620533888801fb7d84c.png",
+          "local": "/assets/blog/recovered/23bfa5cc5f317453.png",
+          "sha256": "23bfa5cc5f31745380e1f5e13c485af1cf50454a61c0a91bd89170524c386eac",
+          "width": 1064,
+          "height": 484,
+          "bytes": 545080,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 11,
+          "section": "2.12 编码"
+        },
+        {
+          "index": 11,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616175615.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/9d6123c336eedbc309d66e7423a10b78.png",
+          "local": "/assets/blog/recovered/fea715abdbb69ad1.png",
+          "sha256": "fea715abdbb69ad11b55e3f5a106af2926f15871f569257772d9058bdfc45f7f",
+          "width": 1060,
+          "height": 438,
+          "bytes": 519045,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 12,
+          "section": "2.12 编码"
+        },
+        {
+          "index": 12,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616175638.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/219b4487371ec4c8d017e8a63c46db37.png",
+          "local": "/assets/blog/recovered/afda57783aad2dd2.png",
+          "sha256": "afda57783aad2dd26572be99247ca541f1e9178e422106bb079de6f5440bc515",
+          "width": 1064,
+          "height": 442,
+          "bytes": 595432,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 13,
+          "section": "2.13 调制：数据转化为模拟信号（了解）"
+        },
+        {
+          "index": 13,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616175645.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/164cad4693853cfb716c77f0594ff3fb.png",
+          "local": "/assets/blog/recovered/9ced39b86f3f57e8.png",
+          "sha256": "9ced39b86f3f57e889f65c2c7e2e633748525ee337778e796df2726d0f163db1",
+          "width": 455,
+          "height": 75,
+          "bytes": 14000,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 14,
+          "section": "2.13 调制：数据转化为模拟信号（了解）"
+        },
+        {
+          "index": 14,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616180008.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/9bfea13bcc93b3d4f511b7b35c361281.png",
+          "local": "/assets/blog/recovered/9d7aec2621372021.png",
+          "sha256": "9d7aec2621372021276da4b09411c68c985cb51a4d97c5411a2e039da766e590",
+          "width": 442,
+          "height": 65,
+          "bytes": 13154,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 15,
+          "section": "2.13 调制：数据转化为模拟信号（了解）"
+        },
+        {
+          "index": 15,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616180249.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/79c55c32b22ec911a130499238af7eef.png",
+          "local": "/assets/blog/recovered/c64b4ce79a366450.png",
+          "sha256": "c64b4ce79a366450efd74d0c0b01a511f8a99bdde06ddf395a7bfbd630954558",
+          "width": 1086,
+          "height": 565,
+          "bytes": 462133,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 16,
+          "section": "3.1.1 双绞线"
+        },
+        {
+          "index": 16,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616180253.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/7de134e0b9afddd6b0785b16e286c239.png",
+          "local": "/assets/blog/recovered/a10b7ab7637f9620.png",
+          "sha256": "a10b7ab7637f9620c69cc7cec0c533137624340034ee7d4a420886aa35d80cbc",
+          "width": 1080,
+          "height": 500,
+          "bytes": 427286,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 17,
+          "section": "3.1.2 同轴电缆（Coaxial Cable）"
+        },
+        {
+          "index": 17,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616180258.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/d683968fa644406c9f60c8fcd8701c3d.png",
+          "local": "/assets/blog/recovered/f9c8762fb03f4078.png",
+          "sha256": "f9c8762fb03f4078ceb9215fde60d36fe8129920ad2df20a453adb64fc264997",
+          "width": 1093,
+          "height": 468,
+          "bytes": 406842,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 18,
+          "section": "3.1.3 光纤（Optical fiber）"
+        },
+        {
+          "index": 18,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616180352.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/27ca2ff380597fab7a5aa8b3e335c96c.png",
+          "local": "/assets/blog/recovered/724d4dc9dea9796a.png",
+          "sha256": "724d4dc9dea9796af6972ad36b645c518d8a810083dbde7584b486633ef0b135",
+          "width": 1094,
+          "height": 587,
+          "bytes": 314527,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 19,
+          "section": "3.1.3 光纤（Optical fiber）"
+        },
+        {
+          "index": 19,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616180409.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/bebf37fedc198c79e9eb4b6ad6b6e357.png",
+          "local": "/assets/blog/recovered/f173ea3a09e8e741.png",
+          "sha256": "f173ea3a09e8e7410bda577ee763bb8ee90431028744645c15fa4b1f121d2777",
+          "width": 1101,
+          "height": 596,
+          "bytes": 330987,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 20,
+          "section": "3.2 常见的非导向性传输介质"
+        },
+        {
+          "index": 20,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616180516.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/b734cf6fb658429c4f2c491b948c97a2.png",
+          "local": "/assets/blog/recovered/923681cd71421d7c.png",
+          "sha256": "923681cd71421d7c1bedefb6dbaa02d57accbda86eba0de48682ce9a6a72b9bf",
+          "width": 1096,
+          "height": 601,
+          "bytes": 391581,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 21,
+          "section": "4.1 中继器（RP repeater）"
+        },
+        {
+          "index": 21,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616180507.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/58cb9a94c56b8dd8473568009244a686.png",
+          "local": "/assets/blog/recovered/53a6abc6ff3e5dbd.png",
+          "sha256": "53a6abc6ff3e5dbdf1e6d8e250ae51b2c7aaea18c28cf4151e5f0ef34ff13292",
+          "width": 1092,
+          "height": 525,
+          "bytes": 270121,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 22,
+          "section": "4.2 集线器（Hub）"
+        },
+        {
+          "index": 22,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210616180504.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/917bbea95fc2276b88012d90d8792f34.png",
+          "local": "/assets/blog/recovered/4e4690b77a01dcc4.png",
+          "sha256": "4e4690b77a01dcc43d6a9fd84f9ccac4cd8d0ae6efaef4d4c420cd59b4a6a332",
+          "width": 1085,
+          "height": 475,
+          "bytes": 158890,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed.",
+          "archiveFigure": 23,
+          "section": "5. 本章思维导图"
+        }
+      ],
+      "unresolved": []
+    },
+    {
+      "article": "/blog/59698.html",
+      "credits": [
+        {
+          "label": "网络笔记原文 · weixin_45067603",
+          "url": "https://blog.csdn.net/weixin_45067603/article/details/106980441"
+        },
+        {
+          "label": "配图公开存档（保留王道考研等原署名）",
+          "url": "https://geekdaxue.co/read/cessstudy@eygo6g/acda1t"
+        }
+      ],
+      "images": [
+        {
+          "index": 0,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210619181742.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/7b75478c35da8a5ce0a407a9a5d8a377.png",
+          "local": "/assets/blog/recovered/277b1af173dbadd8.png",
+          "sha256": "277b1af173dbadd88e60efef8c7d81603141366c903d43366b72367956febd71",
+          "width": 1089,
+          "height": 383,
+          "bytes": 357683,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 1,
+          "section": "1. 基本概念"
+        },
+        {
+          "index": 1,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210619181845.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/2ffa0720389b14a52bfccc0a2475c35b.png",
+          "local": "/assets/blog/recovered/894c91e947832db8.png",
+          "sha256": "894c91e947832db8797dd7b1a507fbc0c02cb096c4cd6538e41d7f96543c0bf9",
+          "width": 1069,
+          "height": 511,
+          "bytes": 288147,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 2,
+          "section": "2. 封装成帧与透明传输"
+        },
+        {
+          "index": 2,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210619181920.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/7957b8efbf74615e4346079b14a83b3d.png",
+          "local": "/assets/blog/recovered/4635b82232b6dd12.png",
+          "sha256": "4635b82232b6dd122ed3104b69c23aaf2a31c6b496ab6e2d4114a314fcf7f3da",
+          "width": 1071,
+          "height": 115,
+          "bytes": 128859,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 3,
+          "section": "2. 封装成帧与透明传输"
+        },
+        {
+          "index": 3,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210619182140.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/af0a92b0fe9c9a338d488b0cecd9306f.png",
+          "local": "/assets/blog/recovered/1b7d4bcd444b014a.png",
+          "sha256": "1b7d4bcd444b014a965c92e813e53df665e35058dd2c8b1f49f1fe95a0a6c0df",
+          "width": 954,
+          "height": 421,
+          "bytes": 140142,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 4,
+          "section": "2.1.1 字符计数法"
+        },
+        {
+          "index": 4,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210619182219.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/7adbba1993064beb8694e27ced6eeb4a.png",
+          "local": "/assets/blog/recovered/e99d59dee8e5ea58.png",
+          "sha256": "e99d59dee8e5ea58650f5e16bb4b60458f0bc4eb138d9e392b34452947761ea4",
+          "width": 1056,
+          "height": 562,
+          "bytes": 278174,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 5,
+          "section": "2.1.2 字符填充法"
+        },
+        {
+          "index": 5,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210619182235.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/fbd2577e2f7e5ec3f390080ab7448948.png",
+          "local": "/assets/blog/recovered/d7c9bd09a7d54975.png",
+          "sha256": "d7c9bd09a7d54975a0c6ba562f46d8131cd8c106db9544c635a5d2e33fd42d36",
+          "width": 1082,
+          "height": 521,
+          "bytes": 163317,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 6,
+          "section": "2.1.2 字符填充法"
+        },
+        {
+          "index": 6,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210619182337.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/8a5ee9c522905caab9f7f9ad6df3abfd.png",
+          "local": "/assets/blog/recovered/b890384096384abf.png",
+          "sha256": "b890384096384abff3895162af1ed2b417e445b48bb9fea6312c6287579b8c73",
+          "width": 1058,
+          "height": 530,
+          "bytes": 277274,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 7,
+          "section": "2.1.3 零比特填充法"
+        },
+        {
+          "index": 7,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210619182332.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/bdf377b7b550b47b68d1d889901579c1.png",
+          "local": "/assets/blog/recovered/5eb22b8a9bda45fc.png",
+          "sha256": "5eb22b8a9bda45fc404996fe5ea1a21e391f85d904be4987be47661ed26b1072",
+          "width": 1079,
+          "height": 415,
+          "bytes": 117336,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 8,
+          "section": "2.1.4 违规编码法"
+        },
+        {
+          "index": 8,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210619182434.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/221966434c5978b11f10c89c275821ac.png",
+          "local": "/assets/blog/recovered/e8f8ca7d9147af01.png",
+          "sha256": "e8f8ca7d9147af010daa93ed30313bc4241c80cf7a6471c5df7e4b43cbc44f9e",
+          "width": 1073,
+          "height": 559,
+          "bytes": 322277,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 9,
+          "section": "3.1 差错是什么，从哪来的"
+        },
+        {
+          "index": 9,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210619182631.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/8efaa365987341c60f0b27ff8c9c9973.png",
+          "local": "/assets/blog/recovered/70b1611bec73447a.png",
+          "sha256": "70b1611bec73447a8f3eaf2a9beb444ba8f191db594616b7cdb40c2c8ea0b0a7",
+          "width": 646,
+          "height": 155,
+          "bytes": 62389,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 10,
+          "section": "3.3.1 奇偶校验码"
+        },
+        {
+          "index": 10,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210619182636.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/1ee20ae29d4fbc69004ca5a54c660bdf.png",
+          "local": "/assets/blog/recovered/b8055e25ade7f2c1.png",
+          "sha256": "b8055e25ade7f2c1dcaacca4620d8a149bc7dd454c5202c3d5adac354d2237b5",
+          "width": 1093,
+          "height": 151,
+          "bytes": 91769,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 11,
+          "section": "3.3.2 循环冗余码CRC"
+        },
+        {
+          "index": 11,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210619183142.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/829ed95b7d154044c56f901cb4a762c4.png",
+          "local": "/assets/blog/recovered/a7b775506fe1f89a.png",
+          "sha256": "a7b775506fe1f89a207307b12d8de57503616ace4917381f640d3bb162a498f5",
+          "width": 1102,
+          "height": 371,
+          "bytes": 263975,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 12,
+          "section": "3.3.2 循环冗余码CRC"
+        },
+        {
+          "index": 12,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210620035045.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/886c9cd6f6fe2fafd55a21a74f878ac2.png",
+          "local": "/assets/blog/recovered/b8f8bc2e09608b52.png",
+          "sha256": "b8f8bc2e09608b52bcd1a3d0853c36a0755ee34c6869ab7e89339c70e9572cea",
+          "width": 1071,
+          "height": 470,
+          "bytes": 274247,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 13,
+          "section": "3.3.2 循环冗余码CRC"
+        },
+        {
+          "index": 13,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210620035300.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/f31233f184093163c56d46a9f8c3389b.png",
+          "local": "/assets/blog/recovered/bd24041feecfde13.png",
+          "sha256": "bd24041feecfde13734690a0dd682b82003e1d373c2ef3fe33daa10cc2e2e2a4",
+          "width": 1027,
+          "height": 311,
+          "bytes": 151457,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 15,
+          "section": "3.4 纠错编码（海明码）"
+        },
+        {
+          "index": 14,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210620035348.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/564d2a2b4756fc696301ea5d2ae375e1.png",
+          "local": "/assets/blog/recovered/af4284632b2dc532.png",
+          "sha256": "af4284632b2dc53283af13ebd171749874f91818f5ed73d62922db07676970b6",
+          "width": 1055,
+          "height": 369,
+          "bytes": 158273,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 16,
+          "section": "3.4 纠错编码（海明码）"
+        },
+        {
+          "index": 15,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210620035452.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/d7fc77f0c65bfb8e15e3631e44db225b.png",
+          "local": "/assets/blog/recovered/569cdc66ed5cfec2.png",
+          "sha256": "569cdc66ed5cfec2dba3803acf6f1686163c2e5a71c5596f46c81917d04a3b85",
+          "width": 1036,
+          "height": 576,
+          "bytes": 314893,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 18,
+          "section": "3.4 纠错编码（海明码）"
+        },
+        {
+          "index": 16,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210620035531.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/a688dd3ffc339e601dbd804a6799c8b5.png",
+          "local": "/assets/blog/recovered/b8f6a841e3a61554.png",
+          "sha256": "b8f6a841e3a6155447410c534394329a66b4497abbb72408def01ac9e1dfd123",
+          "width": 1080,
+          "height": 585,
+          "bytes": 343890,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 19,
+          "section": "3.4 纠错编码（海明码）"
+        },
+        {
+          "index": 17,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210620035551.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/5ce084b6783b7b201587a2bb9121e826.png",
+          "local": "/assets/blog/recovered/032d8ac2ab8560b2.png",
+          "sha256": "032d8ac2ab8560b23b617672ae8605e3359311aaf0226fbad3cbafaf072170fb",
+          "width": 1056,
+          "height": 472,
+          "bytes": 304401,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 20,
+          "section": "4.1.1 停止等待协议（Stop-and-Wait）"
+        },
+        {
+          "index": 18,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210620035831.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/dcba5aa552c55bb9158007845bc63644.png",
+          "local": "/assets/blog/recovered/c27650ff4718089d.png",
+          "sha256": "c27650ff4718089dec96d3dc5f84e93ecdd5b40203514b3f3bad3f26c0e8c0fc",
+          "width": 814,
+          "height": 591,
+          "bytes": 180696,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 21,
+          "section": "4.1.1 停止等待协议（Stop-and-Wait）"
+        },
+        {
+          "index": 19,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210620035835.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/e95cc208bc0d8013dd6cc354b37c902c.png",
+          "local": "/assets/blog/recovered/513432b84434a052.png",
+          "sha256": "513432b84434a052fee43746090b4f4f2a08a130869bcf2c8217979737d29ceb",
+          "width": 1109,
+          "height": 560,
+          "bytes": 264363,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 22,
+          "section": "4.1.1 停止等待协议（Stop-and-Wait）"
+        },
+        {
+          "index": 20,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210620035839.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/0de891392f8a3b462c9eb528ffbce7c4.png",
+          "local": "/assets/blog/recovered/80e1bcd797cf71b5.png",
+          "sha256": "80e1bcd797cf71b59434bab8dd06221923e980256925f986503e1c3ad368e4df",
+          "width": 856,
+          "height": 549,
+          "bytes": 192406,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 23,
+          "section": "4.1.1 停止等待协议（Stop-and-Wait）"
+        },
+        {
+          "index": 22,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210620035844.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/17ca015995b93fcb3bf948f61ed88868.png",
+          "local": "/assets/blog/recovered/79024d1286577afb.png",
+          "sha256": "79024d1286577afb8099aa50f89940a94424267f33033ec6e1096d77944a4c82",
+          "width": 1033,
+          "height": 555,
+          "bytes": 182354,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 25,
+          "section": "4.1.1 停止等待协议（Stop-and-Wait）"
+        },
+        {
+          "index": 23,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210620035849.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/782c1a8b9708e6bd7dbf2d61df49df25.png",
+          "local": "/assets/blog/recovered/957cdb089bd6251f.png",
+          "sha256": "957cdb089bd6251f9c20b3416139e72047ddcdb5eb9eee155b37e01f1f534902",
+          "width": 1032,
+          "height": 511,
+          "bytes": 259956,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 26,
+          "section": "4.1.1 停止等待协议（Stop-and-Wait）"
+        },
+        {
+          "index": 24,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210620035939.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/34e1fdebabcf14204917dddc5ffb9769.png",
+          "local": "/assets/blog/recovered/d793d5e37b1e9cf6.png",
+          "sha256": "d793d5e37b1e9cf613eb66cd4ddeb8822923c8a4e95c6eeafa3924bdd295aea0",
+          "width": 1024,
+          "height": 452,
+          "bytes": 317367,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 27,
+          "section": "4.1.2 后退N帧协议（GBN）"
+        },
+        {
+          "index": 25,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210620040004.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/d7793bf7736218d8cc67fc43a7760b93.png",
+          "local": "/assets/blog/recovered/6bde4581773ced97.png",
+          "sha256": "6bde4581773ced972dabb5572153742a68bb067488692da39477e5edca20daf9",
+          "width": 1127,
+          "height": 635,
+          "bytes": 383993,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 28,
+          "section": "4.1.2 后退N帧协议（GBN）"
+        },
+        {
+          "index": 26,
+          "alt": "在这里插入图片描述",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210620040159.png",
+          "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/c84f96b5a7314d499a03882b10fd7ab5.png",
+          "local": "/assets/blog/recovered/4f9fb2788a5c73f0.png",
+          "sha256": "4f9fb2788a5c73f0c3f1fdf6aa3ca024b5598c2c617cf76cec0ddbe7543c64d3",
+          "width": 1116,
+          "height": 629,
+          "bytes": 452716,
+          "basis": "Matching section, adjacent paragraphs and figure order in the same network-note series; visual subject reviewed. Mapping excludes the two documented extra archive figures; existing ACK-delay image is a byte-identical anchor.",
+          "archiveFigure": 29,
+          "section": "4.1.3 选择重传协议（SR）"
+        }
+      ],
+      "unresolved": [],
+      "anchor": {
+        "local": "/assets/img/6e815c9dd226.png",
+        "source": "https://geekdaxue.co/uploads/projects/cessstudy@eygo6g/6a19cda27ac39e09a7a876a801772caf.png",
+        "sha256": "618cc806f815d0cb6fa4af56e5cc1d751eb0495c1013815c7d459685f8a0e741",
+        "basis": "Existing ACK-delay figure is byte-identical to archive figure 24."
+      },
+      "mappingNotes": "Archive figure 14 (extra CRC reliability note) and 17 (intermediate Hamming grouping) are absent from this article. Original Hamming step 3 maps to the complete calculation in archive figure 18; four-step labels and surrounding paragraphs match."
+    },
+    {
+      "article": "/blog/4830.html",
+      "credits": [
+        {
+          "label": "CSDN 原文件 · 系统概述",
+          "url": "https://img-blog.csdnimg.cn/20210117160451896.png"
+        },
+        {
+          "label": "CSDN 原文件 · 数据表示与运算",
+          "url": "https://img-blog.csdnimg.cn/20210118085022452.png"
+        },
+        {
+          "label": "CSDN 原文件 · 存储系统",
+          "url": "https://img-blog.csdnimg.cn/20210118103433182.png"
+        },
+        {
+          "label": "CSDN 原文件 · 指令系统",
+          "url": "https://img-blog.csdnimg.cn/20210119195316544.png"
+        },
+        {
+          "label": "CSDN 原文件 · 中央处理器",
+          "url": "https://img-blog.csdnimg.cn/20210119195152802.png"
+        },
+        {
+          "label": "CSDN 原文件 · 总线",
+          "url": "https://img-blog.csdnimg.cn/20210119200448840.png"
+        },
+        {
+          "label": "CSDN 原文件 · 输入输出系统",
+          "url": "https://img-blog.csdnimg.cn/20210119200603623.png"
+        }
+      ],
+      "images": [
+        {
+          "index": 0,
+          "alt": "20210117160451896",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210625070436.png",
+          "source": "https://img-blog.csdnimg.cn/20210117160451896.png",
+          "local": "/assets/blog/recovered/8cc3c63b9db974cb.png",
+          "sha256": "8cc3c63b9db974cb27fb87d28ffd5fa34494f2a19e7eeb49951070f29362fc6c",
+          "width": 1273,
+          "height": 764,
+          "bytes": 519485,
+          "basis": "exact original alt filename; visual subject matches original adjacent content; old Gitee bytes unavailable."
+        },
+        {
+          "index": 1,
+          "alt": "20210118085022452",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210625070444.png",
+          "source": "https://img-blog.csdnimg.cn/20210118085022452.png",
+          "local": "/assets/blog/recovered/a6096dcbdbfaae00.png",
+          "sha256": "a6096dcbdbfaae00a37b36481e87274bdc1251d279f0f7bf8973625ed15e9558",
+          "width": 1244,
+          "height": 702,
+          "bytes": 567739,
+          "basis": "exact original alt filename; visual subject matches original adjacent content; old Gitee bytes unavailable."
+        },
+        {
+          "index": 2,
+          "alt": "20210118103433182",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210625070643.png",
+          "source": "https://img-blog.csdnimg.cn/20210118103433182.png",
+          "local": "/assets/blog/recovered/3e1856ec04ec8e70.png",
+          "sha256": "3e1856ec04ec8e703ed01a049a08ffd00a5e2f899772360d785b9a188c7db3d0",
+          "width": 1116,
+          "height": 1486,
+          "bytes": 970594,
+          "basis": "exact original alt filename; visual subject matches original adjacent content; old Gitee bytes unavailable."
+        },
+        {
+          "index": 3,
+          "alt": "20210119195316544",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210625070502.png",
+          "source": "https://img-blog.csdnimg.cn/20210119195316544.png",
+          "local": "/assets/blog/recovered/31a42c4e966d06d0.png",
+          "sha256": "31a42c4e966d06d08ff31fc3d6adeee5adfc815c60b9909900ab7ade28c07819",
+          "width": 1248,
+          "height": 822,
+          "bytes": 610847,
+          "basis": "exact original alt filename; visual subject matches original adjacent content; old Gitee bytes unavailable."
+        },
+        {
+          "index": 4,
+          "alt": "20210119195316544",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210625070606.png",
+          "source": "https://img-blog.csdnimg.cn/20210119195316544.png",
+          "local": "/assets/blog/recovered/31a42c4e966d06d0.png",
+          "sha256": "31a42c4e966d06d08ff31fc3d6adeee5adfc815c60b9909900ab7ade28c07819",
+          "width": 1248,
+          "height": 822,
+          "bytes": 610847,
+          "basis": "exact original alt filename; visual subject matches original adjacent content; old Gitee bytes unavailable."
+        },
+        {
+          "index": 5,
+          "alt": "20210119195152802",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210625070611.png",
+          "source": "https://img-blog.csdnimg.cn/20210119195152802.png",
+          "local": "/assets/blog/recovered/2dce0faf86948b67.png",
+          "sha256": "2dce0faf86948b67aa64755adc3e61aa0145264d44c782a874cfadb8677bd98f",
+          "width": 1121,
+          "height": 1255,
+          "bytes": 925182,
+          "basis": "exact original alt filename; visual subject matches original adjacent content; old Gitee bytes unavailable."
+        },
+        {
+          "index": 6,
+          "alt": "20210119200448840",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210625070617.png",
+          "source": "https://img-blog.csdnimg.cn/20210119200448840.png",
+          "local": "/assets/blog/recovered/c1354db56e154ed8.png",
+          "sha256": "c1354db56e154ed8f5a1906647a6b17a97d59870184a9b93941dd9b66167ab41",
+          "width": 1178,
+          "height": 702,
+          "bytes": 494368,
+          "basis": "exact original alt filename; visual subject matches original adjacent content; old Gitee bytes unavailable."
+        },
+        {
+          "index": 7,
+          "alt": "20210119200603623",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20210625070623.png",
+          "source": "https://img-blog.csdnimg.cn/20210119200603623.png",
+          "local": "/assets/blog/recovered/92af645937d56577.png",
+          "sha256": "92af645937d56577da20f937dba4321acd0dffdb677744df6c00d00cbdbd5338",
+          "width": 1179,
+          "height": 1419,
+          "bytes": 1015596,
+          "basis": "exact original alt filename; visual subject matches original adjacent content; old Gitee bytes unavailable."
+        }
+      ],
+      "unresolved": [],
+      "mappingNotes": "Two original placements share alt 20210119195316544; both positions are retained and reuse the same instruction-system image bytes. Original author of these scans remains unidentified."
+    },
+    {
+      "article": "/blog/38365.html",
+      "credits": [
+        {
+          "label": "Vim 键位图 · ViEmu / fdl 汉化（实验楼存档）",
+          "url": "https://doc.shiyanlou.com/document-uid731737labid7100timestamp1531381084391.png"
+        }
+      ],
+      "images": [
+        {
+          "index": 0,
+          "alt": "document-uid731737labid7100timestamp1531381084391",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/document-uid731737labid7100timestamp1531381084391.png",
+          "source": "https://doc.shiyanlou.com/document-uid731737labid7100timestamp1531381084391.png",
+          "local": "/assets/blog/recovered/3849f42be03f20f4.jpg",
+          "sha256": "3849f42be03f20f4bbdce77a0ba4d0d94e7966d915719356b1c3f131f23e4c99",
+          "width": 1024,
+          "height": 723,
+          "bytes": 125277,
+          "basis": "exact original filename; visual subject matches original adjacent content; old Gitee bytes unavailable."
+        }
+      ],
+      "unresolved": []
+    },
+    {
+      "article": "/blog/39544.html",
+      "credits": [
+        {
+          "label": "深度可分离卷积图 · CSDN 原文件",
+          "url": "https://img-blog.csdnimg.cn/20191030154355407.png"
+        }
+      ],
+      "images": [
+        {
+          "index": 2,
+          "alt": "20191030154355407",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/20191030154355407.png",
+          "source": "https://img-blog.csdnimg.cn/20191030154355407.png",
+          "local": "/assets/blog/recovered/d8a9578574b82c27.png",
+          "sha256": "d8a9578574b82c27afe68073f6ced950eadd2a67d57e789137307a76c47b1ee4",
+          "width": 584,
+          "height": 541,
+          "bytes": 185079,
+          "basis": "exact original alt filename; visual subject matches original adjacent content; old Gitee bytes unavailable."
+        }
+      ],
+      "unresolved": [
+        {
+          "index": 0,
+          "alt": "image-20210420144945504",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/image-20210420144945504.png",
+          "reason": "Timestamp-only filename; exact original illustration/crop has not been confirmed."
+        },
+        {
+          "index": 1,
+          "alt": "image-20210420151632498",
+          "original": "https://gitee.com/sg2019/picgo/raw/master/image-20210420151632498.png",
+          "reason": "Timestamp-only filename; exact original illustration/crop has not been confirmed."
+        }
+      ]
+    }
+  ]
+}

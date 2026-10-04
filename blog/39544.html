@@ -285,7 +285,7 @@
 <p>FaceNet的主干网络起到提取特征的作用，传统的FaceNet以Inception-ResNetV1为主干特征提取网络。</p>
 <p>MobilenetV1模型是Google针对手机等嵌入式设备提出的一种轻量级的深层神经网络，其使用的核心思想便是depthwise separable convolution（深度可分离卷积块）。</p>
 <p>深度可分离卷积块由两个部分组成，分别是深度可分离卷积和1x1普通卷积，深度可分离卷积的卷积核大小一般是3x3的，便于理解的话我们可以把它当作是特征提取，1x1的普通卷积可以完成通道数的调整。</p>
-<p><img loading="lazy" src="https://gitee.com/sg2019/picgo/raw/master/20191030154355407.png" alt="20191030154355407"></p>
+<p><img width="584" height="541" loading="lazy" src="/assets/blog/recovered/d8a9578574b82c27.png" alt="20191030154355407"></p>
 <blockquote>
 <p><strong>深度可分离卷积块的目的是使用更少的参数来代替普通的3x3卷积。</strong>与普通卷积相比，深度可分离卷积结构块可以减少模型的参数。</p>
 </blockquote>
@@ -623,6 +623,7 @@ face_encodings = []
         &#x27;&#x27;&#x27;</span>
 </code></pre>
 </article>
+    <p class="post-source post-image-sources">配图参考与存档：<a href="https://img-blog.csdnimg.cn/20191030154355407.png" target="_blank" rel="noopener">深度可分离卷积图 · CSDN 原文件</a>。</p>
     <a class="back-link" href="./index.html">← 返回文章列表</a>
   </main>
   <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>

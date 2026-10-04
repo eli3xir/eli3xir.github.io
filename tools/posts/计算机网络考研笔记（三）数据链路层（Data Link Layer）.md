@@ -12,7 +12,7 @@ description:
 
 ## 1. 基本概念
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210619181742.png)
+![在这里插入图片描述](/assets/blog/recovered/277b1af173dbadd8.png)
 
 ## 2. 封装成帧与透明传输
 
@@ -20,7 +20,7 @@ description:
 
 - **透明传输**就是为了防止**特殊的数据无法正常传输**的的情况的发生，比如说在封装成帧的过程中出现数据中的某些标记符与开始/结束标记符恰巧重复等等情况。
 
-  ![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210619181845.png)![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210619181920.png)
+  ![在这里插入图片描述](/assets/blog/recovered/894c91e947832db8.png)![在这里插入图片描述](/assets/blog/recovered/4635b82232b6dd12.png)
 
 ### 2.1 透明传输的应用
 
@@ -30,7 +30,7 @@ description:
 
 缺点：如果在某一个帧内，标记位后面的某个字节的数据丢失，那么会影响后面的帧。
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210619182140.png)
+![在这里插入图片描述](/assets/blog/recovered/1b7d4bcd444b014a.png)
 
 #### 2.1.2 字符填充法
 
@@ -38,21 +38,21 @@ description:
 
 但有可能出现数据内某段比特流数据正好**与标记字段重复**，从而导致误判断的情况。
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210619182219.png)
+![在这里插入图片描述](/assets/blog/recovered/e99d59dee8e5ea58.png)
 
 **解决方法：添加转义字符**
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210619182235.png)
+![在这里插入图片描述](/assets/blog/recovered/d7c9bd09a7d54975.png)
 
 #### 2.1.3 零比特填充法
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210619182337.png)
+![在这里插入图片描述](/assets/blog/recovered/b890384096384abf.png)
 
 #### 2.1.4 违规编码法
 
 因为曼彻斯特编码不使用高-高，低-低来表示，所以如果使用高-高，低-低来表示帧起始和终止就**不会与数据冲突**。
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210619182332.png)
+![在这里插入图片描述](/assets/blog/recovered/5eb22b8a9bda45fc.png)
 
 ## 3. 差错控制
 
@@ -60,7 +60,7 @@ description:
 
 数据链路层的差错检测的是**比特**的错误。
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210619182434.png)
+![在这里插入图片描述](/assets/blog/recovered/e8f8ca7d9147af01.png)
 
 ### 3.2 为什么要在数据链路层进行差错控制？
 
@@ -72,24 +72,24 @@ description:
 
 缺点：只能检测出奇位数错误，检测成功率为50%。
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210619182631.png)
+![在这里插入图片描述](/assets/blog/recovered/70b1611bec73447a.png)
 
 ### 3.3.2 循环冗余码CRC
 
 用传输数据除以生成多项式得到冗余码。
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210619182636.png)
+![在这里插入图片描述](/assets/blog/recovered/b8055e25ade7f2c1.png)
 
 注释：
 
 1. 阶数就是最高位是哪位，然后位数-1，如10011就是5-1=4,1011就是4-1=3
 2. 异或运算就是相同得0，不同得1，比如100和101做异或，结果就是001
 3. 最后的余数添加到要发送的数据后面，称为**帧检验序列FCS**
-   ![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210619183142.png)
+   ![在这里插入图片描述](/assets/blog/recovered/a7b775506fe1f89a.png)
 
 接收方收到数据后进行检测，余数不为0则丢弃。
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210620035045.png)
+![在这里插入图片描述](/assets/blog/recovered/b8f8bc2e09608b52.png)
 
 ### 3.4 纠错编码（海明码）
 
@@ -97,24 +97,24 @@ description:
 
 1. 确认校验码位数r
 
-   ![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210620035300.png)
+   ![在这里插入图片描述](/assets/blog/recovered/bd24041feecfde13.png)
 
 2. 确定校验码和数据的位置
 
    - 10为数据位为4位校验码+6位信息位
    - 校验码放到2的几次方的位置，其他的地方按顺序放已知的信息位
    
-   ![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210620035348.png)
+   ![在这里插入图片描述](/assets/blog/recovered/af4284632b2dc532.png)
 
 3. 求出校验码的值
 
-   ![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210620035452.png)
+   ![在这里插入图片描述](/assets/blog/recovered/569cdc66ed5cfec2.png)
 
 4. 检测并纠错
 
    就是和上面一样，将所有校验位进行运算，得出的结果的值就是错误的位
    
-   ![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210620035531.png)
+   ![在这里插入图片描述](/assets/blog/recovered/b8f6a841e3a61554.png)
 
 ## 4. 数据链路层的流量控制和可靠传输
 
@@ -125,16 +125,16 @@ description:
 
 #### 4.1.1 停止等待协议（Stop-and-Wait）
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210620035551.png)
+![在这里插入图片描述](/assets/blog/recovered/032d8ac2ab8560b2.png)
 
 停止等待协议的**无差错**情况
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210620035831.png)
+![在这里插入图片描述](/assets/blog/recovered/c27650ff4718089d.png)
 
 停止等待协议的**有差错**情况
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210620035835.png)
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210620035839.png)
+![在这里插入图片描述](/assets/blog/recovered/513432b84434a052.png)
+![在这里插入图片描述](/assets/blog/recovered/80e1bcd797cf71b5.png)
 ![在这里插入图片描述](/assets/img/6e815c9dd226.png)
 停止等待协议的特点
 
@@ -144,7 +144,7 @@ description:
 
    大部分时间数据都在路上，发送方很长时间闲置，资源浪费
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210620035844.png)![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210620035849.png)
+![在这里插入图片描述](/assets/blog/recovered/79024d1286577afb.png)![在这里插入图片描述](/assets/blog/recovered/957cdb089bd6251f.png)
 
 #### 4.1.2 后退N帧协议（GBN）
 
@@ -152,11 +152,11 @@ description:
 
 累计确认：就是收到一个确认帧，那么**它和它之前的所有帧**都默认已收到，反之，如果某个确认帧没收到，那么**它和它之后的所有帧**都默认丢失（即使收到了也丢掉），进行重传。
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210620035939.png)
+![在这里插入图片描述](/assets/blog/recovered/d793d5e37b1e9cf6.png)
 
 此图发送2帧时丢失，所以接收方几首收到后面的帧也是直接丢弃并且发送最晚收到的有效帧1的ACK，直至2帧的超时重传机制被触发进行重传并得到ACK之后，接收方才会接受2帧以及后面的帧。
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210620040004.png)
+![在这里插入图片描述](/assets/blog/recovered/6bde4581773ced97.png)
 
 发送窗口不能无限大，与使用的编号的比特数有关。简单说就是1比特编号0和1，同理2比特编号0-3，如果用1比特编号，却要4个窗口长度，那么窗口内数据编号都编不过来，直接乱套了。
 
@@ -170,7 +170,7 @@ GBN的优缺点也显而易见，优点是提高了信道利用率，缺点是�
 
 SR运行过程如图，2帧丢失之后仍然在发送，但是2帧丢失之后只是缓存，并没有移动窗口，直至最后2帧收到后一次性确认2-5帧。
 
-![在这里插入图片描述](https://gitee.com/sg2019/picgo/raw/master/20210620040159.png)
+![在这里插入图片描述](/assets/blog/recovered/4f9fb2788a5c73f0.png)
 
 同样的，因为编号的问题，发送窗口不能无限大。
 

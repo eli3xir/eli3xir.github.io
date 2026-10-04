@@ -40,7 +40,7 @@ vim helloworld.py
 
 即可用Vim创建并打开新的脚本文件。
 
-![document-uid731737labid7100timestamp1531381084391](https://gitee.com/sg2019/picgo/raw/master/document-uid731737labid7100timestamp1531381084391.png)
+![document-uid731737labid7100timestamp1531381084391](/assets/blog/recovered/3849f42be03f20f4.jpg)
 
 `i`键进入插入模式，键入代码，`Esc + :wq`即可保存退出。
 

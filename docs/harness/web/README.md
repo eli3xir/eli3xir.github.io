@@ -99,3 +99,7 @@
 修改文章后使用 Node 22 运行 `build:blog`，再运行 `validate`。构建期 `image-dimensions.js` 按源文件内容读取 PNG、JPEG 和当前简单有损 WebP，不联网猜测尺寸；不支持的本地文件使构建失败。原文比对只移除已经核实的尺寸属性，并按 `article-formatting.json` 逐项还原强调格式；不要用一般化 HTML 清洗跳过内容保护。
 
 深链接场景还延迟首轮主样式请求，确认阅读布局在定位前已确定。阅读规则统一保存在 `experience.css` 尾部；不要恢复成定位后才追加的独立样式，否则冷缓存访问可能停在上一节。
+
+`npm run test:recovered-images` 检查六篇中的 65 处恢复配图：两种视口逐张原生解码、滚动到正文、核对 alt/位置/比例/溢出与出处，并延迟 26 张数据链路层图验证章节定位，共十四组。支持 `BASE_URL`，输出 `recovered-images-audit.json` 和每篇首末图及出处截图；两张未确认原图使用显式 404 模拟检查失败提示，不算恢复成功。真实旧地址的 404 已另外实际请求核实，来源及 SHA-256 保存在 `assets/blog/recovered/manifest.json`。
+
+当前 `test:article-reading` 的独立解码覆盖已从上述第三十轮的 70 处扩为 135 处本地图。`validate` 还校验恢复文件的 SHA-256、尺寸与字节数，按文章内序号单独还原每一个原链接；同一图的重复位置不得用全局替换归并。

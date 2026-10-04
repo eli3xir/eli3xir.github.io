@@ -119,8 +119,8 @@ try{
   const context=await browser.newContext({reducedMotion:'reduce'}),page=await context.newPage();await open(page);
   const images=routes.flatMap(route=>[...fs.readFileSync(new URL('..'+route,import.meta.url),'utf8').matchAll(/<img width="(\d+)" height="(\d+)" loading="lazy" src="([^"]+)"/g)].map(([,width,height,src])=>({src,width:Number(width),height:Number(height)})));
   const dimensions=await page.evaluate(images=>Promise.all(images.map(async expected=>{const img=new Image();img.src=expected.src;await img.decode();return{...expected,decoded:[img.naturalWidth,img.naturalHeight]};})),images);
-  assert.equal(dimensions.length,70);assert.ok(dimensions.every(img=>img.width===img.decoded[0]&&img.height===img.decoded[1]));
-  report.cases.push({name:'all 70 local dimensions match browser decoders',dimensions});await context.close();console.log('PASS 70 native image dimensions');
+  assert.equal(dimensions.length,135);assert.ok(dimensions.every(img=>img.width===img.decoded[0]&&img.height===img.decoded[1]));
+  report.cases.push({name:'all 135 local dimensions match browser decoders',dimensions});await context.close();console.log('PASS 135 native image dimensions');
  }
 }catch(error){report.failures.push(error.stack);process.exitCode=1;}
 finally{fs.writeFileSync(`${output}/article-reading-audit.json`,JSON.stringify(report,null,2));await browser.close();await server.close();}
