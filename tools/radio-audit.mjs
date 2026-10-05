@@ -3,9 +3,16 @@ import assert from 'node:assert/strict';
 import {startServer,launchBrowser,ready,settle,observe,output} from './browser-support.mjs';
 const server=process.env.BASE_URL?{base:process.env.BASE_URL,close:async()=>{}}:await startServer();
 const browser=await launchBrowser(),report={base:server.base,cases:[]};fs.mkdirSync(output,{recursive:true});
+const observations=[];
+function watch(page){
+ const log=observe(page),pending=new Set();observations.push({page,log,pending});
+ page.on('request',request=>pending.add(request));
+ for(const event of ['requestfinished','requestfailed'])page.on(event,request=>pending.delete(request));
+ return log;
+}
 try{
  for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
-  const context=await browser.newContext({viewport}),page=await context.newPage(),log=observe(page);
+  const context=await browser.newContext({viewport}),page=await context.newPage(),log=watch(page);
   if(viewport.width===390)await context.addInitScript(()=>{AudioParam.prototype.cancelAndHoldAtTime=undefined;});
   await page.goto(server.base+'/radio/');await ready(page);await settle(page);
   const diagnostics=()=>page.evaluate(()=>window.studio.world.model.diagnostics());
@@ -84,11 +91,11 @@ try{
   assert.equal(await page.locator('.ep.soon').count(),3);assert.deepEqual(log.errors,[]);assert.deepEqual(log.failed,[]);
   report.cases.push({viewport,idle,playing,radiating,alignment,sound,silent,melody,meterPoint,paused,point,continuous,disposed,resources,errors:log.errors});await context.close();
  }
- const context=await browser.newContext(),page=await context.newPage();
+ const context=await browser.newContext(),page=await context.newPage();watch(page);
  await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return /webgl/i.test(type)?null:original.call(this,type,...args);};});
  await page.goto(server.base+'/radio/');await ready(page);await settle(page);await page.locator('.record-play').click();await page.waitForFunction(()=>window.studio.score.audible);
  await page.getByRole('button',{name:'低音声部',exact:true}).click();assert.equal(await page.evaluate(()=>window.studio.score.stemEnabled[1]),false);report.cases.push({noWebGL:true,playbackAndStems:true});await context.close();
- const loopPage=await browser.newPage();await loopPage.goto(server.base+'/radio/');await ready(loopPage);
+ const loopPage=await browser.newPage();watch(loopPage);await loopPage.goto(server.base+'/radio/');await ready(loopPage);
  const loop=await loopPage.evaluate(async()=>{
   const {createPhonograph}=await import('/js/world/phonograph.js'),{disposeGroup}=await import('/js/world/materials.js');
   const duration=32*240/112,state={active:true,time:duration-.3,cycle:(duration-.3)/duration,levels:[0,0,0,0]},model=createPhonograph(()=>state);
@@ -100,11 +107,23 @@ try{
  for(let i=1;i<loop.length;i++){assert.ok(Math.abs(loop[i].recordAngle-loop[i-1].recordAngle)<.07);assert.ok(Math.abs(loop[i].armYaw-loop[i-1].armYaw)<.09);}
  report.cases.push({loopReturn:true,peakLift:Math.max(...loop.map(frame=>frame.armLift)),finalLift:loop.at(-1).armLift});await loopPage.close();
  for(const viewport of [{width:1024,height:768},{width:1280,height:720},{width:1280,height:600},{width:1920,height:720}]){
-  const context=await browser.newContext({viewport}),page=await context.newPage();await page.goto(server.base+'/radio/');await ready(page);await settle(page);
+  const context=await browser.newContext({viewport}),page=await context.newPage();watch(page);await page.goto(server.base+'/radio/');await ready(page);await settle(page);
   const bounds=await page.evaluate(()=>({panel:document.querySelector('.record-controls').getBoundingClientRect().toJSON(),dock:document.querySelector('.sound-dock').getBoundingClientRect().toJSON()}));
   assert.ok(bounds.panel.bottom<bounds.dock.top-12,JSON.stringify({viewport,bounds}));
   await page.screenshot({path:`${output}/radio-landscape-${viewport.width}-${viewport.height}.png`});
   report.cases.push({viewport,controlsClearDock:true,bounds});await context.close();
  }
+ for(const {log} of observations){assert.deepEqual(log.errors,[]);assert.deepEqual(log.failed,[]);}
+}catch(error){
+ report.failure={message:error.stack,pages:[]};
+ for(const {page,log,pending} of observations){
+  const item={url:page.url(),closed:page.isClosed(),...log.drain(),pending:[...pending].map(request=>request.url())};
+  if(!item.closed){
+   item.state=await page.evaluate(()=>({title:document.title,readyState:document.readyState,studio:!!window.studio,ready:window.__ready,error:String(window.__error||'')})).catch(error=>({error:error.message}));
+   await page.screenshot({path:`${output}/radio-failure-${report.failure.pages.length}.png`,timeout:5000}).catch(()=>{});
+  }
+  report.failure.pages.push(item);
+ }
+ throw error;
 }finally{fs.writeFileSync(`${output}/radio-audit.json`,JSON.stringify(report,null,2));await browser.close();await server.close();}
 console.log(JSON.stringify(report,null,2));
