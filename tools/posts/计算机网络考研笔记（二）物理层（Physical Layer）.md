@@ -99,7 +99,7 @@ $码元所带信息量（比特数）=log_2(码元进制数)$
 
 - **双极性归零编码**：正负零三个电平，信号本身携带同步信息。
 
-  ![在这里插入图片描述](/assets/blog/recovered/23bfa5cc5f317453.png)
+  ![在这里插入图片描述](/assets/blog/recovered/643208568b355158.png)
 
 - **曼彻斯特编码**：单极性编码的缺点是没有办法区分此时是没有信号，还是有信号，但是信号是0。
 
@@ -145,11 +145,11 @@ $码元所带信息量（比特数）=log_2(码元进制数)$
 
 #### 3.1.3 光纤（Optical fiber）
 
-![在这里插入图片描述](/assets/blog/recovered/f9c8762fb03f4078.png)
+![在这里插入图片描述](/assets/blog/recovered/3ff55bafac4243b2.png)
 
 根据**入射角**不同，又分为单模光纤和多模光纤
 
-![在这里插入图片描述](/assets/blog/recovered/724d4dc9dea9796a.png)
+![在这里插入图片描述](/assets/blog/recovered/d9632118f0a529de.png)
 
 ### 3.2 常见的非导向性传输介质
 
@@ -177,7 +177,7 @@ $码元所带信息量（比特数）=log_2(码元进制数)$
 
 # 5. 本章思维导图
 
-![在这里插入图片描述](/assets/blog/recovered/4e4690b77a01dcc4.png)
+![在这里插入图片描述](/assets/blog/recovered/e37ea0054078b344.png)
 
 ---
 

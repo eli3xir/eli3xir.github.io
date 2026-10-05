@@ -59,7 +59,7 @@
 <li>第三阶段（O-Net）：通过一个能力更加强的网络找到人脸上面的五个标记点</li>
 </ul>
 <p>完整的MTCNN模型级联如下：</p>
-<p><img loading="lazy" src="https://gitee.com/sg2019/picgo/raw/master/image-20210420144945504.png" alt="image-20210420144945504"></p>
+<p><img width="500" height="580" loading="lazy" src="/assets/blog/recovered/88df0bc91a0dceea.png" alt="image-20210420144945504"></p>
 <p>该模型的特征跟HAAR级联检测在某些程度上有一定的相通之处，都是采用了级联方式，都是在初期就拒绝了绝大多数的图像区域，有效的降低了后期CNN网络的计算量与计算时间。</p>
 <p>MTCNN模型主要贡献在于：</p>
 <ul>
@@ -73,7 +73,7 @@
 <p>图像金字塔是图像多尺度表达的一种常用方法，构造一系列以金字塔形状排列的、分辨率逐步降低、且来源于同一张原始图的图像集合，以适应不同大小的人脸，进行多尺度人脸检测。</p>
 <p>构建方式是通过不同的缩放系数factor对图片进行缩放，每次缩小为原来的factor大小，在MTCNN代码中，按照习惯设为<code>factor = 0.709</code>。</p>
 <p>对应图解：</p>
-<p><img loading="lazy" src="https://gitee.com/sg2019/picgo/raw/master/image-20210420151632498.png" alt="image-20210420151632498"></p>
+<p><img width="601" height="202" loading="lazy" src="/assets/blog/recovered/3189ce518c770ab0.png" alt="image-20210420151632498"></p>
 <h4>代码</h4>
 <pre class="hljs"><code><span class="hljs-comment"># 计算原始输入图像每一次缩放的比例</span>
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">calculateScales</span>(<span class="hljs-params">img</span>):
@@ -285,7 +285,7 @@
 <p>FaceNet的主干网络起到提取特征的作用，传统的FaceNet以Inception-ResNetV1为主干特征提取网络。</p>
 <p>MobilenetV1模型是Google针对手机等嵌入式设备提出的一种轻量级的深层神经网络，其使用的核心思想便是depthwise separable convolution（深度可分离卷积块）。</p>
 <p>深度可分离卷积块由两个部分组成，分别是深度可分离卷积和1x1普通卷积，深度可分离卷积的卷积核大小一般是3x3的，便于理解的话我们可以把它当作是特征提取，1x1的普通卷积可以完成通道数的调整。</p>
-<p><img width="584" height="541" loading="lazy" src="/assets/blog/recovered/d8a9578574b82c27.png" alt="20191030154355407"></p>
+<p><img width="583" height="314" loading="lazy" src="/assets/blog/recovered/dd12e7a986619698.png" alt="20191030154355407"></p>
 <blockquote>
 <p><strong>深度可分离卷积块的目的是使用更少的参数来代替普通的3x3卷积。</strong>与普通卷积相比，深度可分离卷积结构块可以减少模型的参数。</p>
 </blockquote>
@@ -623,7 +623,7 @@ face_encodings = []
         &#x27;&#x27;&#x27;</span>
 </code></pre>
 </article>
-    <p class="post-source post-image-sources">配图参考与存档：<a href="https://img-blog.csdnimg.cn/20191030154355407.png" target="_blank" rel="noopener">深度可分离卷积图 · CSDN 原文件</a>。</p>
+    <p class="post-source post-image-sources">配图参考与存档：<a href="https://img-blog.csdnimg.cn/20191030154355407.png" target="_blank" rel="noopener">卷积示意图来源 · CSDN</a>；<a href="https://gitee.com/buptsg2019/picgo/tree/f2dca76bbe1f19fa7294573a31458d6be27b6ff5" target="_blank" rel="noopener">原图床文件 · Gitee</a>；<a href="https://kpzhang93.github.io/MTCNN_face_detection_alignment/" target="_blank" rel="noopener">MTCNN 原论文与代码 · Zhang 等</a>。</p>
     <a class="back-link" href="./index.html">← 返回文章列表</a>
   </main>
   <footer class="blog-footer">© 2026 eli3xir · 共 39 篇文章</footer>

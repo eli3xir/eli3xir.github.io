@@ -11,10 +11,7 @@ try{
  for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
   const context=await browser.newContext({viewport,reducedMotion:'reduce'}),page=await context.newPage();
   if(!layoutOnly)for(const article of articles){
-   const unresolved=new Set(article.unresolved.map(image=>image.original));
-   // Explicitly exercise the existing failed-image UI for the two unresolved
-   // originals. Their real HTTP 404 responses are recorded in the source audit.
-   for(const url of unresolved)await page.route(url,route=>route.fulfill({status:404,contentType:'text/plain',body:'Not found'}));
+   assert.deepEqual(article.unresolved,[]);
    const log=observe(page);
    await page.goto(server.base+article.article,{waitUntil:'domcontentloaded'});await ready(page);await settle(page);
    await page.locator('.post-content img').evaluateAll(images=>images.forEach(image=>{image.loading='eager';}));
@@ -28,16 +25,33 @@ try{
     assert.ok(Math.abs(actual.rendered.height/actual.rendered.width-expected.height/expected.width)<.01);
     results.push(actual);
     if([article.images[0],article.images.at(-1)].includes(expected))await page.screenshot({path:`${output}/recovered-${article.article.split('/').pop()}-${viewport.width}-${expected.index}.png`});
+    if(article.article==='/blog/39544.html'||article.article==='/blog/59698.html'&&expected.index===12){
+     await figure.click();
+     const dialog=page.locator('.image-inspector[open]');
+     await page.waitForFunction(()=>document.querySelector('.image-inspector[open] .image-inspector-viewport')?.getAttribute('aria-busy')===null);
+     await dialog.evaluate(node=>Promise.all(node.getAnimations().map(animation=>animation.finished)));
+     await page.getByRole('button',{name:'适合窗口',exact:true}).click();
+     const inspected=await dialog.locator('img').evaluate(image=>({src:new URL(image.src).pathname,size:[image.naturalWidth,image.naturalHeight],rect:image.getBoundingClientRect().toJSON(),view:image.parentElement.getBoundingClientRect().toJSON()}));
+     assert.equal(inspected.src,expected.local);assert.deepEqual(inspected.size,[expected.width,expected.height]);
+     assert.ok(inspected.rect.left>=inspected.view.left&&inspected.rect.right<=inspected.view.right&&inspected.rect.top>=inspected.view.top&&inspected.rect.bottom<=inspected.view.bottom,JSON.stringify(inspected));
+     actual.inspected=inspected;
+     await page.screenshot({path:`${output}/recovered-inspector-${article.article.split('/').pop()}-${viewport.width}-${expected.index}.png`});
+     await page.getByRole('button',{name:'原尺寸',exact:true}).click();
+     const native=await dialog.locator('img').evaluate(image=>({width:image.getBoundingClientRect().width,height:image.getBoundingClientRect().height}));
+     assert.deepEqual(native,{width:expected.width,height:expected.height});actual.native=native;
+     if(article.article==='/blog/59698.html')await page.screenshot({path:`${output}/recovered-crc-detail-${viewport.width}.png`});
+     await page.keyboard.press('Escape');assert.equal(await page.locator('.image-inspector:modal').count(),0);
+     assert.equal(await figure.evaluate(image=>document.activeElement===image.closest('button')),true);
+    }
    }
    const credits=await page.locator('.post-image-sources a').evaluateAll(links=>links.map(link=>({label:link.textContent,url:link.href})));
    assert.deepEqual(credits,article.credits);
    const source=page.locator('.post-image-sources');await source.scrollIntoViewIfNeeded();
    await page.screenshot({path:`${output}/recovered-credit-${article.article.split('/').pop()}-${viewport.width}.png`});
-   assert.equal(await page.locator('.image-fallback').count(),unresolved.size);
-   const failed=log.drain();assert.deepEqual(failed.errors,[]);assert.ok(failed.failed.every(request=>unresolved.has(request.url)),JSON.stringify(failed));
-   report.cases.push({article:article.article,viewport,images:results,credits,simulatedUnavailable:[...unresolved]});
+   assert.equal(await page.locator('.image-fallback').count(),0);
+   const failed=log.drain();assert.deepEqual(failed.errors,[]);assert.deepEqual(failed.failed,[]);
+   report.cases.push({article:article.article,viewport,images:results,credits});
    console.log(`PASS ${article.article} ${viewport.width}: ${results.length} recovered figures, credits and overflow`);
-   for(const url of unresolved)await page.unroute(url);
   }
   let release;const gate=new Promise(resolve=>{release=resolve;});
   await page.route('**/assets/blog/recovered/*.png',async route=>{await gate;await route.continue();});
@@ -80,7 +94,7 @@ try{
    report.cases.push({name:'late font preserves viewport reading position',viewport,before,after});console.log(`PASS delayed font and viewport reading position ${viewport.width}`);
   }finally{releaseFont();await fontContext.close();}
  }
- assert.equal(report.cases.reduce((count,result)=>count+(result.images?.length||0),0),layoutOnly?0:130);
+ assert.equal(report.cases.reduce((count,result)=>count+(result.images?.length||0),0),layoutOnly?0:134);
 }catch(error){report.failures.push(error.stack);process.exitCode=1;}
 finally{fs.writeFileSync(`${output}/recovered-images-audit.json`,JSON.stringify(report,null,2));await browser.close();await server.close();}
 console.log(JSON.stringify({cases:report.cases.length,failures:report.failures}));

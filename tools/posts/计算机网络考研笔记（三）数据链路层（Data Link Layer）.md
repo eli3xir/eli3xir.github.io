@@ -12,7 +12,7 @@ description:
 
 ## 1. 基本概念
 
-![在这里插入图片描述](/assets/blog/recovered/277b1af173dbadd8.png)
+![在这里插入图片描述](/assets/blog/recovered/7297a98d7973b656.png)
 
 ## 2. 封装成帧与透明传输
 
@@ -89,7 +89,7 @@ description:
 
 接收方收到数据后进行检测，余数不为0则丢弃。
 
-![在这里插入图片描述](/assets/blog/recovered/b8f8bc2e09608b52.png)
+![在这里插入图片描述](/assets/blog/recovered/e345ce0cc003e521.png)
 
 ### 3.4 纠错编码（海明码）
 

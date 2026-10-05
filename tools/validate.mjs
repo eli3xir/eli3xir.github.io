@@ -4,7 +4,17 @@ import imageMetadata from './image-dimensions.js';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const failures=[];const warnings=[];
 const restored=JSON.parse(fs.readFileSync(path.join(root,'assets/blog/transport/manifest.json'),'utf8'));
-const recovered=JSON.parse(fs.readFileSync(path.join(root,'assets/blog/recovered/manifest.json'),'utf8')).articles;
+const recoveryManifest=JSON.parse(fs.readFileSync(path.join(root,'assets/blog/recovered/manifest.json'),'utf8'));
+const recovered=recoveryManifest.articles,originals=recovered.flatMap(article=>article.images);
+const originalRepository='https://gitee.com/buptsg2019/picgo',originalCommit='f2dca76bbe1f19fa7294573a31458d6be27b6ff5';
+if(recoveryManifest.repository.url!==originalRepository||recoveryManifest.repository.commit!==originalCommit)failures.push('Original image repository provenance changed');
+if(originals.length!==67||new Set(originals.map(image=>image.local)).size!==66||recovered.some(article=>article.unresolved.length))failures.push('Original image recovery is incomplete');
+for(const image of originals){
+  const bytes=fs.readFileSync(path.join(root,image.local));
+  const gitBlob=createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex');
+  const filename=image.original.replace('https://gitee.com/sg2019/picgo/raw/master/','');
+  if(image.source!==`${originalRepository}/raw/${originalCommit}/${filename}`||gitBlob!==image.gitBlob)failures.push(`Original image provenance differs: ${image.local}`);
+}
 const formatting=JSON.parse(fs.readFileSync(path.join(root,'tools/article-formatting.json'),'utf8'));
 for(const image of [...restored.images,...recovered.flatMap(article=>article.images)]){
   const bytes=fs.readFileSync(path.join(root,image.local));

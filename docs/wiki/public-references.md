@@ -114,11 +114,17 @@ Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐�
 
 网络笔记从 [概述公开存档](https://geekdaxue.co/read/cessstudy@eygo6g/gdrwok)、[物理层公开存档](https://geekdaxue.co/read/cessstudy@eygo6g/ap71m3)、[数据链路层公开存档](https://geekdaxue.co/read/cessstudy@eygo6g/acda1t) 取得完整文章与图片，实际查看 58 张候选图，并核对本地笔记的相邻文字和小节。概述的 [腾讯云转载页](https://cloud.tencent.com/developer/article/2095455) 列出原 CSDN 系列链接；原作者账户为 weixin_45067603，图片中保留王道考研、CSDN 等署名。CSDN 概述只取得简介与系列入口，其余两页请求未成功，不把存档阅读写成原站全文阅读。
 
-数据链路层存档比本站对应范围多两张：CRC 的可靠性补充说明和海明码中间分组表。恢复时不插入这两张，海明码第三步对应完整求值图；停止等待协议的 ACK 迟到图与本站已有文件 SHA-256 同为 `618cc806f815d0cb6fa4af56e5cc1d751eb0495c1013815c7d459685f8a0e741`。此单图字节证据与其他图的语境证据明确分开。
+第三十一轮曾推断数据链路层存档多出 CRC 可靠性说明和海明码中间分组表，因而排除这两张；其中 CRC 推断已被第三十八轮原文件证据推翻，原第 13 图正是可靠性说明。此前误配的接收端除法图已纠正，详见下文。停止等待协议的 ACK 迟到图与本站已有文件 SHA-256 同为 `618cc806f815d0cb6fa4af56e5cc1d751eb0495c1013815c7d459685f8a0e741`，这一单图字节结论仍成立。
 
 组成原理的七份 CSDN 文件名与原 alt 时间戳一致，实际查看系统、运算、存储、指令、CPU、总线和 I/O 架构图，保留原文八次展示；扫描图作者仍未知，不能把存储平台写成作者。Python 笔记的 [Vim 键位图](https://doc.shiyanlou.com/document-uid731737labid7100timestamp1531381084391.png) 与旧文件名一致，图内标明 ViEmu、fdl 汉化；源内容实际是 JPEG，按 JPEG 保存。人脸项目的 [深度可分离卷积图](https://img-blog.csdnimg.cn/20191030154355407.png) 与原 alt 同名且内容相符。上述九份唯一文件均实际查看并保留原字节。
 
-MTCNN 级联与图像金字塔的两张时间戳图片尚未确认。已检索到 OpenCV 学堂的级联说明及 [码农的后花园文章](https://www.cnblogs.com/xiamuzi/p/13637756.html)，但相似段落不足以确认原图或裁切，未将候选图发布为恢复结果。此次恢复只用于既有技术文章，不用于网站品牌、3D 美术或原创署名。
+第三十一轮尚未确认 MTCNN 级联与图像金字塔的两张时间戳图片。当时已检索到 OpenCV 学堂的级联说明及 [码农的后花园文章](https://www.cnblogs.com/xiamuzi/p/13637756.html)，但相似段落不足以确认原图或裁切，未将候选图发布为恢复结果。第三十八轮已通过下述同名原文件解决。恢复图只用于既有技术文章，不用于网站品牌、3D 美术或原创署名。
+
+2026-10-05 重新检查项目原链接时，发现 [当前 PicGo 仓库](https://gitee.com/buptsg2019/picgo) 可访问。`git ls-remote` 取得 master 提交 `f2dca76bbe1f19fa7294573a31458d6be27b6ff5`；以原 URL 文件名从该提交逐一取得全部 67 处图片。独立请求 [Git 文件树 API](https://gitee.com/api/v5/repos/buptsg2019/picgo/git/trees/f2dca76bbe1f19fa7294573a31458d6be27b6ff5?recursive=1)，返回 887 项且未截断；每份下载的 Git blob 摘要与对应条目相同。旧 `sg2019` 级联 raw 地址仍实测 404，当前所有者路径可取原文件；没有独立证据确定账户改名时间或历史过程。
+
+逐项比较：56 处与第三十一轮文件逐字节一致，9 处不同，2 处此前未恢复。实际查看全部九组前后对照及两张新增图：CRC 原图为 1035×163 的可靠性说明，卷积原图为 583×314 的上半部裁切；其余不同文件主题相同但像素或压缩不同，均按固定版本原字节保存。两张 MTCNN 图分别为 500×580 和 601×202。清单记录原地址、固定来源、Git blob、SHA-256、位置及先前替代记录；Gitee 只作为文件来源，不替代 ViEmu、fdl、王道考研、CSDN 等原署名。
+
+同轮实际阅读 [MTCNN 作者项目页](https://kpzhang93.github.io/MTCNN_face_detection_alignment/)，核对三阶段检测/对齐说明、作者、2016 年论文和代码入口；未声称阅读全文 PDF。只读克隆原 [Flask 人脸项目](https://gitee.com/buptsg2019/flask-face-recognition-api)，实际 HEAD 为 `630512dacf9715d4bb5a798814bf6282b34a5417`，阅读 README 及 utils.py 中缩放和 NMS 实现用于后续研究；此次配图恢复没有新增浏览器模型推理或复制人脸数据集。
 
 2026-10-04 阅读 MDN 的 [dialog 元素](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog) 与 [showModal](https://developer.mozilla.org/en-US/docs/Web/API/HTMLDialogElement/showModal)，核对顶层模态框、背景不可交互、初始焦点及可见关闭入口；没有依赖较新的 closedby 或声明式调用属性。继续阅读 [WAI-ARIA APG 模态框模式](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/)，按其键盘行为实现双向焦点循环、Escape 和返回入口。实际 Chromium 检查中第五次 Tab 曾落到 BODY，因此补充了显式首尾循环；这不等于已完成全部浏览器或辅助技术验证。
 

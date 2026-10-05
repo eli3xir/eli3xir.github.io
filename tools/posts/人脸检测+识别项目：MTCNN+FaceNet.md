@@ -38,7 +38,7 @@ MTCNN，英文全称是Multi-task convolutional neural network，中文全称是
 
 完整的MTCNN模型级联如下：
 
-![image-20210420144945504](https://gitee.com/sg2019/picgo/raw/master/image-20210420144945504.png)
+![image-20210420144945504](/assets/blog/recovered/88df0bc91a0dceea.png)
 
 该模型的特征跟HAAR级联检测在某些程度上有一定的相通之处，都是采用了级联方式，都是在初期就拒绝了绝大多数的图像区域，有效的降低了后期CNN网络的计算量与计算时间。
 
@@ -60,7 +60,7 @@ MTCNN模型主要贡献在于：
 
 对应图解：
 
-![image-20210420151632498](https://gitee.com/sg2019/picgo/raw/master/image-20210420151632498.png)
+![image-20210420151632498](/assets/blog/recovered/3189ce518c770ab0.png)
 
 #### 代码
 ```python
@@ -313,7 +313,7 @@ MobilenetV1模型是Google针对手机等嵌入式设备提出的一种轻量级
 
 深度可分离卷积块由两个部分组成，分别是深度可分离卷积和1x1普通卷积，深度可分离卷积的卷积核大小一般是3x3的，便于理解的话我们可以把它当作是特征提取，1x1的普通卷积可以完成通道数的调整。
 
-![20191030154355407](/assets/blog/recovered/d8a9578574b82c27.png)
+![20191030154355407](/assets/blog/recovered/dd12e7a986619698.png)
 
 > <strong>深度可分离卷积块的目的是使用更少的参数来代替普通的3x3卷积。</strong>与普通卷积相比，深度可分离卷积结构块可以减少模型的参数。
 
