@@ -37,6 +37,7 @@ try{
   await open(page,routes[0]);
   for(const path of routes){
    if(new URL(page.url()).pathname!==path){await page.evaluate(path=>window.studio.router.navigate(path),path);await settle(page);}
+   assert.equal(new URL(page.url()).pathname,path,'article navigation must reach its requested destination');
    const result=await layout(page);assert.equal(result.overflow,0,path);assert.equal(result.overlap,0,`${path}: book crosses copy ${JSON.stringify(result)}`);
    assert.ok(result.left>=-1&&result.right<=viewport.width+1,`${path}: book is cropped ${JSON.stringify(result)}`);
    assert.ok(result.bottom<result.heroBottom-60,path);assert.ok(result.font>=16);assert.equal(result.entries,Math.max(1,result.headings));assert.equal(result.validLinks,true);
