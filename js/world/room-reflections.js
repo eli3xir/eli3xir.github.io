@@ -44,8 +44,14 @@ function createMixer(renderer,{textures,manifest}){
     fragmentShader:'uniform sampler2D from,to;uniform float amount;varying vec2 vUv;void main(){gl_FragColor=mix(texture2D(from,vUv),texture2D(to,vUv),amount);}'
   });
   const quad=new FullScreenQuad(material),viewport=new THREE.Vector4(),scissor=new THREE.Vector4();
-  let selected=null,target=null,progress=1,draws=0;const checked=new Set();
+  let selected=null,target=null,progress=1,draws=0,weights=new Map();const checked=new Set();
+  const currentWeights=()=>{
+    if(!target)return new Map([[selected,1]]);
+    const current=new Map([...weights].map(([id,value])=>[id,value*(1-progress)]));
+    current.set(target,(current.get(target)||0)+progress);return current;
+  };
   const render=(a,b,amount,destination)=>{
+    if(renderer.getContext().isContextLost())return;
     const old=renderer.getRenderTarget(),face=renderer.getActiveCubeFace(),level=renderer.getActiveMipmapLevel(),test=renderer.getScissorTest(),xr=renderer.xr.enabled;
     renderer.getViewport(viewport);renderer.getScissor(scissor);
     try{
@@ -59,12 +65,30 @@ function createMixer(renderer,{textures,manifest}){
   };
   const api={texture:output.texture,manifest,
     set(id){id=textures.has(id)?id:'default';if(id===selected&&!target)return;const texture=textures.get(id);render(texture,texture,1,output);selected=id;target=null;progress=1;},
-    begin(id){id=textures.has(id)?id:'default';render(output.texture,output.texture,0,snapshot);target=id;progress=0;},
+    begin(id){id=textures.has(id)?id:'default';weights=currentWeights();render(output.texture,output.texture,0,snapshot);target=id;progress=0;},
     blend(value){if(!target)return;value=THREE.MathUtils.clamp(value,0,1);if(value===progress)return;render(snapshot.texture,textures.get(target),value,output);progress=value;if(value===1){selected=target;target=null;}},
     diagnostics(){return{selected,target,progress,draws,probes:textures.size,width:output.width,height:output.height};}
   };
+  const restore=()=>{
+    checked.clear();
+    if(!target){const texture=textures.get(selected);render(texture,texture,1,output);return;}
+    // Render targets have no CPU image after context loss. Retain just the five
+    // source weights, including interrupted blends, and rebuild the snapshot.
+    // Half-float intermediate rounding may differ by a few ULPs on restoration.
+    const sources=[...weights].filter(([,weight])=>weight>0).map(([id,weight])=>[textures.get(id).image.data,weight]);
+    const data=new Uint16Array(output.width*output.height*4);
+    for(let i=0;i<data.length;i++){
+      let value=0;for(const [source,weight] of sources)value+=THREE.DataUtils.fromHalfFloat(source[i])*weight;
+      data[i]=THREE.DataUtils.toHalfFloat(value);
+    }
+    const texture=new THREE.DataTexture(data,output.width,output.height,THREE.RGBAFormat,THREE.HalfFloatType);
+    texture.colorSpace=THREE.LinearSRGBColorSpace;texture.needsUpdate=true;
+    try{render(texture,texture,1,snapshot);render(snapshot.texture,textures.get(target),progress,output);}
+    finally{texture.dispose();}
+  };
   // Upload and compile during room preparation, before visitors can change skin.
-  try{textures.forEach(texture=>renderer.initTexture(texture));api.set('default');api.begin('default');api.blend(1);return api;}
+  try{textures.forEach(texture=>renderer.initTexture(texture));api.set('default');api.begin('default');api.blend(1);
+    renderer.domElement.addEventListener('webglcontextrestored',restore);return api;}
   catch(error){output.dispose();snapshot.dispose();material.dispose();throw error;}
 }
 

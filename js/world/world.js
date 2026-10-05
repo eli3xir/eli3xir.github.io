@@ -17,6 +17,7 @@ import { nextBeatDelay } from '../experience/domain.js';
 import {visualQuality,qualityRatio} from '../experience/visual-quality.js';
 import { BPM } from '../audio/composition.js';
 import {frameRoomCorner,roomFocusActor,roomFlightArc} from './room-framing.js';
+import {createAntialiasing} from './antialiasing.js';
 
 export class World {
   constructor(container,score,{status,onHover,onPick,onPortal}={}) {
@@ -39,11 +40,8 @@ export class World {
     // Reset the background after the shadow pass, including the transmission target.
     // These linear values retain the previous postprocessed clear-color appearance.
     this.scene.background=new THREE.Color().setRGB(16/255,21/255,19/255);
-    const pmrem=new THREE.PMREMGenerator(this.renderer);
-    const environment=new RoomEnvironment();
-    this.environment=pmrem.fromScene(environment,.04).texture;
+    this.restoreEnvironment();
     this.scene.environment=this.environment;this.scene.environmentIntensity=.8;
-    environment.dispose();pmrem.dispose();
     this.camera=new THREE.PerspectiveCamera(38,1,.05,70);
     this.camera.position.set(0,.5,7);
     this.target=new THREE.Vector3();this.desiredCamera=new THREE.Vector3();this.desiredTarget=new THREE.Vector3();
@@ -59,6 +57,8 @@ export class World {
     this.composer.addPass(new RenderPass(this.scene,this.camera));
     this.bloom=new UnrealBloomPass(new THREE.Vector2(1,1),.22,.34,1.35);this.composer.addPass(this.bloom);
     this.composer.addPass(new OutputPass());
+    this.antialiasing=createAntialiasing(this.renderer,this.composer);
+    this.composer.addPass(this.antialiasing.pass);
     this.film=new ShaderPass(FilmShader);this.composer.addPass(this.film);
     this.particles=createParticles(innerWidth<700?1200:2800);this.scene.add(this.particles);
     this.actor=createCharacter();this.scene.add(this.actor.root);
@@ -70,6 +70,7 @@ export class World {
     this.previewObserver=new ResizeObserver(()=>{if(this.focused&&!this.focusJourney)this.resize();});
     const preview=document.querySelector('.object-preview');if(preview)this.previewObserver.observe(preview);
     const options={signal:this.events.signal};
+    this.renderer.domElement.addEventListener('webglcontextrestored',()=>{this.restoreEnvironment();this.antialiasing.refresh();this.applyQuality();},options);
     addEventListener('resize',()=>this.resize(),options);
     addEventListener('pointermove',e=>this.move(e),{...options,passive:true});
     addEventListener('pointerdown',e=>{if(!e.target.closest('a,button,input,select,textarea'))this.down=[e.clientX,e.clientY];},options);
@@ -86,6 +87,15 @@ export class World {
     this.resize();this.start();
   }
 
+  restoreEnvironment(){
+    const previous=this.environment,pmrem=new THREE.PMREMGenerator(this.renderer),room=new RoomEnvironment();
+    try{
+      const target=pmrem.fromScene(room,.04);
+      this.environmentTarget?.dispose();this.environmentTarget=target;this.environment=target.texture;
+      if(this.scene.environment===previous)this.scene.environment=this.environment;
+    }finally{room.dispose();pmrem.dispose();}
+  }
+
   resize() {
     this.focusJourney=null;
     this.applyQuality();this.renderer.setSize(innerWidth,innerHeight);
@@ -99,6 +109,7 @@ export class World {
   applyQuality(){
     const quality=visualQuality(),ratio=qualityRatio();
     if(this.renderer.getPixelRatio()!==ratio){this.renderer.setPixelRatio(ratio);this.composer.setPixelRatio(ratio);}
+    this.antialiasing.apply(quality,innerWidth<700);
     this.bloom.enabled=quality!=='low'&&!this.reduced.matches;
     this.renderer.shadowMap.enabled=quality!=='low';
     this.key.castShadow=quality!=='low'&&this.route?.id!=='home';
@@ -342,6 +353,6 @@ export class World {
   }
 
   diagnostics(){return{chapter:this.route?.id,drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,
-    geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,pixelRatio:this.renderer.getPixelRatio(),
+    geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,pixelRatio:this.renderer.getPixelRatio(),antialiasing:this.antialiasing.mode,
     roomReady:this.model?.loaded??null,rendering:this.running,renderedFrames:this.renderedFrames,story:this.storyFrame,frameTimes:this.frames};}
 }

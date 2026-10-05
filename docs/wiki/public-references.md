@@ -161,3 +161,11 @@ Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐�
 ## 装置保持比例的连续升降
 
 2026-10-05 对照原实际录像中被纵向压扁的照片，改为完整模型经过台面开口升降。核对 Three.js 官方 [Material](https://threejs.org/docs/pages/Material.html) 的 clippingPlanes、clipShadows 与 [Plane](https://threejs.org/docs/pages/Plane.html) 的变换：裁切面使用世界坐标，负有符号距离一侧不绘制；必须启用 renderer.localClippingEnabled，阴影裁切另行启用。独立 GPU 读回比较实际照片的裁切与未裁切渲染，分别检查开口以下透明、以上像素保持。轨迹、井口与托盘均为本仓库代码，没有引入外部模型或视频转场。
+
+## 后处理中的细线与轮廓
+
+2026-10-05 阅读 Three.js 官方 [RenderTarget](https://threejs.org/docs/pages/RenderTarget.html)、[EffectComposer](https://threejs.org/docs/pages/EffectComposer.html)、[多重采样示例](https://threejs.org/examples/webgl_multisampled_renderbuffers.html) 与 [r185 SMAA 示例](https://github.com/mrdoob/three.js/blob/r185/examples/webgl_postprocessing_smaa.html)，并读取本地 0.185.1 的 EffectComposer、SMAAPass、FXAAPass、FXAAShader、WebGLTextures 和 WebGLRenderer。核对默认离屏 samples 为零、颜色与深度格式、采样支持及合成器交换行为；未把默认画布的 antialias 属性视为离屏画面已经抗锯齿的证据。
+
+同一冻结镜头下比较原输出、默认及较低阈值的 SMAA、FXAA、完整缓冲区 MSAA、仅场景 MSAA 和 2 倍像素比。此次主体的细线与小字选择仅场景 MSAA，省电及格式不支持时使用 FXAA；这是本网站的取舍，不推断某种算法在所有场景都更好。新增两份 FXAA 文件直接取自 [three 0.185.1 发布包](https://registry.npmjs.org/three/-/three-0.185.1.tgz)，原包 SHA-512 与重新获取的 [npm 版本元数据](https://registry.npmjs.org/three/0.185.1) 一致，发布文件再与归档成员逐字节比较；沿用 vendor/three/LICENSE。
+
+恢复检查进一步参考官方 [PMREMGenerator](https://threejs.org/docs/pages/PMREMGenerator.html)、[WebGL 上下文丢失说明](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isContextLost)，并读取本地 r185.1 的 PMREMGenerator、WebGLRenderer 与 WebGLTextures。实际截图确认恢复后金属反射丢失；由场景生成的目标没有可重新上传的原图，因此在恢复事件中重建。共享房间保留原探针与过渡权重，避免中途换色回跳；这是针对本项目资源生命周期的修复。
