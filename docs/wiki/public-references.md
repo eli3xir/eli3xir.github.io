@@ -155,3 +155,5 @@ Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐�
 示例取自 [scikit-image 的 astronaut 数据说明](https://scikit-image.org/docs/0.25.x/api/skimage.data.html#skimage.data.astronaut) 与 [v0.25.2 原 PNG](https://raw.githubusercontent.com/scikit-image/scikit-image/v0.25.2/skimage/data/astronaut.png)。进一步用 curl 读取短链接跳转后的 [NASA on The Commons 原页](https://www.flickr.com/photos/nasacommons/16504233985/)，核对 canonical、Eileen Collins / STS-93 图注、NASA 署名与 Commons 许可入口；示例仅用于解释检测算法。图片保留 791,555 字节原内容及 SHA-256，没有重绘或修改肖像。
 
 数值参考由独立 NumPy 算子直接读取原 H5，组合未经修改的原 Python 后处理与 OpenCV 缩放；它不等同于运行完整旧版 Keras。初次逐行按顺序比较发现两个相近分数的候选互换，改为唯一几何对应后核对全部框、分数和关键点，并在验证记录保留该差异。
+
+线上画面复查发现慢加载后照片未显示，继续核对 Three.js 官方 [Texture](https://threejs.org/docs/pages/Texture.html) 的首次使用后尺寸不可变约束，并用延迟真实输入和 GPU 读回复现 `GL_INVALID_VALUE`。显示层改为固定尺寸画布原位重绘，保存同一纹理和照片比例；独立参考纹理的逐像素比较验证实际上传，不能以正确的模型输出推断 GPU 照片已经显示。

@@ -146,3 +146,7 @@
 `npm run test:vision-timing` 另用 320×512、512×320 的原图左上裁切核对非正方形运算，并实际启动、暂停音频，验证推理后按整拍开始及独立界面时钟完成。三份报告分别为 `vision-audit.json`、`vision-failure-audit.json`、`vision-timing-audit.json`，均支持 `BASE_URL`；GPU 工作顺序运行。坐标阶段帧使用真实 controller 时钟推进，不手改状态冒充完整用户流程；连续录像另保存以检查中间动作。
 
 `npm run validate:vision` 检查全部导出张量、运行库、示例文件和来源摘要，已加入 `validate`。模型重导出用 `python tools/pack-vision-models.py --source 固定原仓库 --runtime TFJS的node_modules --sample 原astronaut.png --license TFJS上游LICENSE`，需 numpy/h5py。独立参考用 `python tools/reference-vision.py --source 固定原仓库`，需另有 opencv-python；直接读取原 H5 和未经修改的原 Python 后处理，不依赖导出模型或浏览器算法。参考包含正方形及横竖裁切，按唯一几何对应检查全部数值（最大绝对容差 0.005），不能以置信分数极接近时的行交换判为完全错误的框，也不能省略一对一数量检查。
+
+`npm run test:vision-images` 在两视口扣住示例，先把占位纹理真实上传到 GPU，再放行照片；以独立新建的输入参考纹理进行 64×64 GPU 读回比较，覆盖照片、空白、重新载入和横竖裁切，捕获 `GL_INVALID_*`。输出 `vision-image-audit.json` 及延迟加载后的实际截图，支持 `BASE_URL`。该检查针对曾出现的尺寸变化导致上传失败，不能用 CPU 图片像素或非零检测框替代。全站 observe 也记录此类 GL 错误，即使浏览器将其归为 warning。
+
+视觉阶段检查记录构造终点的实际进度，并在终点后一微秒再次观察完成状态；浮点运算可能把理论八拍计算为 `7.999999999999998`。这只影响测试的人工时钟采样，正常 RAF 会继续推进；不要先停住人工时钟，再把仍处于“停止检测”状态的下一次点击当成重跑。

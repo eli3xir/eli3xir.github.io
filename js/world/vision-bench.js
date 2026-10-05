@@ -31,9 +31,11 @@ export function createVisionBench(vision){
   const screen=display(720,160),readout=mesh(new THREE.PlaneGeometry(1.65,.34),new THREE.MeshBasicMaterial({map:screen.texture,toneMapped:false}),hardware,[-.12,-.48,1.07]);readout.rotation.x=-.18;readout.castShadow=false;
   screen.draw('MTCNN / OPTICAL BENCH','INSERT A PHOTOGRAPH','P-NET / R-NET / O-NET');batchStatic(hardware);
 
-  const placeholder=document.createElement('canvas');placeholder.width=placeholder.height=64;
-  const ctx=placeholder.getContext('2d');ctx.fillStyle='#10251f';ctx.fillRect(0,0,64,64);ctx.strokeStyle='#486856';ctx.strokeRect(15,15,34,34);
-  const photo=new THREE.CanvasTexture(placeholder);photo.colorSpace=THREE.SRGBColorSpace;photo.anisotropy=4;
+  // GPU texture storage keeps its dimensions after the first upload. Paint all
+  // sources into one fixed canvas; the photo plane preserves their aspect ratio.
+  const photoCanvas=document.createElement('canvas');photoCanvas.width=photoCanvas.height=512;
+  const ctx=photoCanvas.getContext('2d');ctx.fillStyle='#10251f';ctx.fillRect(0,0,512,512);ctx.strokeStyle='#486856';ctx.strokeRect(120,120,272,272);
+  const photo=new THREE.CanvasTexture(photoCanvas);photo.colorSpace=THREE.SRGBColorSpace;photo.anisotropy=4;
   const paper=new THREE.MeshBasicMaterial({map:photo,toneMapped:false});
   const plane=new THREE.PlaneGeometry(1,1),picture=mesh(plane,paper,root,CENTER.toArray());picture.position.z=.193;picture.scale.set(PHOTO_SIZE,PHOTO_SIZE,1);picture.castShadow=picture.receiveShadow=false;
   const atlasCanvas=document.createElement('canvas');atlasCanvas.width=1024;atlasCanvas.height=512;
@@ -81,7 +83,7 @@ export function createVisionBench(vision){
       if(state.imageRevision!==imageRevision){
         imageRevision=state.imageRevision;report=null;geometry.setDrawRange(0,0);previousGeometry.setDrawRange(0,0);marksGeometry.setDrawRange(0,0);previousMarks.geometry.setDrawRange(0,0);previousCount=0;zoom=resetZoom=1;origin=resetOrigin=[0,0];photo.repeat.set(1,1);photo.offset.set(0,0);
         if(state.image){
-          photo.image=state.image;photo.needsUpdate=true;photoWidth=PHOTO_SIZE*state.image.width/Math.max(state.image.width,state.image.height);photoHeight=PHOTO_SIZE*state.image.height/Math.max(state.image.width,state.image.height);picture.scale.set(photoWidth,photoHeight,1);
+          ctx.drawImage(state.image,0,0,512,512);photo.needsUpdate=true;photoWidth=PHOTO_SIZE*state.image.width/Math.max(state.image.width,state.image.height);photoHeight=PHOTO_SIZE*state.image.height/Math.max(state.image.width,state.image.height);picture.scale.set(photoWidth,photoHeight,1);
           pyramid=imageScales(state.image.width,state.image.height);atlasContext.clearRect(0,0,1024,512);
           pyramid.forEach((level,i)=>{const x=i%4*256,y=Math.floor(i/4)*512/3;atlasContext.fillStyle='#dfce9d';atlasContext.font='27px monospace';atlasContext.textAlign='center';atlasContext.fillText(`${level.width} × ${level.height}`,x+128,y+90);});atlas.needsUpdate=true;
         }

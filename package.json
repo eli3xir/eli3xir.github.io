@@ -15,6 +15,7 @@
     "test:vision": "node tools/vision-audit.mjs",
     "test:vision-failures": "node tools/vision-failure-audit.mjs",
     "test:vision-timing": "node tools/vision-timing-audit.mjs",
+    "test:vision-images": "node tools/vision-image-audit.mjs",
     "validate:vision": "node tools/validate-vision.mjs",
     "validate:room-artwork": "node tools/validate-room-artwork.mjs",
     "validate": "node tools/validate.mjs",

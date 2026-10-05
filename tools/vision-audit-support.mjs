@@ -18,10 +18,14 @@ export function compareReference(report){
 export async function geometryFrame(page,progress){
  return page.evaluate(async progress=>{
   const T=await import('three'),w=window.studio.world,v=window.studio.route.vision,m=w.model.optical;
-  w.moving=1;w.frame((v.state.startedAt+progress*v.state.beat)*1000);w.scene.updateMatrixWorld(true);
+  w.moving=1;const at=(v.state.startedAt+progress*v.state.beat)*1000;w.frame(at);
+  const atRequestedTime={progress:v.state.progress,phase:v.state.phase};
+  // Floating-point division can put the constructed deadline just below eight
+  // beats. Observe completion one microsecond after it, like the next RAF.
+  if(progress===8){w.moving=1;w.frame(at+.001);}w.scene.updateMatrixWorld(true);
   const hand=w.actor.root.getObjectByName('mote-right-hand').getWorldPosition(new T.Vector3()),contact=m.contact.getWorldPosition(new T.Vector3());
   const marks=m.marks.geometry.attributes.position,points=[];for(let i=0;i<m.marks.geometry.drawRange.count;i++)points.push([marks.getX(i),marks.getY(i),marks.getZ(i)]);
-  return{progress:v.state.progress,requestedProgress:progress,handError:hand.distanceTo(contact),...m.diagnostics(),points,photo:{repeat:m.photo.repeat.toArray(),offset:m.photo.offset.toArray()},levels:m.levels.map(l=>({visible:l.root.visible,position:l.root.position.toArray(),scale:l.root.scale.toArray()}))};
+  return{progress:v.state.progress,requestedProgress:progress,atRequestedTime,handError:hand.distanceTo(contact),...m.diagnostics(),points,photo:{repeat:m.photo.repeat.toArray(),offset:m.photo.offset.toArray()},levels:m.levels.map(l=>({visible:l.root.visible,position:l.root.position.toArray(),scale:l.root.scale.toArray()}))};
  },progress);
 }
 export async function layout(page){

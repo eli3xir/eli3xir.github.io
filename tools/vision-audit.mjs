@@ -2,7 +2,7 @@ import fs from 'node:fs';import assert from 'node:assert/strict';
 import {startServer,launchBrowser,ready,settle,observe,output} from './browser-support.mjs';
 import {compareReference,geometryFrame,layout} from './vision-audit-support.mjs';
 const server=process.env.BASE_URL?{base:process.env.BASE_URL,close:async()=>{}}:await startServer(),browser=await launchBrowser();
-const report={base:server.base,cases:[],failures:[]};fs.mkdirSync(output,{recursive:true});
+const report={base:server.base,cases:[],failures:[]};let activePage=null,activeLog=null;fs.mkdirSync(output,{recursive:true});
 const visionReady=page=>page.waitForFunction(()=>window.studio.route.vision.state.phase==='ready'&&(!window.studio.world||window.studio.world.model.instrumentLevels.vision===1));
 const done=page=>page.waitForFunction(()=>window.studio.route.vision.state.phase==='done',null,{timeout:60000});
 const sample=fs.readFileSync('assets/vision/astronaut.png');
@@ -10,14 +10,14 @@ async function enter(page){await page.goto(server.base+'/projects/');await ready
 try{
  for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
   const context=await browser.newContext({viewport}),page=await context.newPage(),log=observe(page),requests=[];context.on('request',r=>requests.push({url:r.url(),method:r.method()}));
-  await enter(page);assert.ok(!requests.some(r=>/tfjs|weights.bin/.test(r.url)),'model loaded before explicit detection');
+  activePage=page;activeLog=log;await enter(page);assert.ok(!requests.some(r=>/tfjs|weights.bin/.test(r.url)),'model loaded before explicit detection');
   await page.evaluate(()=>{const w=window.studio.world;window.identities={root:w.model.root,actor:w.actor,renderer:w.renderer,photo:w.model.optical.photo};window.heartbeat=0;window.tick=setInterval(()=>window.heartbeat++,16);});
   await page.locator('.vision-run').click();await page.waitForFunction(()=>window.studio.route.vision.state.phase==='playing',null,{timeout:60000});
   const first=await page.evaluate(()=>{window.studio.world.stop();clearInterval(window.tick);return{report:window.studio.route.vision.state.report,memory:window.studio.route.vision.state.memory,ticks:window.heartbeat};});
   const differences=compareReference(first.report);assert.ok(first.ticks>3);assert.equal(first.memory.numTensors,50);
   const frames=[];for(const p of [0,1.9,2.9,4.7,6.7,7.5,8]){const frame=await geometryFrame(page,p);assert.ok(frame.handError<1e-6,JSON.stringify(frame));frames.push(frame);}
   assert.deepEqual(frames.map(f=>f.visibleBoxes),[0,0,370,370,3,1,1]);assert.equal(frames.at(-1).landmarks,5);
-  const final=frames.at(-1),marks=first.report.stages[2].boxes[0].marks;
+  const final=frames.at(-1),marks=first.report.stages[2].boxes[0].marks;report.lastSampledEndpoint=final.atRequestedTime;assert.equal(await page.evaluate(()=>window.studio.route.vision.state.phase),'done');
   final.points.forEach((p,i)=>{assert.ok(Math.abs(p[0]-(-.12+(marks[i*2]/512-final.origin[0])*final.zoom*1.88-.94))<1e-6);assert.ok(Math.abs(p[1]-(.31+.94-(marks[i*2+1]/512-final.origin[1])*final.zoom*1.88))<1e-6);});
   assert.equal(final.photo.repeat[0],1/final.zoom);assert.ok(Math.abs(final.photo.offset[1]-(1-final.origin[1]-1/final.zoom))<1e-9);
   if(viewport.width<700)await page.evaluate(()=>scrollTo(0,280));await page.screenshot({path:`${output}/vision-final-${viewport.width}.png`});
@@ -43,7 +43,7 @@ try{
   report.cases.push({name:'real inference, independent reference, continuous mechanism, local file, blank, resources and cleanup',viewport,differences,firstTicks:first.ticks,frames,memories,motion});await context.close();console.log(`PASS vision behavior ${viewport.width}`);
  }
  {
-  const context=await browser.newContext({reducedMotion:'reduce'}),page=await context.newPage(),log=observe(page),layouts=[];
+  const context=await browser.newContext({reducedMotion:'reduce'}),page=await context.newPage(),log=observe(page),layouts=[];activePage=page;activeLog=log;
   for(const viewport of [{width:320,height:568},{width:390,height:844},{width:768,height:1024},{width:844,height:390},{width:568,height:320},{width:1280,height:540},{width:1440,height:1000}]){
    await page.setViewportSize(viewport);await enter(page);await page.locator('.vision-run').click();await done(page);await page.waitForTimeout(100);const result=await layout(page);
    assert.equal(result.overflow,false);assert.ok(result.bounds.left>=-1&&result.bounds.right<=viewport.width+1,JSON.stringify({viewport,result}));
@@ -53,9 +53,9 @@ try{
   assert.deepEqual(log.errors,[]);assert.deepEqual(log.failed,[]);report.cases.push({name:'seven responsive compositions, reduced motion and target sizes',layouts});await context.close();console.log('PASS vision layouts');
  }
  {
-  const context=await browser.newContext(),page=await context.newPage(),log=observe(page);await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return /webgl/i.test(type)?null:original.call(this,type,...args);};});
+  const context=await browser.newContext(),page=await context.newPage(),log=observe(page);activePage=page;activeLog=log;await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return /webgl/i.test(type)?null:original.call(this,type,...args);};});
   await enter(page);await page.locator('.vision-run').click();await done(page);compareReference(await page.evaluate(()=>window.studio.route.vision.state.report));assert.equal(await page.locator('.vision-preview').isVisible(),true);
   await page.screenshot({path:`${output}/vision-no-webgl.png`});assert.deepEqual(log.errors,[]);assert.deepEqual(log.failed,[]);report.cases.push({name:'real WASM inference and annotated canvas without WebGL'});await context.close();console.log('PASS vision no WebGL');
  }
-}catch(error){report.failures.push(error.stack);process.exitCode=1;}
+}catch(error){report.failures.push(error.stack);report.failureState=await activePage?.evaluate(()=>{const s=window.studio?.route?.vision?.state;return s?{phase:s.phase,busy:s.busy,serial:s.serial,progress:s.progress,error:s.error,button:document.querySelector('.vision-run')?.textContent}:null;}).catch(()=>null);report.failureLog=activeLog?{errors:activeLog.errors,failed:activeLog.failed}:null;process.exitCode=1;}
 finally{fs.writeFileSync(`${output}/vision-audit.json`,JSON.stringify(report,null,2));await browser.close();await server.close();}console.log(JSON.stringify({cases:report.cases.length,failures:report.failures}));
