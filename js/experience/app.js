@@ -83,7 +83,7 @@ async function mount(doc,url){
   contentEvents?.abort();contentEvents=new AbortController();
   route=routeFor(url.pathname,doc);route.readingEntries=readingEntries(doc,route);document.body.dataset.chapter=route.id;
   if(route.id==='projects'){route.relay=createMessageRelay();route.compiler=createCompiler();route.vision=createVision();}
-  if(route.id==='radio')route.radioPlayback=()=>({active:score.audible,time:score.time,cycle:score.rhythm.cycleBar/32,levels:score.levels()});
+  if(route.id==='radio')route.radioPlayback=()=>({active:score.audible,time:score.time,cycle:score.rhythm.cycleBar/32,levels:score.levels(),stems:score.stemEnabled,volume:score.volume});
   document.body.classList.toggle('article-view',route.article);document.body.classList.toggle('experiment-view',route.experiment);
   explorer.reset();tooltip.hidden=true;
   document.title=doc.title||`${route.label} · eli3xir`;

@@ -128,7 +128,7 @@ export class World {
     }
     const compact=this.compact??innerWidth<=850;
     const height=compact?this.heroHeight||innerHeight:innerHeight;
-    this.camera.setViewOffset(innerWidth,height,compact?0:-innerWidth*.2,compact?(this.heroOffset||0)+scrollY:0,innerWidth,innerHeight);
+    this.camera.setViewOffset(innerWidth,height,compact?(this.heroOffsetX||0):-innerWidth*.2,compact?(this.heroOffset||0)+scrollY:0,innerWidth,innerHeight);
   }
 
   setRig() {
@@ -322,6 +322,7 @@ export class World {
     this.actor.root.position.copy(position);this.actor.root.scale.setScalar(bodyScale);
     if(anchor){anchor.getWorldQuaternion(this.actor.root.quaternion);this.actor.root.quaternion.slerp(this.anchorPortalRotation,journey);}
     else this.actor.root.rotation.z=-journey*.3;
+    this.model.afterActor?.(this.actor);
     this.particles.scale.setScalar(actorScale);this.particles.position.y=actorScale<1?-.3:0;
     const uniforms=this.particles.material.uniforms;
     uniforms.uTime.value=t;uniforms.uBeat.value=rhythm.pulse*(.5+mood*.5);uniforms.uGather.value=this.transition;

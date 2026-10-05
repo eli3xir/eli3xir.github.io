@@ -4,6 +4,8 @@ import {batchStatic} from './batch.js';
 import {createCabinet,createHorn} from './phonograph-finish.js';
 import {recordLabel,createMeters} from './phonograph-parts.js';
 import {createVinylSurface,OUTER_GROOVE,INNER_GROOVE} from './vinyl.js';
+import {createConductorMotion} from '../experience/conductor-motion.js';
+import {createConductorBaton} from './conductor-baton.js';
 
 export function createPhonograph(playback){
   const root=new THREE.Group(),deck=new THREE.Group();root.add(deck);deck.rotation.set(.3,-.3,-.04);
@@ -29,13 +31,15 @@ export function createPhonograph(playback){
   const lamp=mesh(new THREE.SphereGeometry(.035,16,12),new THREE.MeshStandardMaterial({color:0x45654b,emissive:0x9bda80,emissiveIntensity:0}),deck,[1.08,-.225,.63]);
   const excluded=new Set([record,arm,lamp]);for(const group of [record,arm,...meters.map(m=>m.root)])group.traverse(object=>excluded.add(object));
   batchStatic(deck,excluded);batchStatic(record);batchStatic(arm);
+  const conductor=createConductorMotion(),baton=createConductorBaton(root,metal,black);
   let lastUI=null,lastAudio=null,lastCycle=0,angle=0,offset=0,wasActive=false,lower=0,returnUntil=0,disposed=false;
   const idle={active:false,time:0,cycle:0,levels:[0,0,0,0]};
-  const model={root,displayScale:.87,actorPosition:[-.85,.82,.2],onPick:null,particleEmitter,
+  const model={root,displayScale:.87,actorPosition:[-.85,.82,.2],onPick:null,particleEmitter,actorMotion:{performance:conductor.pose},
     pick(ray){root.updateMatrixWorld(true);const hit=ray.intersectObjects([record,...meters.map(m=>m.root)],true)[0];if(!hit)return null;
       let object=hit.object;while(object){if(object.userData.action)return object.userData.action;object=object.parent;}return null;},
     update(t,beat,scroll,now,reduced){
       if(disposed)return;const state=playback?.()||idle,dt=lastUI===null?0:Math.max(0,Math.min(.06,now-lastUI));lastUI=now;
+      conductor.advance(state,now,reduced);
       const active=state.active&&!reduced;
       particleEmitter.enabled=active;particleEmitter.time=state.time;particleEmitter.levels=state.levels;
       if(active&&!wasActive)offset=angle+state.time*3.49;
@@ -50,7 +54,8 @@ export function createPhonograph(playback){
       meters.forEach((meter,i)=>{meter.level=reduced?0:THREE.MathUtils.damp(meter.level,state.levels[i]||0,13,dt);meter.pivot.rotation.z=.83-meter.level*1.66;});
       lamp.material.emissiveIntensity=state.active?1.2:0;
     },
-    diagnostics(){return{recordAngle:angle,armLift:1-lower,armYaw:arm.rotation.y,levels:meters.map(m=>m.level),audioTime:lastAudio};},
+    afterActor(actor){baton.follow(actor);},
+    diagnostics(){return{recordAngle:angle,armLift:1-lower,armYaw:arm.rotation.y,levels:meters.map(m=>m.level),audioTime:lastAudio,conductor:{...conductor.pose,arms:conductor.pose.arms.map(arm=>arm.slice())}};},
     dispose(){disposed=true;model.onPick=null;}
   };return model;
 }

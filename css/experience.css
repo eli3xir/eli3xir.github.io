@@ -421,3 +421,24 @@ body.room-focused{overflow:hidden}.room-focused .studio-header{position:fixed}.r
 @keyframes inspector-enter{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:600px){.image-inspector{width:calc(100vw - 20px);height:calc(100vh - 24px);height:calc(100dvh - 24px)}.image-inspector-head{padding:14px;gap:10px}.image-inspector-head h2{font-size:16px}.image-inspector-tools{padding:9px 14px;gap:6px}.image-inspector-tools button{padding:8px 11px;font-size:12px}.image-inspector-original{font-size:11px}.image-inspector-status{padding:10px 14px}}
 @media(prefers-reduced-motion:reduce){.image-inspector[open]{animation:none}.image-inspector::backdrop{backdrop-filter:none}}
+
+/* Keep the performer and instrument together below the controls on narrow stages. */
+.radio-scene{display:none}
+@media(max-width:1100px),(max-aspect-ratio:4/3){
+  [data-chapter="radio"] .world-hero{height:auto;min-height:100svh;max-height:none;padding:110px 7vw 120px}
+  [data-chapter="radio"] .hero-copy{position:relative;top:auto;left:auto;right:auto;max-width:none}
+  [data-chapter="radio"] .hero-title{font-size:clamp(40px,7.5vw,54px)}
+  [data-chapter="radio"] .eyebrow{margin-bottom:22px}
+  [data-chapter="radio"] .hero-rule{margin:20px 0 10px}
+  [data-chapter="radio"] .record-position{min-height:2.6em}
+  [data-chapter="radio"] .world-caption{display:none}
+  .radio-scene{display:block;height:clamp(250px,calc(100svh - 550px),380px);margin-top:18px;pointer-events:none}
+  .no-webgl .radio-scene{display:none}
+}
+@media(min-width:701px) and (min-aspect-ratio:11/10) and (max-width:1100px),
+      (min-width:701px) and (min-aspect-ratio:11/10) and (max-aspect-ratio:4/3){
+  [data-chapter="radio"] .world-hero{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:24px;align-items:center}
+  [data-chapter="radio"] .hero-title{font-size:clamp(36px,4.8vw,54px)}
+  [data-chapter="radio"] .radio-scene{height:clamp(300px,65svh,500px);margin-top:0}
+}
+@media(max-height:500px){.radio-scene{height:clamp(230px,calc(100svh - 90px),300px)}}

@@ -6,6 +6,7 @@ export function bindRadio(section,main,{score,world,signal,announce}){
   const stemNames=['氛围','低音','旋律','节奏'];
   stemNames.forEach((name,i)=>{const button=document.createElement('button');button.type='button';button.dataset.stem=String(i);button.setAttribute('aria-label',name+'声部');button.textContent=name;panel.querySelector('.record-stems').append(button);});
   const copy=section.querySelector('.hero-copy');copy.querySelector('.hero-note').remove();copy.querySelector('.explore-button').remove();copy.append(panel);
+  const scene=document.createElement('div');scene.className='radio-scene';scene.setAttribute('aria-hidden','true');section.append(scene);
   const heroPlay=panel.querySelector('.record-play'),scoreButton=main.querySelector('[data-score-toggle]'),stems=[...panel.querySelectorAll('[data-stem]')];
   const toggle=async()=>{try{await score.toggle();}catch(error){announce(`声音暂时无法启动：${error.message}`);}};
   heroPlay.addEventListener('click',toggle,{signal});scoreButton.addEventListener('click',toggle,{signal});

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 export function heroSlotKey(){
-  const slot=document.querySelector('.project-scene'),rect=slot?.getBoundingClientRect();
+  const slot=document.querySelector('.project-scene,.radio-scene'),rect=slot?.getBoundingClientRect();
   return rect?.height?[rect.top+scrollY,rect.width,rect.height].join(':'):null;
 }
 
@@ -9,11 +9,11 @@ export function heroSlotKey(){
 // above their active controls; its framing is independent of panel height.
 export function composeHero(world) {
   const hero=document.querySelector('.world-hero');
-  const slot=hero.querySelector('.project-scene')?.getBoundingClientRect();
+  const slot=hero.querySelector('.project-scene,.radio-scene')?.getBoundingClientRect();
   world.compact=innerWidth<=850||Boolean(slot?.height);
   const height=slot?.height?innerHeight:Math.max(innerHeight,hero?.offsetHeight||0);
   world.compositionSlot=heroSlotKey();
-  world.heroHeight=height;world.layoutScale=1;world.heroOffset=0;
+  world.heroHeight=height;world.layoutScale=1;world.heroOffset=0;world.heroOffsetX=0;
   if(!world.compact||world.route?.id==='home'){
     world.heroOffset=world.compact?-height*.12:0;return;
   }
@@ -36,7 +36,7 @@ export function composeHero(world) {
   world.camera.updateMatrixWorld(true);
   const bounds=()=>{
     const box=model.compositionBounds?model.compositionBounds.clone().applyMatrix4(model.root.matrixWorld):new THREE.Box3().setFromObject(model.root);
-    if(!slot?.height)box.union(new THREE.Box3().setFromObject(actor));
+    if(!slot?.height||world.route.id!=='projects')box.union(new THREE.Box3().setFromObject(actor));
     if(model.layoutBounds)box.union(model.layoutBounds.clone().applyMatrix4(model.root.matrixWorld));
     const result={left:Infinity,right:-Infinity,top:Infinity,bottom:-Infinity};
     for(const x of [box.min.x,box.max.x])for(const y of [box.min.y,box.max.y])for(const z of [box.min.z,box.max.z]){
@@ -55,7 +55,8 @@ export function composeHero(world) {
     let lower=0,upper=world.layoutScale;
     for(let i=0;i<12;i++){
       world.layoutScale=(lower+upper)/2;place();region=bounds();
-      if(region.right-region.left<=innerWidth*.86&&region.bottom-region.top<=available)lower=world.layoutScale;
+      const width=world.route.id==='radio'?slot.width*.9:innerWidth*.86;
+      if(region.right-region.left<=width&&region.bottom-region.top<=available)lower=world.layoutScale;
       else upper=world.layoutScale;
     }
     world.layoutScale=lower;
@@ -63,5 +64,6 @@ export function composeHero(world) {
     world.layoutScale*=Math.min(1,innerWidth*.86/(region.right-region.left),available/(region.bottom-region.top));
   }
   place();region=bounds();
+  if(slot?.height&&world.route.id==='radio')world.heroOffsetX=(region.left+region.right)/2-(slot.left+slot.width/2);
   world.heroOffset=slot?.height?(region.top+region.bottom)/2-(slot.top+scrollY+slot.height/2):region.top-textBottom-28;
 }

@@ -177,3 +177,9 @@ Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐�
 ## 唱机的木材与压制黄铜
 
 2026-10-05 核对 Three.js 官方 [MeshPhysicalMaterial](https://threejs.org/docs/pages/MeshPhysicalMaterial.html)、[MeshStandardMaterial](https://threejs.org/docs/pages/MeshStandardMaterial.html) 与 [Texture](https://threejs.org/docs/pages/Texture.html)：方向性反射用于拉丝，清漆层与木材底层分别控制；色纹使用 sRGB，起伏与粗糙度保留线性数据。代码生成的三份纹理启用 mipmap 与各向异性过滤，并在网站固定 r185.1 中实际渲染、丢失和恢复上下文。材质和压纹造型为本站原创程序实现；这是风格化制作质感，不宣称复刻某件历史唱机或真实木种扫描。
+
+## 从声音与操作长出来的角色表演
+
+2026-10-05 参考 Disney Animation 对[角色表演](https://www.disneyanimation.com/process/animation/)的说明，把动作准备、收势和次要动作用于有明确原因的指挥与停顿。本站的歪头反应对应访客关闭全部声部，而非固定插入的动画片段；姿态和指挥棒均为原创程序实现，没有引入角色片段或外部动作数据。
+
+按 Three.js [Object3D](https://threejs.org/docs/pages/Object3D.html) 核对局部矩阵、世界矩阵和更新顺序，在本站固定版本中以实际右手变换定位道具。指挥棒保持唱机的资源归属，按父级逆矩阵转换手部世界变换；独立比较连续帧中的手掌与握柄位置。节奏滤波以固定电平的拍点测试作工程依据，最终表演和声音感受仍需要人工评审。
