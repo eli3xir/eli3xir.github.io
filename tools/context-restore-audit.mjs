@@ -3,7 +3,7 @@ import {startServer,launchBrowser,ready,settle,observe,output} from './browser-s
 const server=process.env.BASE_URL?{base:process.env.BASE_URL,close:async()=>{}}:await startServer(),browser=await launchBrowser();
 const report={base:server.base,cases:[],failures:[]};fs.mkdirSync(output,{recursive:true});
 try{
- const cases=[['projects','/projects/',1440],['home','/',1440],['blend','/skin/',1440],['cached','/',1440],['projects','/projects/',390],['blend','/skin/',390],['radio','/radio/',1440],['radio','/radio/',390]];
+ const cases=[['projects','/projects/',1440],['home','/',1440],['blend','/skin/',1440],['cached','/',1440],['projects','/projects/',390],['blend','/skin/',390],['radio','/radio/',1440],['radio','/radio/',390],['book','/blog/',1440],['book','/blog/',390]];
  for(const [name,path,width] of cases.filter(([name])=>!process.env.RESTORE_CASE||name===process.env.RESTORE_CASE)){
   const context=await browser.newContext({viewport:{width,height:width===390?844:1000}}),page=await context.newPage(),log=observe(page);
   await page.goto(server.base+path);await ready(page);await settle(page);await page.evaluate(()=>document.fonts.ready);
@@ -67,6 +67,10 @@ try{
   }else if(name==='projects'||name==='cached'){
    await page.locator('[data-instrument=compiler]').click();await page.waitForFunction(()=>window.studio.world.model.instrumentLevels.compiler===1);
    await page.locator('[data-source="x := (2 + 3) * 4;"]').click();await page.waitForFunction(()=>window.studio.route.compiler.state.phase==='done');assert.equal(await page.evaluate(()=>window.studio.route.compiler.state.program.result),20);
+  }else if(name==='book'){
+   const before=await page.evaluate(()=>window.studio.world.model.index);
+   await page.getByRole('button',{name:'翻到下一篇'}).click();
+   await page.waitForFunction(before=>window.studio.world.model.index!==before,before);
   }else if(name==='radio'){
    await page.locator('.record-play').click();await page.waitForFunction(()=>window.studio.score.audible);
    await page.waitForFunction(()=>window.studio.world.model.diagnostics().armLift<.02);

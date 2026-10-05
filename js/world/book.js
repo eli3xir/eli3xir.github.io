@@ -1,6 +1,7 @@
 import * as THREE from 'three';
-import { brass, ink, paper, mesh } from './materials.js';
+import {mesh} from './materials.js';
 import { bookPage } from './book-page.js';
+import {createBookBinding} from './book-binding.js';
 
 const width=1.36,height=1.88;
 const curve=x=>Math.sin(x/width*Math.PI)*.11+x*.08;
@@ -15,20 +16,17 @@ function pageGeometry(sign,depth) {
 
 export function createBook(title,entries=[],article=null) {
   const root=new THREE.Group(),pivot=new THREE.Group();root.add(pivot);pivot.rotation.set(.04,-.3,-.12);
+  const binding=createBookBinding(pivot,width,height,curve);
   const intro=bookPage({title:article?title:'A curious mind.',...article,kicker:article?'FIELD NOTE / ELI3XIR':'THE CABINET / ELI3XIR',number:article?'§':'✳'});
   const textureAt=i=>bookPage({...entries[i],title:entries[i]?.title||title,number:String(i+1).padStart(2,'0')});
   const surfaces=[];
   for(const sign of [-1,1]){
-    const cover=mesh(new THREE.BoxGeometry(1.43,1.94,.095),ink(),pivot,[sign*.72,0,-.18]);cover.rotation.y=sign*-.13;
-    for(let layer=0;layer<11;layer++){
-      const material=layer===10?new THREE.MeshStandardMaterial({map:sign<0?intro:textureAt(0),roughness:.7,side:THREE.DoubleSide}):paper();
-      const page=mesh(pageGeometry(sign,layer*.007),material,pivot);if(layer===10)surfaces.push(page);
-    }
-    mesh(new THREE.CylinderGeometry(.015,.015,1.86,12),brass(),pivot,[sign*.025,0,-.08]);
+    const page=mesh(pageGeometry(sign,.07),binding.pageMaterial(sign<0?intro:textureAt(0)),pivot);surfaces.push(page);
   }
   const leaf=new THREE.Group();leaf.position.z=.07;leaf.visible=false;pivot.add(leaf);
-  const front=mesh(pageGeometry(1,0),new THREE.MeshStandardMaterial({map:surfaces[1].material.map,roughness:.7,side:THREE.FrontSide,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1}),leaf);
-  const back=mesh(front.geometry.clone(),new THREE.MeshStandardMaterial({map:intro,roughness:.7,side:THREE.BackSide,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1}),leaf);
+  const front=mesh(pageGeometry(1,0),binding.pageMaterial(surfaces[1].material.map,THREE.FrontSide),leaf);
+  const back=mesh(front.geometry.clone(),binding.pageMaterial(intro,THREE.BackSide),leaf);
+  for(const page of [front,back]){page.material.polygonOffset=true;page.material.polygonOffsetFactor=-1;page.material.polygonOffsetUnits=-1;}
   const backUV=back.geometry.attributes.uv;for(let i=0;i<backUV.count;i++)backUV.setX(i,1-backUV.getX(i));
   const anchor=new THREE.Object3D(),contact=new THREE.Object3D();pivot.add(anchor,contact);
   const rest=new THREE.Vector3(width-.24,height/2+.08,curve(width)+.25),offset=new THREE.Vector3(-.24,.08,.18);

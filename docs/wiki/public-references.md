@@ -1,5 +1,7 @@
 # 公开参考与核验
 
+2026-10-05 实体书参考 CCAHA [Illustrated Guide to Book Terminology](https://ccaha.org/resources/illustrated-guide-book-terminology) 的第一部分，核对书芯、书帖、封皮、书脊和端带的结构关系。采用风格化封闭书芯和布面，保留原阅读面的尺寸与翻页路径；没有把纸边纹理当作真实页面计数或装订仿真。对照 Three.js [MeshStandardMaterial](https://threejs.org/docs/pages/MeshStandardMaterial.html) 的颜色、凹凸与粗糙度输入，以及本地固定版本实现；细节贴图全部由本站代码生成，没有发布参考图片或扫描材质。
+
 2026-10-05 标题揭示对照 W3C [CSS Shapes 的方向无关尺寸和圆形半径](https://www.w3.org/TR/css-shapes-1/#supported-basic-shapes) 与 [Web Animations 时间模型](https://www.w3.org/TR/web-animations-1/)。按视口对角线除以 √2 解释圆形百分比，用实际文字框判断纸幕退出；可见后将同一次节拍选择映射到共同的文档时间原点。浏览器检查另外采用真实 CSS 命中检测确认遮挡，没有仅用同一公式自证。迪士尼 [Layout](https://www.disneyanimation.com/process/layout/) 对构图、动作可读性与时间安排的说明用于演出取舍；未采用参考视频或图像资产。
 
 同轮根据 W3C [CSS Overflow 的 clip 定义](https://www.w3.org/TR/css-overflow-3/#valdef-overflow-clip)，在文章标题行限制入场绘制，同时保留原格式化上下文。真实截图比较包含关闭裁切的负对照，另核对全部文章的最终布局；规范定义与本站实际结果分别作为语义和实现证据。
