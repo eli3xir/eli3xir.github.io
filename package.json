@@ -13,6 +13,7 @@
     "test:room-projects": "node tools/room-projects-audit.mjs",
     "test:compiler": "node tools/compiler-audit.mjs",
     "test:instrument-lift": "node tools/instrument-lift-audit.mjs",
+    "test:project-layout": "node tools/project-layout-audit.mjs",
     "test:antialiasing": "node tools/antialiasing-audit.mjs",
     "test:context-restore": "node tools/context-restore-audit.mjs",
     "test:vision": "node tools/vision-audit.mjs",

@@ -12,7 +12,7 @@ import { createCharacter } from './character.js';
 import { disposeGroup } from './materials.js';
 import { FilmShader } from './film.js';
 import { createStage } from './stage.js';
-import { composeHero } from './composition.js';
+import { composeHero,heroSlotKey } from './composition.js';
 import { nextBeatDelay } from '../experience/domain.js';
 import {visualQuality,qualityRatio} from '../experience/visual-quality.js';
 import { BPM } from '../audio/composition.js';
@@ -66,7 +66,9 @@ export class World {
     this.actor.root.rotation.y=0;
     this.moving=0;this.scroll=0;this.transition=0;this.last=performance.now();this.frames=[];this.renderedFrames=0;
     this.events=new AbortController();
-    this.heroObserver=new ResizeObserver(()=>{if(this.model&&!this.focused)this.resize();});
+    this.heroObserver=new ResizeObserver(()=>{
+      if(this.model&&!this.focused&&(!this.compositionSlot||this.compositionSlot!==heroSlotKey()))this.resize();
+    });
     this.previewObserver=new ResizeObserver(()=>{if(this.focused&&!this.focusJourney)this.resize();});
     const preview=document.querySelector('.object-preview');if(preview)this.previewObserver.observe(preview);
     const options={signal:this.events.signal};

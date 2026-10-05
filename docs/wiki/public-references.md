@@ -169,3 +169,7 @@ Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐�
 同一冻结镜头下比较原输出、默认及较低阈值的 SMAA、FXAA、完整缓冲区 MSAA、仅场景 MSAA 和 2 倍像素比。此次主体的细线与小字选择仅场景 MSAA，省电及格式不支持时使用 FXAA；这是本网站的取舍，不推断某种算法在所有场景都更好。新增两份 FXAA 文件直接取自 [three 0.185.1 发布包](https://registry.npmjs.org/three/-/three-0.185.1.tgz)，原包 SHA-512 与重新获取的 [npm 版本元数据](https://registry.npmjs.org/three/0.185.1) 一致，发布文件再与归档成员逐字节比较；沿用 vendor/three/LICENSE。
 
 恢复检查进一步参考官方 [PMREMGenerator](https://threejs.org/docs/pages/PMREMGenerator.html)、[WebGL 上下文丢失说明](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/isContextLost)，并读取本地 r185.1 的 PMREMGenerator、WebGLRenderer 与 WebGLTextures。实际截图确认恢复后金属反射丢失；由场景生成的目标没有可重新上传的原图，因此在恢复事件中重建。共享房间保留原探针与过渡权重，避免中途换色回跳；这是针对本项目资源生命周期的修复。
+
+## 手机项目页的真实场景与表单顺序
+
+2026-10-05 从线上截图追查项目首屏留白，DOM 测量确认不可见的三个 Grid 面板仍按最高者占位。参考 MDN 的 [Grid 布局说明](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/grid) 与 Three.js [PerspectiveCamera](https://threejs.org/docs/pages/PerspectiveCamera.html) 的 setViewOffset，再用本地固定版本与真实浏览器核对。新布局让活动表单位于三维区域之后，投影按窗口视锥与文档区域位置建立；按实际投影边界求解尺度，模型、照片和控制器保持原对象。此处依据是该站的截图、DOM 与几何测量，没有把响应式模拟称作真机测试。

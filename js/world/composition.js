@@ -1,18 +1,25 @@
 import * as THREE from 'three';
 
-// Portrait scenes occupy the space after the actual text, including wrapped
-// article titles. A taller hero is cropped by the viewport as the visitor scrolls.
+export function heroSlotKey(){
+  const slot=document.querySelector('.project-scene'),rect=slot?.getBoundingClientRect();
+  return rect?.height?[rect.top+scrollY,rect.width,rect.height].join(':'):null;
+}
+
+// Most portrait scenes follow the actual copy. Projects reserve a document slot
+// above their active controls; its framing is independent of panel height.
 export function composeHero(world) {
   const hero=document.querySelector('.world-hero');
-  const height=Math.max(innerHeight,hero?.offsetHeight||0);
-  world.compact=innerWidth<=850;
+  const slot=hero.querySelector('.project-scene')?.getBoundingClientRect();
+  world.compact=innerWidth<=850||Boolean(slot?.height);
+  const height=slot?.height?innerHeight:Math.max(innerHeight,hero?.offsetHeight||0);
+  world.compositionSlot=heroSlotKey();
   world.heroHeight=height;world.layoutScale=1;world.heroOffset=0;
   if(!world.compact||world.route?.id==='home'){
     world.heroOffset=world.compact?-height*.12:0;return;
   }
   const copy=hero.querySelector('.hero-copy').getBoundingClientRect();
   const textBottom=copy.bottom-hero.getBoundingClientRect().top;
-  world.layoutScale=.72*Math.min(1,innerWidth/390*844/height);
+  world.layoutScale=slot?.height ? Math.min(2,.72*844/innerHeight) : .72*Math.min(1,innerWidth/390*844/height);
   const model=world.model,actor=world.actor.root;
   const position=model.actorMobilePosition||model.actorPosition;
   const place=()=>{
@@ -28,7 +35,8 @@ export function composeHero(world) {
   world.camera.setViewOffset(innerWidth,height,0,0,innerWidth,innerHeight);
   world.camera.updateMatrixWorld(true);
   const bounds=()=>{
-    const box=(model.compositionBounds?model.compositionBounds.clone().applyMatrix4(model.root.matrixWorld):new THREE.Box3().setFromObject(model.root)).union(new THREE.Box3().setFromObject(actor));
+    const box=model.compositionBounds?model.compositionBounds.clone().applyMatrix4(model.root.matrixWorld):new THREE.Box3().setFromObject(model.root);
+    if(!slot?.height)box.union(new THREE.Box3().setFromObject(actor));
     if(model.layoutBounds)box.union(model.layoutBounds.clone().applyMatrix4(model.root.matrixWorld));
     const result={left:Infinity,right:-Infinity,top:Infinity,bottom:-Infinity};
     for(const x of [box.min.x,box.max.x])for(const y of [box.min.y,box.max.y])for(const z of [box.min.z,box.max.z]){
@@ -40,8 +48,20 @@ export function composeHero(world) {
     return result;
   };
   place();let region=bounds();
-  const available=Math.max(160,height-textBottom-148);
-  const fit=Math.min(1,innerWidth*.86/(region.right-region.left),available/(region.bottom-region.top));
-  world.layoutScale*=fit;place();region=bounds();
-  world.heroOffset=region.top-textBottom-28;
+  const available=slot?.height?slot.height-28:Math.max(160,height-textBottom-148);
+  if(slot?.height){
+    // Perspective size is nonlinear when the model approaches the camera.
+    // Find the largest safe pose, rather than shrinking once and leaving gaps.
+    let lower=0,upper=world.layoutScale;
+    for(let i=0;i<12;i++){
+      world.layoutScale=(lower+upper)/2;place();region=bounds();
+      if(region.right-region.left<=innerWidth*.86&&region.bottom-region.top<=available)lower=world.layoutScale;
+      else upper=world.layoutScale;
+    }
+    world.layoutScale=lower;
+  }else{
+    world.layoutScale*=Math.min(1,innerWidth*.86/(region.right-region.left),available/(region.bottom-region.top));
+  }
+  place();region=bounds();
+  world.heroOffset=slot?.height?(region.top+region.bottom)/2-(slot.top+scrollY+slot.height/2):region.top-textBottom-28;
 }

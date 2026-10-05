@@ -47,7 +47,7 @@ try{
   for(const viewport of [{width:320,height:568},{width:390,height:844},{width:768,height:1024},{width:844,height:390},{width:568,height:320},{width:1280,height:540},{width:1440,height:1000}]){
    await page.setViewportSize(viewport);await enter(page);await page.locator('.vision-run').click();await done(page);await page.waitForTimeout(100);const result=await layout(page);
    assert.equal(result.overflow,false);assert.ok(result.bounds.left>=-1&&result.bounds.right<=viewport.width+1,JSON.stringify({viewport,result}));
-   if(viewport.width<=850){assert.ok(result.bounds.top>=result.textBottom+12,JSON.stringify({viewport,result}));assert.ok(result.bounds.bottom<result.heroHeight-25,JSON.stringify({viewport,result}));}
+   if(viewport.width<=850){assert.ok(result.bounds.top>=result.textBottom+12,JSON.stringify({viewport,result}));assert.ok(result.bounds.bottom<result.panelTop-12,JSON.stringify({viewport,result}));assert.ok(result.bounds.bottom<result.heroHeight-25,JSON.stringify({viewport,result}));}
    assert.ok(result.targets.every(b=>b.height>=44&&b.width>=44));layouts.push({viewport,...result});
   }
   assert.deepEqual(log.errors,[]);assert.deepEqual(log.failed,[]);report.cases.push({name:'seven responsive compositions, reduced motion and target sizes',layouts});await context.close();console.log('PASS vision layouts');

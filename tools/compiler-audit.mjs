@@ -58,7 +58,7 @@ try{
    await page.setViewportSize(viewport);await page.goto(server.base+'/projects/');await ready(page);await settle(page);await mode(page,'compiler');
    await page.locator('.compiler-form button').click();await page.waitForTimeout(120);
    const layout=await page.evaluate(async()=>{
-    const T=await import('three'),w=window.studio.world,hero=document.querySelector('.world-hero'),copy=document.querySelector('.hero-copy').getBoundingClientRect();
+    const T=await import('three'),w=window.studio.world,hero=document.querySelector('.world-hero'),copy=document.querySelector(document.querySelector('.project-scene').offsetHeight?'.project-instruments':'.hero-copy').getBoundingClientRect();
     const r={left:Infinity,right:-Infinity,top:Infinity,bottom:-Infinity};
     for(const root of [w.model.root,w.actor.root]){root.updateWorldMatrix(true,true);root.traverseVisible(obj=>{
      if(!obj.geometry)return;obj.geometry.computeBoundingBox();const box=obj.geometry.boundingBox,matrix=new T.Matrix4();
@@ -68,9 +68,9 @@ try{
      }
     });}
     const buttons=[...document.querySelectorAll('.project-workbench button')].filter(el=>el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden').map(el=>{const b=el.getBoundingClientRect();return{width:b.width,height:b.height};});
-    return{overflow:document.documentElement.scrollWidth>innerWidth+1,model:r,textBottom:copy.bottom+scrollY,heroHeight:hero.offsetHeight,buttons};
+    return{overflow:document.documentElement.scrollWidth>innerWidth+1,model:r,textBottom:copy.bottom+scrollY,panelTop:document.querySelector('.project-panels').getBoundingClientRect().top+scrollY,heroHeight:hero.offsetHeight,buttons};
    });assert.equal(layout.overflow,false);assert.ok(layout.model.left>=-1&&layout.model.right<=viewport.width+1,JSON.stringify({viewport,layout}));
-   if(viewport.width<=850){assert.ok(layout.model.top>=layout.textBottom+12,JSON.stringify({viewport,layout}));assert.ok(layout.model.bottom<layout.heroHeight-25,JSON.stringify({viewport,layout}));}
+   if(viewport.width<=850){assert.ok(layout.model.top>=layout.textBottom+12,JSON.stringify({viewport,layout}));assert.ok(layout.model.bottom<layout.panelTop-12,JSON.stringify({viewport,layout}));assert.ok(layout.model.bottom<layout.heroHeight-25,JSON.stringify({viewport,layout}));}
    assert.ok(layout.buttons.every(b=>b.height>=44&&b.width>=44),JSON.stringify({viewport,layout}));layouts.push({viewport,...layout});
   }
   assert.deepEqual(log.errors,[]);assert.deepEqual(log.failed,[]);report.cases.push({name:'seven responsive compositions and target sizes',layouts});await context.close();console.log('PASS compiler layouts');

@@ -53,8 +53,9 @@ export function createSignalBench(relay,compiler,vision){
   const actorMotion={grounded:false,reach:0,grip:new THREE.Vector3()};
   const lift=createInstrumentMotion(),levels=lift.levels;
   // Below-deck storage must not enlarge the portrait composition. Capture all
-  // instruments at their working height, before the initial retraction.
-  const compositionBounds=new THREE.Box3().setFromObject(root).union(new THREE.Box3(new THREE.Vector3(-2.05,-1.17,-1.3),new THREE.Vector3(1.86,1.9,1.55)));
+  // instruments at their working height, before the initial retraction; the
+  // upper margin also contains Mote's antenna in its resting pose.
+  const compositionBounds=new THREE.Box3().setFromObject(root).union(new THREE.Box3(new THREE.Vector3(-2.05,-1.17,-1.3),new THREE.Vector3(1.86,2.14,1.55)));
   const state=relay.state;let stamp='',disposed=false;
   function refresh(){
     const next=[state.serial,state.phase,state.sender].join(':');if(next===stamp)return;stamp=next;

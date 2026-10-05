@@ -30,7 +30,7 @@ export async function geometryFrame(page,progress){
 }
 export async function layout(page){
  return page.evaluate(async()=>{
-  const T=await import('three'),w=window.studio.world,copy=document.querySelector('.hero-copy').getBoundingClientRect(),bounds={left:Infinity,right:-Infinity,top:Infinity,bottom:-Infinity};
+  const T=await import('three'),w=window.studio.world,copy=document.querySelector(document.querySelector('.project-scene').offsetHeight?'.project-instruments':'.hero-copy').getBoundingClientRect(),bounds={left:Infinity,right:-Infinity,top:Infinity,bottom:-Infinity};
   for(const root of [w.model.root,w.actor.root]){root.updateWorldMatrix(true,true);root.traverseVisible(obj=>{
    if(!obj.geometry||obj.geometry.drawRange.count===0)return;const positions=obj.geometry.attributes.position;
    // Dynamic line/point buffers contain unused zero slots; inspect drawRange.
@@ -41,6 +41,6 @@ export async function layout(page){
    }
   });}
   function project(p){p.project(w.camera);bounds.left=Math.min(bounds.left,(p.x+1)*innerWidth/2);bounds.right=Math.max(bounds.right,(p.x+1)*innerWidth/2);bounds.top=Math.min(bounds.top,(1-p.y)*innerHeight/2+scrollY);bounds.bottom=Math.max(bounds.bottom,(1-p.y)*innerHeight/2+scrollY);}
-  return{bounds,textBottom:copy.bottom+scrollY,heroHeight:document.querySelector('.world-hero').offsetHeight,overflow:document.documentElement.scrollWidth>innerWidth+1,targets:[...document.querySelectorAll('.project-workbench button,.vision-inputs label')].filter(el=>el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden').map(el=>{const b=el.getBoundingClientRect();return{width:b.width,height:b.height};})};
+  return{bounds,textBottom:copy.bottom+scrollY,panelTop:document.querySelector('.project-panels').getBoundingClientRect().top+scrollY,heroHeight:document.querySelector('.world-hero').offsetHeight,overflow:document.documentElement.scrollWidth>innerWidth+1,targets:[...document.querySelectorAll('.project-workbench button,.vision-inputs label')].filter(el=>el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden').map(el=>{const b=el.getBoundingClientRect();return{width:b.width,height:b.height};})};
  });
 }

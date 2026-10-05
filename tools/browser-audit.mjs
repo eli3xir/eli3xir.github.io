@@ -285,7 +285,7 @@ try{
           for(const x of [box.min.x,box.max.x])for(const y of [box.min.y,box.max.y])for(const z of [box.min.z,box.max.z]){
             const point=new Vector3(x,y,z).project(w.camera);top=Math.min(top,(1-point.y)*innerHeight/2);
           }
-          return{top,copyBottom:document.querySelector('.hero-copy').getBoundingClientRect().bottom,
+          return{top,copyBottom:document.querySelector(w.route.id==='projects'?'.project-instruments':'.hero-copy').getBoundingClientRect().bottom,
             sameRenderer:w.renderer===window.auditLayoutRenderer,overflow:document.documentElement.scrollWidth>innerWidth+2,
             scale:w.layoutScale,aspect:w.camera.aspect,negativeFrame:w.frames.some(dt=>dt<0)};
         });
