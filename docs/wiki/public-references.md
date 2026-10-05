@@ -157,3 +157,7 @@ Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐�
 数值参考由独立 NumPy 算子直接读取原 H5，组合未经修改的原 Python 后处理与 OpenCV 缩放；它不等同于运行完整旧版 Keras。初次逐行按顺序比较发现两个相近分数的候选互换，改为唯一几何对应后核对全部框、分数和关键点，并在验证记录保留该差异。
 
 线上画面复查发现慢加载后照片未显示，继续核对 Three.js 官方 [Texture](https://threejs.org/docs/pages/Texture.html) 的首次使用后尺寸不可变约束，并用延迟真实输入和 GPU 读回复现 `GL_INVALID_VALUE`。显示层改为固定尺寸画布原位重绘，保存同一纹理和照片比例；独立参考纹理的逐像素比较验证实际上传，不能以正确的模型输出推断 GPU 照片已经显示。
+
+## 装置保持比例的连续升降
+
+2026-10-05 对照原实际录像中被纵向压扁的照片，改为完整模型经过台面开口升降。核对 Three.js 官方 [Material](https://threejs.org/docs/pages/Material.html) 的 clippingPlanes、clipShadows 与 [Plane](https://threejs.org/docs/pages/Plane.html) 的变换：裁切面使用世界坐标，负有符号距离一侧不绘制；必须启用 renderer.localClippingEnabled，阴影裁切另行启用。独立 GPU 读回比较实际照片的裁切与未裁切渲染，分别检查开口以下透明、以上像素保持。轨迹、井口与托盘均为本仓库代码，没有引入外部模型或视频转场。

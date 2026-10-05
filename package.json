@@ -12,6 +12,7 @@
     "test:room-artwork": "node tools/room-artwork-audit.mjs",
     "test:room-projects": "node tools/room-projects-audit.mjs",
     "test:compiler": "node tools/compiler-audit.mjs",
+    "test:instrument-lift": "node tools/instrument-lift-audit.mjs",
     "test:vision": "node tools/vision-audit.mjs",
     "test:vision-failures": "node tools/vision-failure-audit.mjs",
     "test:vision-timing": "node tools/vision-timing-audit.mjs",

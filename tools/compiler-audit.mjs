@@ -2,7 +2,7 @@ import fs from 'node:fs';import assert from 'node:assert/strict';
 import {startServer,launchBrowser,ready,settle,observe,output} from './browser-support.mjs';
 const server=process.env.BASE_URL?{base:process.env.BASE_URL,close:async()=>{}}:await startServer(),browser=await launchBrowser();
 const report={base:server.base,cases:[],failures:[]};fs.mkdirSync(output,{recursive:true});
-const mode=async(page,id)=>{await page.locator(`[data-instrument=${id}]`).click();await page.waitForFunction(id=>Math.abs(window.studio.world.model.instrumentBlend-(id==='compiler'?1:0))<1e-8,id);};
+const mode=async(page,id)=>{await page.locator(`[data-instrument=${id}]`).click();await page.waitForFunction(id=>window.studio.world.model.instrumentLevels[id]===1,id);};
 const done=page=>page.waitForFunction(()=>window.studio.route.compiler.state.phase==='done');
 try{
  for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){

@@ -1,19 +1,17 @@
 import * as THREE from 'three';
 import {brass,ink,mesh} from './materials.js';
 import {terminal,display} from './signal-hardware.js';
-import {casing} from './hardware.js';
 import {batchStatic} from './batch.js';
 import {createCompilerBench} from './compiler-bench.js';
 import {createVisionBench} from './vision-bench.js';
+import {createInstrumentWell} from './instrument-well.js';
+import {createInstrumentMotion} from '../experience/instrument-motion.js';
 
 export function createSignalBench(relay,compiler,vision){
   const root=new THREE.Group(),bench=new THREE.Group();root.add(bench);bench.rotation.set(.24,-.23,0);
   const metal=brass(),dark=ink();
   const finish=new THREE.MeshPhysicalMaterial({color:0x23372e,metalness:.45,roughness:.35,clearcoat:.5});
-  mesh(casing(3.65,.21,2.35,.16),finish,bench,[0,-.87,.25]);
-  mesh(casing(3.55,.025,2.26,.12),metal,bench,[0,-.749,.25]);
-  mesh(casing(3.45,.018,2.16,.1),dark,bench,[0,-.723,.25]);
-  for(const x of [-1.53,1.53])for(const z of [-.63,1.11])mesh(new THREE.CylinderGeometry(.09,.07,.15,16),dark,bench,[x,-1.035,z]);
+  const well=createInstrumentWell(bench,{metal,dark,finish});
   const circuit=new THREE.Group();bench.add(circuit);
   const terminals=[terminal(circuit,'A',[-1.15,-.23,.08],.19),terminal(circuit,'B',[1.15,-.23,.08],-.19),terminal(circuit,'C',[.13,-.23,1.05],0)];
   const relayRoot=new THREE.Group();circuit.add(relayRoot);relayRoot.position.set(0,-.68,-.38);
@@ -46,11 +44,17 @@ export function createSignalBench(relay,compiler,vision){
   const moving=new Set([packets,filament]);for(const part of [...terminals.map(t=>t.root),cage])part.traverse(object=>moving.add(object));
   batchStatic(circuit,moving);batchStatic(cage);
   const staticCircuit=new Set();circuit.traverse(obj=>staticCircuit.add(obj));batchStatic(bench,staticCircuit);
-  const syntax=createCompilerBench(compiler);bench.add(syntax.root);syntax.root.visible=false;syntax.root.scale.y=.001;syntax.root.position.y=-.72;
-  const optical=createVisionBench(vision);bench.add(optical.root);optical.root.visible=false;optical.root.scale.y=.001;optical.root.position.y=-.72;
+  const syntax=createCompilerBench(compiler);bench.add(syntax.root);
+  const optical=createVisionBench(vision);bench.add(optical.root);
+  // Travel includes each instrument's highest part, including the relay label.
+  const instruments=[['signal',circuit,1.6],['compiler',syntax.root,1.92],['vision',optical.root,2.16]];
+  for(const [,group] of instruments)well.attach(group);
   const anchor=new THREE.Object3D();root.add(anchor);const rest=new THREE.Vector3(),destination=new THREE.Vector3(),contactPoint=new THREE.Vector3();
   const actorMotion={grounded:false,reach:0,grip:new THREE.Vector3()};
-  let instrument='signal',switching=null;const levels={signal:1,compiler:0,vision:0};
+  const lift=createInstrumentMotion(),levels=lift.levels;
+  // Below-deck storage must not enlarge the portrait composition. Capture all
+  // instruments at their working height, before the initial retraction.
+  const compositionBounds=new THREE.Box3().setFromObject(root).union(new THREE.Box3(new THREE.Vector3(-2.05,-1.17,-1.3),new THREE.Vector3(1.86,1.9,1.55)));
   const state=relay.state;let stamp='',disposed=false;
   function refresh(){
     const next=[state.serial,state.phase,state.sender].join(':');if(next===stamp)return;stamp=next;
@@ -63,25 +67,19 @@ export function createSignalBench(relay,compiler,vision){
   }
   refresh();
   const model={root,syntax,circuit,optical,actorPosition:[.9,1.42,-.15],actorMobilePosition:[1.12,1.42,-.15],actorAnchor:anchor,actorMotion,displayScale:.92,onPick:null,
-    layoutBounds:new THREE.Box3(new THREE.Vector3(-2.05,-1.17,-1.3),new THREE.Vector3(1.86,1.9,1.55)),
-    get instrument(){return instrument;},get instrumentBlend(){return levels.compiler;},get instrumentLevels(){return{...levels};},
-    setInstrument(id,{now,delay=0,duration=.8,reduced=false}){
-      if(!Object.hasOwn(levels,id)||id===instrument)return;
-      instrument=id;switching={from:{...levels},start:now+delay,duration:reduced?0:duration};
-    },
+    compositionBounds,localClipping:true,clipPlane:well.plane,
+    get instrument(){return lift.selected;},get instrumentBlend(){return levels.compiler;},get instrumentLevels(){return{...levels};},
+    setInstrument(id,options){lift.select(id,options);},
     get relay(){return relay;},
-    pick(ray){if(instrument!=='signal'||levels.signal<.99)return null;root.updateMatrixWorld(true);const hit=ray.intersectObjects(terminals.map(t=>t.root),true)[0];if(!hit)return null;return terminals.findIndex(t=>{let object=hit.object;while(object){if(object===t.root)return true;object=object.parent;}return false;});},
+    pick(ray){if(lift.selected!=='signal'||levels.signal<.99)return null;root.updateMatrixWorld(true);const hit=ray.intersectObjects(terminals.map(t=>t.root),true)[0];if(!hit)return null;return terminals.findIndex(t=>{let object=hit.object;while(object){if(object===t.root)return true;object=object.parent;}return false;});},
     update(t,beat,scroll,now,reduced){
       if(disposed)return;relay.advance(now,reduced);refresh();
-      if(switching){
-        const p=reduced||!switching.duration?1:THREE.MathUtils.clamp((now-switching.start)/switching.duration,0,1);
-        for(const id of Object.keys(levels)){const amount=id===instrument?THREE.MathUtils.smoothstep(p,.28,1):THREE.MathUtils.smoothstep(p,0,.72);levels[id]=THREE.MathUtils.lerp(switching.from[id],id===instrument?1:0,amount);}
-        if(p===1)switching=null;
-      }
-      for(const [id,group] of [['signal',circuit],['compiler',syntax.root],['vision',optical.root]]){const lift=levels[id];group.visible=lift>.001;group.scale.y=Math.max(.001,lift);group.position.y=-.72*(1-lift);}
+      lift.advance(now,reduced);
+      for(const [id,group,travel] of instruments){group.visible=levels[id]>0;group.position.y=-travel*(1-levels[id]);}
       syntax.update(now,reduced);optical.update(now,reduced);
-      rest.set((innerWidth<=850?1.12:.9)/.92,1.42/.92,-.15/.92);bench.updateMatrix();destination.copy(optical.actorHome).applyMatrix4(bench.matrix);anchor.position.lerpVectors(rest,destination,levels.vision);
-      actorMotion.grounded=levels.vision>.01;actorMotion.reach=levels.vision*levels.vision;
+      const approach=THREE.MathUtils.smoothstep(levels.vision,.65,1);
+      rest.set((innerWidth<=850?1.12:.9)/.92,1.42/.92,-.15/.92);bench.updateMatrix();destination.copy(optical.actorHome).applyMatrix4(bench.matrix);anchor.position.lerpVectors(rest,destination,approach);
+      actorMotion.grounded=approach>.01;actorMotion.reach=THREE.MathUtils.smoothstep(levels.vision,.94,1);
       const p=state.progress;filament.material.emissiveIntensity=.55+(state.busy?Math.sin(Math.PI*p)**2*3:0);
       cage.rotation.y=state.busy?Math.sin(p*Math.PI)*.08:0;
       terminals.forEach((terminal,i)=>{terminal.root.rotation.z=state.busy&&i===state.sender?Math.sin(Math.min(1,p/.3)*Math.PI)*-.015:0;});
@@ -95,7 +93,7 @@ export function createSignalBench(relay,compiler,vision){
       }
       packets.instanceMatrix.needsUpdate=true;
     },
-    afterTransform(){root.updateMatrixWorld(true);optical.contact.getWorldPosition(contactPoint);actorMotion.grip.copy(anchor.worldToLocal(contactPoint)).multiplyScalar(.92);},
+    afterTransform(){root.updateMatrixWorld(true);well.update();optical.contact.getWorldPosition(contactPoint);actorMotion.grip.copy(anchor.worldToLocal(contactPoint)).multiplyScalar(.92);},
     dispose(){disposed=true;model.onPick=null;relay.dispose();compiler.dispose();vision.dispose();}
   };
   model.update(0,{},0,0,true);

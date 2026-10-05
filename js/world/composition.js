@@ -28,7 +28,7 @@ export function composeHero(world) {
   world.camera.setViewOffset(innerWidth,height,0,0,innerWidth,innerHeight);
   world.camera.updateMatrixWorld(true);
   const bounds=()=>{
-    const box=new THREE.Box3().setFromObject(model.root).union(new THREE.Box3().setFromObject(actor));
+    const box=(model.compositionBounds?model.compositionBounds.clone().applyMatrix4(model.root.matrixWorld):new THREE.Box3().setFromObject(model.root)).union(new THREE.Box3().setFromObject(actor));
     if(model.layoutBounds)box.union(model.layoutBounds.clone().applyMatrix4(model.root.matrixWorld));
     const result={left:Infinity,right:-Infinity,top:Infinity,bottom:-Infinity};
     for(const x of [box.min.x,box.max.x])for(const y of [box.min.y,box.max.y])for(const z of [box.min.z,box.max.z]){
