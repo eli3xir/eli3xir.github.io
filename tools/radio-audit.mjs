@@ -58,10 +58,23 @@ try{
   // Click the real vinyl surface to resume the original sources.
   const point=await page.evaluate(async()=>{const {Vector3}=await import('three'),w=window.studio.world,deck=w.model.root.children[0];w.camera.updateMatrixWorld();deck.updateWorldMatrix(true,true);const p=deck.localToWorld(new Vector3(-.65,-.195,.16)).project(w.camera);return{x:(p.x+1)*innerWidth/2,y:(1-p.y)*innerHeight/2};});
   await page.mouse.click(point.x,point.y);await page.waitForFunction(()=>window.studio.score.audible);
+  await page.evaluate(()=>{
+    const textures=new Set();window.radioTextureDisposals=[];
+    window.studio.world.model.root.traverse(object=>{for(const material of [object.material].flat().filter(Boolean))for(const value of Object.values(material))if(value?.isTexture)textures.add(value);});
+    for(const texture of textures){const item={name:texture.name,count:0};window.radioTextureDisposals.push(item);texture.addEventListener('dispose',()=>item.count++);}
+  });
   await page.evaluate(()=>window.studio.router.navigate('/about/'));await settle(page);assert.equal(await page.evaluate(()=>window.studio.score.listeners.size),1);
+  const disposed=await page.evaluate(()=>window.radioTextureDisposals);assert.ok(disposed.length>0);assert.ok(disposed.every(item=>item.count===1),JSON.stringify(disposed));
   await page.evaluate(()=>window.studio.router.navigate('/radio/'));await settle(page);
   const continuous=await page.evaluate(()=>{const s=window.studio.score;return{sources:s.sources.every((v,i)=>v===window.radioSources[i]),meters:s.meters.every((v,i)=>v===window.radioMeters[i]),particles:window.studio.world.particles.geometry===window.radioParticles,enabled:s.stemEnabled,listeners:s.listeners.size};});
   assert.equal(continuous.sources,true);assert.equal(continuous.meters,true);assert.equal(continuous.particles,true);assert.equal(continuous.listeners,2);assert.deepEqual(continuous.enabled,[false,false,true,false]);
+  const resources=[];
+  if(viewport.width===1440)for(let cycle=0;cycle<3;cycle++){
+    const memory=await page.evaluate(()=>{const r=window.studio.world.renderer;return{...r.info.memory,programs:r.info.programs.length};});resources.push(memory);
+    await page.evaluate(()=>window.studio.router.navigate('/about/'));await settle(page);
+    await page.evaluate(()=>window.studio.router.navigate('/radio/'));await settle(page);
+    assert.deepEqual(await page.evaluate(()=>{const r=window.studio.world.renderer;return{...r.info.memory,programs:r.info.programs.length};}),memory);
+  }
   await page.evaluate(()=>window.studio.score.context.suspend());await page.waitForTimeout(700);assert.ok((await diagnostics()).armLift>.99);
   assert.match(await page.locator('.record-play').textContent(),/继续唱片/);await page.locator('.record-play').click();await page.waitForFunction(()=>window.studio.score.audible);
   await page.emulateMedia({reducedMotion:'reduce'});await page.waitForTimeout(100);const reduced=await diagnostics();await page.waitForTimeout(200);
@@ -69,7 +82,7 @@ try{
   assert.equal((await emission()).enabled,0);
   await page.reload();await ready(page);await settle(page);assert.deepEqual(await page.evaluate(()=>window.studio.score.stemEnabled),[false,false,true,false]);
   assert.equal(await page.locator('.ep.soon').count(),3);assert.deepEqual(log.errors,[]);assert.deepEqual(log.failed,[]);
-  report.cases.push({viewport,idle,playing,radiating,alignment,sound,silent,melody,meterPoint,paused,point,continuous,errors:log.errors});await context.close();
+  report.cases.push({viewport,idle,playing,radiating,alignment,sound,silent,melody,meterPoint,paused,point,continuous,disposed,resources,errors:log.errors});await context.close();
  }
  const context=await browser.newContext(),page=await context.newPage();
  await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return /webgl/i.test(type)?null:original.call(this,type,...args);};});

@@ -173,3 +173,7 @@ Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐�
 ## 手机项目页的真实场景与表单顺序
 
 2026-10-05 从线上截图追查项目首屏留白，DOM 测量确认不可见的三个 Grid 面板仍按最高者占位。参考 MDN 的 [Grid 布局说明](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/grid) 与 Three.js [PerspectiveCamera](https://threejs.org/docs/pages/PerspectiveCamera.html) 的 setViewOffset，再用本地固定版本与真实浏览器核对。新布局让活动表单位于三维区域之后，投影按窗口视锥与文档区域位置建立；按实际投影边界求解尺度，模型、照片和控制器保持原对象。此处依据是该站的截图、DOM 与几何测量，没有把响应式模拟称作真机测试。
+
+## 唱机的木材与压制黄铜
+
+2026-10-05 核对 Three.js 官方 [MeshPhysicalMaterial](https://threejs.org/docs/pages/MeshPhysicalMaterial.html)、[MeshStandardMaterial](https://threejs.org/docs/pages/MeshStandardMaterial.html) 与 [Texture](https://threejs.org/docs/pages/Texture.html)：方向性反射用于拉丝，清漆层与木材底层分别控制；色纹使用 sRGB，起伏与粗糙度保留线性数据。代码生成的三份纹理启用 mipmap 与各向异性过滤，并在网站固定 r185.1 中实际渲染、丢失和恢复上下文。材质和压纹造型为本站原创程序实现；这是风格化制作质感，不宣称复刻某件历史唱机或真实木种扫描。

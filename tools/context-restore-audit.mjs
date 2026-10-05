@@ -3,7 +3,8 @@ import {startServer,launchBrowser,ready,settle,observe,output} from './browser-s
 const server=process.env.BASE_URL?{base:process.env.BASE_URL,close:async()=>{}}:await startServer(),browser=await launchBrowser();
 const report={base:server.base,cases:[],failures:[]};fs.mkdirSync(output,{recursive:true});
 try{
- for(const [name,path,width] of [['projects','/projects/',1440],['home','/',1440],['blend','/skin/',1440],['cached','/',1440],['projects','/projects/',390],['blend','/skin/',390]]){
+ const cases=[['projects','/projects/',1440],['home','/',1440],['blend','/skin/',1440],['cached','/',1440],['projects','/projects/',390],['blend','/skin/',390],['radio','/radio/',1440],['radio','/radio/',390]];
+ for(const [name,path,width] of cases.filter(([name])=>!process.env.RESTORE_CASE||name===process.env.RESTORE_CASE)){
   const context=await browser.newContext({viewport:{width,height:width===390?844:1000}}),page=await context.newPage(),log=observe(page);
   await page.goto(server.base+path);await ready(page);await settle(page);await page.evaluate(()=>document.fonts.ready);
   if(path==='/skin/')await page.waitForFunction(()=>window.studio.world.model.previewStatus==='ready');
@@ -66,6 +67,11 @@ try{
   }else if(name==='projects'||name==='cached'){
    await page.locator('[data-instrument=compiler]').click();await page.waitForFunction(()=>window.studio.world.model.instrumentLevels.compiler===1);
    await page.locator('[data-source="x := (2 + 3) * 4;"]').click();await page.waitForFunction(()=>window.studio.route.compiler.state.phase==='done');assert.equal(await page.evaluate(()=>window.studio.route.compiler.state.program.result),20);
+  }else if(name==='radio'){
+   await page.locator('.record-play').click();await page.waitForFunction(()=>window.studio.score.audible);
+   await page.waitForFunction(()=>window.studio.world.model.diagnostics().armLift<.02);
+   const angle=await page.evaluate(()=>window.studio.world.model.diagnostics().recordAngle);await page.waitForTimeout(150);
+   assert.notEqual(await page.evaluate(()=>window.studio.world.model.diagnostics().recordAngle),angle);
   }
   if(name==='cached'){await page.evaluate(()=>window.studio.router.navigate('/'));await settle(page);assert.equal(await page.evaluate(()=>window.studio.world.scene.environment===window.restoreReflections.texture),true);}
   assert.deepEqual(log.errors,[]);assert.deepEqual(log.failed,[]);report.cases.push({name,width,cycles});await context.close();console.log('PASS visual context restoration',name,width);

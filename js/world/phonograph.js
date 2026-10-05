@@ -1,15 +1,14 @@
 import * as THREE from 'three';
-import {brass,ink,mesh,ring} from './materials.js';
+import {brass,ink,mesh} from './materials.js';
 import {batchStatic} from './batch.js';
-import {casing} from './hardware.js';
+import {createCabinet,createHorn} from './phonograph-finish.js';
 import {recordLabel,createMeters} from './phonograph-parts.js';
 import {createVinylSurface,OUTER_GROOVE,INNER_GROOVE} from './vinyl.js';
 
 export function createPhonograph(playback){
   const root=new THREE.Group(),deck=new THREE.Group();root.add(deck);deck.rotation.set(.3,-.3,-.04);
   const metal=brass(),black=ink();
-  mesh(casing(2.6,.4,1.8),new THREE.MeshPhysicalMaterial({color:0x21372d,metalness:.35,roughness:.3,clearcoat:.6}),deck,[0,-.46,0]);
-  mesh(casing(2.63,.025,1.83),metal,deck,[0,-.247,0]);
+  const brushed=createCabinet(deck,metal,black);
   const record=mesh(new THREE.CylinderGeometry(.78,.78,.034,112),black,deck,[-.3,-.215,0]);record.userData.action='play';
   createVinylSurface(record);
   const label=mesh(new THREE.CircleGeometry(.185,64),new THREE.MeshStandardMaterial({map:recordLabel(),roughness:.6}),record,[0,.021,0]);label.rotation.x=-Math.PI/2;
@@ -22,9 +21,7 @@ export function createPhonograph(playback){
   mesh(new THREE.CylinderGeometry(.074,.09,.16,24),metal,deck,[.87,-.15,.55]);
   mesh(new THREE.CylinderGeometry(.075,.09,.075,24),metal,deck,[.93,-.2,-.17]);
   const horn=new THREE.Group();deck.add(horn);horn.position.set(.93,-.17,-.17);horn.rotation.z=.24;
-  const profile=[[.045,0],[.05,.3],[.075,.5],[.15,.7],[.28,.92],[.5,1.14],[.72,1.35],[.78,1.39]];
-  mesh(new THREE.LatheGeometry(profile.map(p=>new THREE.Vector2(...p)),96),new THREE.MeshStandardMaterial({color:0xb88245,metalness:.9,roughness:.3,side:THREE.DoubleSide}),horn);
-  ring(horn,.78,.017,1.39,metal);
+  createHorn(horn,brushed,metal);
   const mouth=new THREE.Object3D();mouth.position.y=1.39;horn.add(mouth);
   const particleEmitter={object:mouth,levels:[0,0,0,0],time:0,enabled:false};
   for(const x of [-1.03,1.03])for(const z of [-.65,.65])mesh(new THREE.CylinderGeometry(.06,.08,.09,16),black,deck,[x,-.695,z]);
