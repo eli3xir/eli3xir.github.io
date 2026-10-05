@@ -109,6 +109,7 @@ function layout({ title, description, content, extraHead = '' }) {
 ${extraHead}
   <link rel="stylesheet" href="/css/experience.css" data-experience-style>
   <script type="importmap">{"imports":{"three":"/vendor/three/three.module.min.js","three/addons/":"/vendor/three/addons/"}}</script>
+  <script async src="/js/experience/preload.js"></script>
 </head>
 <body>
   <header class="blog-nav">

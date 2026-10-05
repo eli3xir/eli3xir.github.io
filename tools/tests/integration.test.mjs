@@ -12,6 +12,8 @@ test('repeated integration preserves ES module experiments and the classic boots
   assert.equal((second.match(/<script src="\/js\/experience\/lab-host.js">/g)||[]).length,1);
   assert.equal((second.match(/type="importmap"/g)||[]).length,1);
   assert.equal((second.match(/src="\/js\/experience\/entry.js"/g)||[]).length,1);
+  assert.equal((second.match(/<script async src="\/js\/experience\/preload.js">/g)||[]).length,1);
+  assert.ok(second.indexOf('type="importmap"')<second.indexOf('src="/js/experience/preload.js"'));
   assert.ok(!second.includes('data-src="/js/experience/lab-host.js"'));
 });
 

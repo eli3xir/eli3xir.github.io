@@ -1,4 +1,4 @@
-const loaders={
+export const experimentLoaders={
  ocean:()=>import('./ocean.js').then(m=>m.createOcean),
  partext:()=>import('./word-machine.js').then(m=>m.createWordMachine),
  moon:()=>import('./moon.js').then(m=>m.createMoon),
@@ -9,10 +9,10 @@ const loaders={
  breakout:()=>import('./breakout.js').then(m=>m.createBreakout),
  bullet:()=>import('./bullet.js').then(m=>m.createBullet),
 };
-const pending=new Map(),factories=new Map(),keyFor=id=>Object.hasOwn(loaders,id)?id:'fluid';
+const pending=new Map(),factories=new Map(),keyFor=id=>Object.hasOwn(experimentLoaders,id)?id:'fluid';
 export function prepareExperiment(id){
  const key=keyFor(id);
- if(!pending.has(key))pending.set(key,loaders[key]().then(factory=>factories.set(key,factory)).catch(error=>{pending.delete(key);throw error;}));
+ if(!pending.has(key))pending.set(key,experimentLoaders[key]().then(factory=>factories.set(key,factory)).catch(error=>{pending.delete(key);throw error;}));
  return pending.get(key);
 }
 export function createExperiment(id,renderer){

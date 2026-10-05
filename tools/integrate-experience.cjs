@@ -13,8 +13,9 @@ function integrate(source,isLab=false){
     });
   }
   html=html.replace(/\s*<script type="importmap">[\s\S]*?<\/script>/g,'');
+  html=html.replace(/\s*<script\b[^>]*src=["']\/js\/experience\/preload\.js["'][^>]*>\s*<\/script>/g,'');
   if(!html.includes('data-experience-style'))html=html.replace('</head>','  <link rel="stylesheet" href="/css/experience.css" data-experience-style>\n</head>');
-  html=html.replace('</head>',`  <script type="importmap">${JSON.stringify(map)}</script>\n</head>`);
+  html=html.replace('</head>',`  <script type="importmap">${JSON.stringify(map)}</script>\n  <script async src="/js/experience/preload.js"></script>\n</head>`);
   if(!html.includes('/js/experience/entry.js'))html=html.replace('</body>','  <script type="module" src="/js/experience/entry.js"></script>\n</body>');
   if(isLab&&!html.includes('src="/js/experience/lab-host.js"'))html=html.replace('</body>','  <script src="/js/experience/lab-host.js"></script>\n</body>');
   return html;

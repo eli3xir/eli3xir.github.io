@@ -26,6 +26,7 @@ try{execFileSync(process.execPath,['tools/pack-room-lightmaps.mjs','--check'],{c
 try{execFileSync(process.execPath,['tools/validate-room-reflections.mjs'],{cwd:root,stdio:'pipe'});}catch(error){failures.push(`Room reflections: ${error.stderr||error.message}`);}
 try{execFileSync(process.execPath,['tools/validate-room-artwork.mjs'],{cwd:root,stdio:'pipe'});}catch(error){failures.push(`Room artwork: ${error.stderr||error.message}`);}
 try{execFileSync(process.execPath,['tools/validate-vision.mjs'],{cwd:root,stdio:'pipe'});}catch(error){failures.push(`Vision assets: ${error.stderr||error.message}`);}
+try{execFileSync(process.execPath,['tools/build-module-preloads.mjs','--check'],{cwd:root,stdio:'pipe'});}catch(error){failures.push(`Module preloads: ${error.stderr||error.message}`);}
 function files(dir,excluded=new Set(['.git','node_modules','temp-docs','.playwright-cli'])){
   return fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>excluded.has(entry.name)?[]:entry.isDirectory()?files(path.join(dir,entry.name),excluded):[path.join(dir,entry.name)]);
 }
@@ -33,6 +34,7 @@ const all=files(root);const html=all.filter(f=>f.endsWith('.html')&&!f.includes(
 for(const file of html){
   const source=fs.readFileSync(file,'utf8');const label=path.relative(root,file);
   if(!source.includes('/js/experience/entry.js'))failures.push(`${label}: missing experience entry`);
+  if(!source.includes('<script async src="/js/experience/preload.js"></script>'))failures.push(`${label}: missing optional module hints`);
   if(!source.includes('data-experience-style'))failures.push(`${label}: missing visual system`);
   if(!source.includes('three/addons/'))failures.push(`${label}: missing local import map`);
   if(/lab[\\/](?!index)[^\\/]+\.html$/.test(file)){

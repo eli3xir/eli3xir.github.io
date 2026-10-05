@@ -36,7 +36,8 @@ try{
    Object.assign(result,await page.evaluate(()=>({marks:{...window.openingMarks,audible:performance.now()},generationMs:window.studio.score.data.generationMs,
     navigation:performance.getEntriesByType('navigation')[0].toJSON(),resources:performance.getEntriesByType('resource').map(e=>e.toJSON()),longTasks:window.openingLongTasks,
     renderer:window.studio.diagnostics()})));
-   result.scripts=result.resources.filter(r=>r.initiatorType==='script').map(r=>new URL(r.name).pathname);
+   // Include preloaded modules and worker records, regardless of initiator label.
+   result.scripts=result.resources.filter(r=>/\.m?js$/.test(new URL(r.name).pathname)).map(r=>new URL(r.name).pathname);
    assert.ok(result.scripts.includes('/js/world/leisure.js'));assert.ok(result.scripts.includes('/js/experience/about.js'));
    assert.deepEqual(result.scripts.filter(path=>forbidden.test(path)),[],'unrelated route modules entered the cold graph');
    await page.locator('[data-activity="swim"]').click();await page.waitForFunction(()=>window.studio.world.model.activity==='swim');

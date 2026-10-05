@@ -15,6 +15,7 @@
 | 命令 | 验证范围 |
 | --- | --- |
 | `npm run build:blog` | 从 Markdown 重建 39 篇文章和列表；不递归删除博客目录 |
+| `npm run build:preloads` | 从真实加载器与 import map 生成当前路由的必要模块提示；validate 校验清单是否过期 |
 | `npm run build:lightmaps` | 将 manifest 中的原始 JPEG 字节打包，不改变图片、UV 或 HDR 倍率 |
 | `npm test` | 节拍、路由、拒绝存储、采样、接入脚本重复运行 |
 | `npm run validate` | 55 页入口、import map、本地文件、脚本类型/语法及正文保留 |
@@ -22,6 +23,7 @@
 | `npm run test:audio` | 实际 OfflineAudioContext 渲染完整配乐、音量与重叠提示音，检查峰值/削波 |
 | `npm run test:loading` | 真实 HTTP 慢速分块传输、下载中往返导航、停滞连接取消 |
 | `npm run test:opening` | 首屏依赖与计时、专属模块慢加载/失败、连续改选、原生正文降级和嵌入实验隔离 |
+| `npm run test:preloads` | 五组原生预加载、请求复用、缺失/不支持/迟到恢复与嵌入隔离 |
 | `npm run test:navigation-preparation` | 七种准备状态布局、键盘焦点、取消当前目标、前进后退和迟到模块不挂载 |
 | `npm run test:lightmaps` | 资源包完整、缺失、索引损坏、单张图片损坏的实际浏览器恢复 |
 | `npm run test:performance` | 七个入口及九个实验首屏/实际交互的 50 组帧间隔、长任务和离屏绘制；注明模拟限制 |
@@ -44,6 +46,8 @@
 检查输出在忽略目录 `tools/test-results/`；截图研究与临时脚本在 `temp-docs/`。稳定结果写入 [验证记录](../../wiki/verification.md)。`window.studio.diagnostics()` 提供当前画面调用、几何和纹理统计。`AUDIT_QUICK=1` 只测七个入口；完整验收不设置它。`AUDIT_SCREENSHOTS=0` 可只跑行为。
 
 `test:opening` 使用独立浏览器上下文并禁用冷启动缓存，记录资源明细、HTML 完成、首个三维帧、点击声音与 Worker 合成时间。`OPENING_NETWORK=1` 仅对冷启动样本施加 150 ms 延迟、1.5 MiB/s 下载，不代表真实手机；`BASE_URL` 可核对线上，另记录代理和本机 GPU 条件。其余场景实际阻塞/拒绝模块响应，检查旧 DOM、模型、事件及音源身份、最后一个排队目的地、原生导航和嵌入实验；预期 503 与意外失败分别记录。输出 `opening-audit.json`，不以固定毫秒门槛或标题动画等待替代资源与首帧计时。
+
+`test:preloads` 阻塞 entry 后先等提示下载完成，确认没有场景副作用；放行后检查禁用 HTTP 缓存时同 URL 的 CDP 请求只有一次。另实际操作三种降级路径及独立嵌入实验，输出 `preload-audit.json`，支持 `BASE_URL`。生成器用 es-module-lexer 3.0.3 的 minimal 词法记录分析导入，按当前模块大小排序；新增路由、导入或源码变化后运行 `build:preloads`，再运行 `validate`。JS 资源统计按 URL 后缀包含所有 initiator，另列网络请求数；声音 Worker 与主线程共享源码会留下多个资源记录，不能直接当作同一执行域的重复下载。
 
 停滞分支使用实际 12 秒上限，恢复后操作原控件并进入另一页，再放行旧请求；检查迟到完成不更换当前场景，随后仍可主动进入原目的地。慢模块分支在纸幕完全未展开时真实点击游泳，再在旧响应仍阻塞时改选并抵达文章，记录实际挂载序列，拒绝先展示中间页面的实现。完整专项共九组，启动计时与异常恢复分别记录。
 

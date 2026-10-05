@@ -1,7 +1,7 @@
 import {routeFor} from './domain.js';
 import {prepareModel} from '../world/models.js';
 
-const loaders={
+export const featureLoaders={
   about:()=>import('./about.js'),
   radio:()=>import('./radio.js'),
   skin:()=>import('./skin.js'),
@@ -21,9 +21,10 @@ const loaders={
 };
 const pending=new Map();
 export function prepareRoute(route){
+  globalThis.__preloadExperience?.(route.pathname);
   const key=route.experiment?route.experimentId:route.id;
   if(!pending.has(key)){
-    const features=Object.hasOwn(loaders,key)?loaders[key]():Promise.resolve({});
+    const features=Object.hasOwn(featureLoaders,key)?featureLoaders[key]():Promise.resolve({});
     pending.set(key,Promise.all([features,prepareModel(route)]).then(([module])=>module).catch(error=>{pending.delete(key);throw error;}));
   }
   return pending.get(key);

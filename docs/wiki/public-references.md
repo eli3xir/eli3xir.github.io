@@ -201,3 +201,5 @@ Three.js [DataTexture](https://threejs.org/docs/pages/DataTexture.html) 与本�
 2026-10-05 使用 MDN [PerformanceResourceTiming](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming) 的请求、响应、压缩字节和协议字段，分开检查 HTML、依赖网络、图形初始化与声音合成。参考 MDN [动态 import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import) 的条件加载、模块缓存与失败语义，把网站已有专属模型和控制器按路由载入；浏览器缓存模块命名空间，应用只保存工厂，不缓存每次创建的场景。性能判断来自本机受控网络与代理线上样本，不将 GitHub 响应等待全部归因于 JavaScript，也不将模拟结果当作手机性能。
 
 随后从本站正常录像发现按需模块尚未就绪时纸幕停留过久，决定将网络准备放在可操作的当前场景中，成功后再进行原转场。参考 W3C 对 [状态消息](https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html) 的说明，状态提示使用语义角色并保留当前焦点，取消等待给予明确反馈。实际检查只覆盖 DOM、键盘、七尺寸几何和浏览器行为，不据此宣称完成辅助技术或 WCAG 的整体验收。
+
+2026-10-06 核对 MDN [modulepreload](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel/modulepreload)：原生提示可预先获取、解析和编译模块，执行仍由 import 触发；过多提示可能挤占其他资源。本站只提示当前路由闭包，以实际请求检查复用及范围。构建工具使用 [es-module-lexer](https://github.com/guybedford/es-module-lexer) 的 3.0.3 minimal API，核对已安装版本的类型声明后读取静态和字面量动态导入，拒绝不可分析的加载器；分析器不发送到访客浏览器。改进幅度以同条件测量及线上样本分别记录。

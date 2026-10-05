@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build:blog": "node tools/build-blog.js",
+    "build:preloads": "node tools/build-module-preloads.mjs",
     "build:lightmaps": "node tools/pack-room-lightmaps.mjs",
     "build:reflections": "node tools/build-room-reflections.mjs",
     "validate:reflections": "node tools/validate-room-reflections.mjs",
@@ -34,6 +35,7 @@
     "test:audio": "node tools/audio-audit.mjs",
     "test:loading": "node tools/room-loading-audit.mjs",
     "test:opening": "node tools/opening-audit.mjs",
+    "test:preloads": "node tools/preload-audit.mjs",
     "test:navigation-preparation": "node tools/navigation-preparation-audit.mjs",
     "test:lightmaps": "node tools/lightmap-audit.mjs",
     "test:reading": "node tools/reading-audit.mjs",
@@ -62,6 +64,7 @@
     "node": ">=22"
   },
   "devDependencies": {
+    "es-module-lexer": "3.0.3",
     "playwright-core": "^1.63.0"
   }
 }

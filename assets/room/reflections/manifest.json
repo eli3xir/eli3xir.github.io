@@ -104,7 +104,7 @@
     "js/world/room-notes.js": "e7fd313dce5befdb0c6d40588515567da2c5c9532125940cf610a8467eeee0ef",
     "js/world/room-projects.js": "5f5cbf47500022043fb34813179df977f63fa7cc36bca7d9fb83448b3420dc47",
     "js/experience/domain.js": "e3ea16087a685df5a5198c01bf391832177467d79505b7b694f4c8d5a37575f0",
-    "projects/index.html": "01f6b8269c1e7ec22e03d04677dc706daaa668e53f0f2a21f56715c5d7395966",
+    "projects/index.html": "b88d27cf6291067661c4d1fb528c544c60417a4ffdd4e153b7124751d5d7efbd",
     "tools/build-room-reflections.mjs": "90f352d7b72e03321afc4b1b39cd54d5a3d764d3f437755a257c8e0ce2540ebb",
     "tools/reflection-encoding.mjs": "287066a599d60c3d798e5939b74ae3061df9052c75b3ddcb394ceb09c89b016f"
   },
