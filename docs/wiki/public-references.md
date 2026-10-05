@@ -205,3 +205,5 @@ Three.js [DataTexture](https://threejs.org/docs/pages/DataTexture.html) 与本�
 2026-10-06 核对 MDN [modulepreload](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel/modulepreload)：原生提示可预先获取、解析和编译模块，执行仍由 import 触发；过多提示可能挤占其他资源。本站只提示当前路由闭包，以实际请求检查复用及范围。构建工具使用 [es-module-lexer](https://github.com/guybedford/es-module-lexer) 的 3.0.3 minimal API，核对已安装版本的类型声明后读取静态和字面量动态导入，拒绝不可分析的加载器；分析器不发送到访客浏览器。改进幅度以同条件测量及线上样本分别记录。
 
 同日复核 W3C [CSS Shapes](https://www.w3.org/TR/css-shapes-1/#funcdef-circle) 对圆半径、参考框和百分比尺度的定义，以及 MDN [circle()](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/basic-shape/circle) 的长度与圆心说明。本站将原固定 150% 半径改为实际最远角距离加 2 px，标题判断使用同一几何；没有依赖较新的角距离 CSS 关键字。覆盖与改尺寸行为另由实际浏览器命中、正常录像及旧样式反证验证，规范定义本身不等于视觉质量或帧率证明。
+
+剩余长帧的分段观测显示，多数同步时间落在首次程序信息查询。查阅 MDN [WebGL 最佳实践](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices) 的并行编译与非阻塞完成查询，以及 Three.js [WebGLRenderer](https://threejs.org/docs/pages/WebGLRenderer.html) 对 compileAsync 和预先配置光照、环境的要求。异步准备仅是下一轮待验证方向，当前纸幕改进没有改变着色程序生命周期，也未证明不同驱动和真实设备的收益。
