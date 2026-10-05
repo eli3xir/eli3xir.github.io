@@ -11,6 +11,7 @@
     "test:room-explorer": "node tools/room-explorer-audit.mjs",
     "test:room-artwork": "node tools/room-artwork-audit.mjs",
     "test:room-projects": "node tools/room-projects-audit.mjs",
+    "test:compiler": "node tools/compiler-audit.mjs",
     "validate:room-artwork": "node tools/validate-room-artwork.mjs",
     "validate": "node tools/validate.mjs",
     "test": "node --test tools/tests/*.test.mjs",

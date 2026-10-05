@@ -3,8 +3,9 @@ import {brass,ink,mesh} from './materials.js';
 import {terminal,display} from './signal-hardware.js';
 import {casing} from './hardware.js';
 import {batchStatic} from './batch.js';
+import {createCompilerBench} from './compiler-bench.js';
 
-export function createSignalBench(relay){
+export function createSignalBench(relay,compiler){
   const root=new THREE.Group(),bench=new THREE.Group();root.add(bench);bench.rotation.set(.24,-.23,0);
   const metal=brass(),dark=ink();
   const finish=new THREE.MeshPhysicalMaterial({color:0x23372e,metalness:.45,roughness:.35,clearcoat:.5});
@@ -12,8 +13,9 @@ export function createSignalBench(relay){
   mesh(casing(3.55,.025,2.26,.12),metal,bench,[0,-.749,.25]);
   mesh(casing(3.45,.018,2.16,.1),dark,bench,[0,-.723,.25]);
   for(const x of [-1.53,1.53])for(const z of [-.63,1.11])mesh(new THREE.CylinderGeometry(.09,.07,.15,16),dark,bench,[x,-1.035,z]);
-  const terminals=[terminal(bench,'A',[-1.15,-.23,.08],.19),terminal(bench,'B',[1.15,-.23,.08],-.19),terminal(bench,'C',[.13,-.23,1.05],0)];
-  const relayRoot=new THREE.Group();bench.add(relayRoot);relayRoot.position.set(0,-.68,-.38);
+  const circuit=new THREE.Group();bench.add(circuit);
+  const terminals=[terminal(circuit,'A',[-1.15,-.23,.08],.19),terminal(circuit,'B',[1.15,-.23,.08],-.19),terminal(circuit,'C',[.13,-.23,1.05],0)];
+  const relayRoot=new THREE.Group();circuit.add(relayRoot);relayRoot.position.set(0,-.68,-.38);
   mesh(new THREE.CylinderGeometry(.34,.41,.16,48),dark,relayRoot,[0,.08,0]);
   mesh(new THREE.CylinderGeometry(.36,.36,.045,48),metal,relayRoot,[0,.185,0]);
   const tube=mesh(new THREE.CylinderGeometry(.275,.29,.98,48,1,true),new THREE.MeshPhysicalMaterial({color:0xc5ddce,transparent:true,opacity:.24,roughness:.12,metalness:.1,depthWrite:false,side:THREE.DoubleSide}),relayRoot,[0,.7,0]);tube.castShadow=false;
@@ -26,7 +28,7 @@ export function createSignalBench(relay){
   const filament=mesh(new THREE.CylinderGeometry(.055,.055,.73,20),new THREE.MeshStandardMaterial({color:0xd6ad67,emissive:0xffa24c,emissiveIntensity:.55}),relayRoot,[0,.72,0]);
   const spiral=[];for(let i=0;i<=160;i++){const a=i/160*Math.PI*16;spiral.push(new THREE.Vector3(Math.cos(a)*.18,.3+i/160*.85,Math.sin(a)*.18));}
   mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(spiral),160,.007,6,false),metal,relayRoot);
-  const gauge=display(512,160),plate=mesh(new THREE.PlaneGeometry(.54,.17),new THREE.MeshBasicMaterial({map:gauge.texture,toneMapped:false}),bench,[-.05,.68,-.37]);plate.castShadow=false;
+  const gauge=display(512,160),plate=mesh(new THREE.PlaneGeometry(.54,.17),new THREE.MeshBasicMaterial({map:gauge.texture,toneMapped:false}),circuit,[-.05,.68,-.37]);plate.castShadow=false;
   gauge.draw('MESSAGE RELAY','READY','AFTER HOURS / 04');
   const hub=new THREE.Vector3(0,.12,-.38);
   const paths=terminals.map((terminal,i)=>{
@@ -34,14 +36,17 @@ export function createSignalBench(relay){
     const points=[new THREE.Vector3(p.x+(i===0?-.4:.4),-.47,p.z+.12),new THREE.Vector3(i===0?-1.66:1.66,-.22,p.z+.12),new THREE.Vector3(p.x*.52,.27,-.16),hub];
     if(i===2){points[0].set(.53,-.47,1.15);points[1].set(.78,-.21,1.25);points[2].set(.68,.1,.24);}
     const path=new THREE.CatmullRomCurve3(points);
-    mesh(new THREE.TubeGeometry(path,48,.022,8,false),metal,bench);
-    for(const point of [points[0],hub]){const port=mesh(new THREE.TorusGeometry(.043,.01,6,18),metal,bench,point.toArray());port.rotation.x=Math.PI/2;}
+    mesh(new THREE.TubeGeometry(path,48,.022,8,false),metal,circuit);
+    for(const point of [points[0],hub]){const port=mesh(new THREE.TorusGeometry(.043,.01,6,18),metal,circuit,point.toArray());port.rotation.x=Math.PI/2;}
     return path;
   });
-  const packets=new THREE.InstancedMesh(new THREE.SphereGeometry(.034,10,8),new THREE.MeshBasicMaterial({color:0xbff5c5,toneMapped:false}),27);bench.add(packets);packets.frustumCulled=false;
+  const packets=new THREE.InstancedMesh(new THREE.SphereGeometry(.034,10,8),new THREE.MeshBasicMaterial({color:0xbff5c5,toneMapped:false}),27);circuit.add(packets);packets.frustumCulled=false;
   const dummy=new THREE.Object3D();
   const moving=new Set([packets,filament]);for(const part of [...terminals.map(t=>t.root),cage])part.traverse(object=>moving.add(object));
-  batchStatic(bench,moving);batchStatic(cage);
+  batchStatic(circuit,moving);batchStatic(cage);
+  const staticCircuit=new Set();circuit.traverse(obj=>staticCircuit.add(obj));batchStatic(bench,staticCircuit);
+  const syntax=createCompilerBench(compiler);bench.add(syntax.root);syntax.root.visible=false;syntax.root.scale.y=.001;syntax.root.position.y=-.72;
+  let instrument='signal',blend=0,switching=null;
   const state=relay.state;let stamp='',disposed=false;
   function refresh(){
     const next=[state.serial,state.phase,state.sender].join(':');if(next===stamp)return;stamp=next;
@@ -53,11 +58,20 @@ export function createSignalBench(relay){
     gauge.draw('MESSAGE RELAY',state.busy?'ROUTING':state.serial?String(state.serial).padStart(3,'0'):'READY','A LOCAL CIRCUIT');
   }
   refresh();
-  const model={root,actorPosition:[.9,1.05,-.15],actorMobilePosition:[1.12,1.05,-.15],displayScale:.92,onPick:null,
+  const model={root,syntax,circuit,actorPosition:[.9,1.42,-.15],actorMobilePosition:[1.12,1.42,-.15],displayScale:.92,onPick:null,
+    get instrument(){return instrument;},get instrumentBlend(){return blend;},
+    setInstrument(id,{now,delay=0,duration=.8,reduced=false}){
+      if(!['signal','compiler'].includes(id)||id===instrument)return;
+      instrument=id;switching={from:blend,to:id==='compiler'?1:0,start:now+delay,duration:reduced?0:duration};
+    },
     get relay(){return relay;},
-    pick(ray){root.updateMatrixWorld(true);const hit=ray.intersectObjects(terminals.map(t=>t.root),true)[0];if(!hit)return null;return terminals.findIndex(t=>{let object=hit.object;while(object){if(object===t.root)return true;object=object.parent;}return false;});},
+    pick(ray){if(instrument!=='signal'||blend>.01)return null;root.updateMatrixWorld(true);const hit=ray.intersectObjects(terminals.map(t=>t.root),true)[0];if(!hit)return null;return terminals.findIndex(t=>{let object=hit.object;while(object){if(object===t.root)return true;object=object.parent;}return false;});},
     update(t,beat,scroll,now,reduced){
       if(disposed)return;relay.advance(now,reduced);refresh();
+      if(switching){const p=reduced||!switching.duration?1:THREE.MathUtils.clamp((now-switching.start)/switching.duration,0,1);blend=THREE.MathUtils.lerp(switching.from,switching.to,p*p*(3-2*p));if(p===1)switching=null;}
+      const lift=THREE.MathUtils.smoothstep(blend,.28,1),lower=1-THREE.MathUtils.smoothstep(blend,0,.72);
+      circuit.visible=lower>.001;circuit.scale.y=Math.max(.001,lower);circuit.position.y=-.72*(1-lower);
+      syntax.root.visible=lift>.001;syntax.root.scale.y=Math.max(.001,lift);syntax.root.position.y=-.72*(1-lift);syntax.update(now,reduced);
       const p=state.progress;filament.material.emissiveIntensity=.55+(state.busy?Math.sin(Math.PI*p)**2*3:0);
       cage.rotation.y=state.busy?Math.sin(p*Math.PI)*.08:0;
       terminals.forEach((terminal,i)=>{terminal.root.rotation.z=state.busy&&i===state.sender?Math.sin(Math.min(1,p/.3)*Math.PI)*-.015:0;});
@@ -71,7 +85,7 @@ export function createSignalBench(relay){
       }
       packets.instanceMatrix.needsUpdate=true;
     },
-    dispose(){disposed=true;model.onPick=null;relay.dispose();}
+    dispose(){disposed=true;model.onPick=null;relay.dispose();compiler.dispose();}
   };
   return model;
 }

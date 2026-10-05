@@ -131,3 +131,9 @@ MTCNN 级联与图像金字塔的两张时间戳图片尚未确认。已检索�
 2026-10-05 项目便签的事实取自仓库既有 [项目页](../../projects/index.html)：C++ 多客户端聊天室与 MySQL、Flask 接口和 MTCNN/FaceNet、Pascal-S 的 lex/yacc/LLVM 技术路线。只增加三个卡片锚点，原介绍和仓库链接保留；没有以搜索摘要补造项目进度。通信节点、检测框、语法树与存储草图为代码绘制的解释性示意，不声称是实际程序输出。
 
 复核 Three.js 官方 [CanvasTexture](https://threejs.org/docs/pages/CanvasTexture.html)、[Texture](https://threejs.org/docs/pages/Texture.html) 与 [Raycaster](https://threejs.org/docs/pages/Raycaster.html)，用于一次生成的共享图集、独立 UV 与按实际相交物件选择项目。实际 GLB 保留十张纸面的不同尺寸和旋转，天花板下表面用于限制飞行高度。连续录像发现穿过顶面的失败，比只检查屏幕投影得到更强的反证；后续加入实际几何高度与角色灯点到镜头的遮挡检查。
+
+## 可操作的表达式与语法树
+
+2026-10-05 从项目原链接只读克隆 [Pascal-S-compiler](https://gitee.com/buptsg2019/pascal-s-compiler)，实际 HEAD 为 `7a8b8917c8b1d3e2b1df6c7584c28cdcbb16a865`。网页抓取部分失败后改用仓库和 raw README 核实，没有把缓存页日期当作新提交。阅读 pascal.l、pascal.y、AbstractTree.cpp 与 pas/1.pas：赋值使用 `:=`，expr / term / factor 分层赋予乘法优先级，括号返回内部表达式；一元负号构造零减节点。整数加减乘由 LLVM Builder 的 CreateAdd / CreateSub / CreateMul 生成。词法器虽然有 div token，语法中的 DIVI 分支被注释；本次网页演示因此没有声称支持它。
+
+阅读 LLVM 官方 [Implementing a Parser and AST](https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl02.html) 的 AST、表达式和括号部分，核对树表示语义结构以及括号不必成为节点的解释。该教程的语言是 Kaleidoscope，不能据此推断原 Pascal 项目的全部功能。网页新增解析器由本仓库实现，限定一条整数赋值式；它真实生成树和结果，但不是原 LLVM 编译器的浏览器移植。三维字块、连杆与传值动画也由本仓库程序生成，没有引入第三方视觉资产。

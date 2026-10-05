@@ -7,6 +7,7 @@ try{
   for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
     const context=await browser.newContext({viewport}),page=await context.newPage(),log=observe(page);
     await page.goto(server.base+'/projects/');await ready(page);await settle(page);
+    if(viewport.width<700){await page.evaluate(()=>scrollTo(0,280));await page.waitForTimeout(100);}
     const input=page.getByRole('textbox',{name:'发送一句话'}),sender=page.getByRole('combobox',{name:'发送终端'}),submit=page.locator('.signal-form button');
     assert.equal(await page.locator('.pcard').count(),4);assert.equal(await page.locator('.signal-source').getAttribute('href'),'https://gitee.com/buptsg2019/cpp-chat-room');
     await input.fill('');await submit.click();assert.equal(await page.evaluate(()=>window.studio.route.relay.state.serial),0);
