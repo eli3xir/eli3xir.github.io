@@ -8,7 +8,7 @@ export function createLeisure(){
   const root=new THREE.Group(),stage=new THREE.Group();root.add(stage);stage.rotation.x=.40;stage.position.y=.65;
   const props=createLeisureProps(stage),actorAnchor=new THREE.Object3D();stage.add(actorAnchor);actorAnchor.position.copy(HOME);
   actorAnchor.name='leisure-actor-anchor';
-  const motion={grounded:true,run:0,swim:0,reach:0,phase:0,grip:new THREE.Vector3()},target=new THREE.Vector3(),targetQuaternion=new THREE.Quaternion(),inverse=new THREE.Quaternion();
+  const motion={grounded:true,run:0,swim:0,reach:0,phase:0,grip:new THREE.Vector3(),swimHands:[new THREE.Vector3(),new THREE.Vector3()]},target=new THREE.Vector3(),targetQuaternion=new THREE.Quaternion(),inverse=new THREE.Quaternion();
   stage.updateMatrix();const layoutBounds=new THREE.Box3(new THREE.Vector3(-1.84,-1,-1.1),new THREE.Vector3(1.84,.5,1.1)).applyMatrix4(stage.matrix);
   let flight=null,disposed=false,pawnFlight=null,pawnSide=0;
   const model={root,layoutBounds,actorAnchor,actorMotion:motion,actorPosition:HOME.toArray(),actorScale:1.35,activity:null,progress:0,
@@ -16,7 +16,7 @@ export function createLeisure(){
     select(id,{now,delay=0,duration,reduced=false}={}){
       if(disposed||!['run','swim','chess'].includes(id))return false;
       if(pawnFlight){pawnFlight={from:props.pawn.position.clone(),to:pawnFlight.to.clone(),start:now+delay,duration:duration/8};}
-      flight={id,start:now+delay,duration,from:actorAnchor.position.clone(),rotation:actorAnchor.quaternion.clone(),motion:{run:motion.run,swim:motion.swim,reach:motion.reach,phase:motion.phase,grip:motion.grip.clone()}};
+      flight={id,start:now+delay,duration,from:actorAnchor.position.clone(),rotation:actorAnchor.quaternion.clone(),motion:{run:motion.run,swim:motion.swim,reach:motion.reach,phase:motion.phase,grip:motion.grip.clone(),swimHands:motion.swimHands.map(hand=>hand.clone())}};
       if(id==='chess'){
         pawnSide=1-pawnSide;flight.pieceFrom=props.pawn.position.clone();flight.pieceTo=new THREE.Vector3(pawnSide?.115:-.115,-.628,pawnSide?-.115:.115);
         pawnFlight={from:flight.pieceFrom,to:flight.pieceTo,start:flight.start+duration*.25,duration:duration*.5};
@@ -54,8 +54,17 @@ export function createLeisure(){
       }
       if(flight&&model.progress<ENTER&&flight.motion.reach>0)motion.grip.copy(flight.motion.grip);
       else motion.grip.copy(props.pawn.position).add(new THREE.Vector3(.63,.235,0)).sub(actorAnchor.position).applyQuaternion(inverse.copy(actorAnchor.quaternion).invert()).divideScalar(model.actorScale);
-      props.water.update(now,actorAnchor.position.x+.52,actorAnchor.position.z,reduced?0:motion.swim);
+      for(let i=0;i<2;i++){
+        if(flight&&model.progress<ENTER&&flight.motion.swim>0){motion.swimHands[i].copy(flight.motion.swimHands[i]);continue;}
+        const phase=motion.phase+i*Math.PI,hand=motion.swimHands[i];
+        hand.set((i?1:-1)*.215,0,Math.sin(phase)*.09).multiplyScalar(model.actorScale).applyQuaternion(actorAnchor.quaternion).add(actorAnchor.position);
+        hand.x=clamp(hand.x,-.97,-.07);hand.z=clamp(hand.z,-.285,.285);hand.y=-.663+Math.cos(phase)*.055;
+        hand.sub(actorAnchor.position).applyQuaternion(inverse.copy(actorAnchor.quaternion).invert()).divideScalar(model.actorScale);
+      }
+      props.water.update(now,actorAnchor.position.x+.52,actorAnchor.position.z,reduced?0:motion.swim,reduced);
     },
+    afterActor(actor){props.water.follow(actor);},
+    diagnostics(){return{water:props.water.diagnostics()};},
     dispose(){disposed=true;flight=pawnFlight=null;props.squares.dispose();model.onState=model.onPick=null;}
   };
   function finish(){flight=null;actorAnchor.position.copy(HOME);actorAnchor.quaternion.identity();motion.run=motion.swim=motion.reach=0;model.progress=1;if(pawnFlight){props.pawn.position.copy(pawnFlight.to);pawnFlight=null;}}
@@ -65,7 +74,7 @@ export function createLeisure(){
       const a=q*Math.PI*2;position.set(Math.sin(a)*1.38,-.425+Math.sin(q*Math.PI*12)**2*.025,Math.cos(a)*.75);
       rotation.setFromAxisAngle(UP,Math.atan2(1.38*Math.cos(a),-.75*Math.sin(a)));
     }else if(id==='swim'){
-      const x=-.77+(1-Math.cos(q*Math.PI*2))*.25;position.set(x,-.60,0);
+      const x=-.77+(1-Math.cos(q*Math.PI*2))*.25;position.set(x,-.46,0);
       // Turn continuously at the far end of the lane.
       const yaw=Math.PI/2-Math.PI*ease(clamp((q-.44)/.12,0,1));rotation.setFromEuler(new THREE.Euler(-.22,yaw,Math.sin(q*Math.PI*12)*.07));
     }else{

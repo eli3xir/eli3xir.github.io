@@ -27,6 +27,7 @@ export class World {
     this.pointer=new THREE.Vector2();this.targetPointer=new THREE.Vector2();
     this.ray=new THREE.Raycaster();this.focused=null;this.down=null;this.hovered=null;
     this.reduced=matchMedia('(prefers-reduced-motion: reduce)');
+    this.appliedReduced=this.reduced.matches;
     this.renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
     this.renderer.setClearColor(0x101513,1);
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -82,10 +83,7 @@ export class World {
       this.last=performance.now();
       this.updateVisibility();
     },options);
-    this.reduced.addEventListener('change',()=>{
-      if(this.reduced.matches){this.focusJourney=null;this.offsetCamera();this.camera.position.copy(this.desiredCamera);this.target.copy(this.desiredTarget);}
-      this.applyQuality();
-    },options);
+    this.reduced.addEventListener('change',()=>this.applyMotionPreference(),options);
     this.resize();this.start();
   }
 
@@ -106,6 +104,12 @@ export class World {
     this.setRig();
     if(this.model){this.camera.position.copy(this.desiredCamera);this.camera.lookAt(this.desiredTarget);composeHero(this);}
     this.offsetCamera();this.camera.updateProjectionMatrix();this.moving=1;this.updateVisibility();
+  }
+
+  applyMotionPreference(){
+    this.appliedReduced=this.reduced.matches;
+    if(this.appliedReduced){this.focusJourney=null;this.offsetCamera();this.camera.position.copy(this.desiredCamera);this.target.copy(this.desiredTarget);}
+    this.applyQuality();
   }
 
   applyQuality(){
@@ -262,6 +266,9 @@ export class World {
   frame(now) {
     const dt=Math.max(0,Math.min((now-this.last)/1000,.06));this.last=now;
     const reduced=this.reduced.matches;
+    // Some browser/media-emulation paths update matches before delivering the
+    // change event. Apply the new state before the reduced-motion frame guard.
+    if(reduced!==this.appliedReduced)this.applyMotionPreference();
     if(reduced&&this.moving<.01&&this.transition===0)return;
     this.moving*=.92;
     // The score clock also advances in silent mode, and freezes when playback pauses.

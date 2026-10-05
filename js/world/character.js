@@ -35,13 +35,13 @@ export function createCharacter() {
   const halo = mesh(new THREE.TorusGeometry(.26, .006, 8, 64), brass(), root);
   halo.rotation.x = Math.PI / 2; halo.position.y = -.32;
   let surprise = 0;
-  const handDirection=new THREE.Vector3(.12,-.08,.03).normalize(),gripDirection=new THREE.Vector3(),gripRotation=new THREE.Quaternion(),headInverse=new THREE.Matrix4();
+  const handDirections=[-1,1].map(sign=>new THREE.Vector3(sign*.12,-.08,.03).normalize()),gripDirection=new THREE.Vector3(),gripRotation=new THREE.Quaternion(),headInverse=new THREE.Matrix4();
   const handLength=Math.hypot(.12,.08,.03);
   return { root, beacon:lamp, react() { surprise = 1; }, update(time, rhythm, pointer, large = false,dt=1/60,motion=null,expressionTime=time) {
     surprise *= Math.exp(-dt*2.2);
     const beat=rhythm.beat||0,mood=rhythm.energy??.55,performance=motion?.performance;
     const presence=performance?.presence||0;
-    head.position.y = (motion?.grounded?0:(Math.sin(beat*Math.PI) * .026 + rhythm.pulse * .015)*(1-presence)) + surprise * .07+(performance?.lift||0);
+    head.position.y = (motion?.grounded?0:(Math.sin(beat*Math.PI) * .026 + rhythm.pulse * .015)*(1-presence)) + surprise * .07*(1-Math.min(1,(motion?.swim||0)*2))+(performance?.lift||0);
     const action=Math.min(1,(motion?.run||0)+(motion?.swim||0)+(motion?.reach||0));
     head.rotation.x=performance?.pitch||0;
     head.rotation.y = (pointer.x * .35 + Math.sin(time * .5) * .12)*(1-action)*(1-presence)+(performance?.yaw||0);
@@ -54,13 +54,14 @@ export function createCharacter() {
       const swing=Math.sin((motion?.phase||0)+i*Math.PI),run=motion?.run||0,swim=motion?.swim||0;
       arm.rotation.x=swing*(run*.7+swim*1.05);
       arm.rotation.z=i===1?(large&&!motion?Math.sin(beat*Math.PI)*.23*(.5+mood*.5)-.15:-surprise*.7)-(motion?.reach||0)*.9:0;
-      arm.rotation.z+=(i===0?-1:1)*swim*.4;
+      arm.rotation.z+=(i===0?1:-1)*swim*.9;
       if(performance)arm.rotation.set(...performance.arms[i]);
       arm.scale.setScalar(1);
-      if(i===1&&motion?.reach){
-        head.updateMatrix();gripDirection.copy(motion.grip).applyMatrix4(headInverse.copy(head.matrix).invert()).sub(arm.position);const length=gripDirection.length();
-        gripRotation.setFromUnitVectors(handDirection,gripDirection.normalize());arm.quaternion.slerp(gripRotation,motion.reach);
-        arm.scale.setScalar(THREE.MathUtils.lerp(1,length/handLength,motion.reach));
+      if(i===1&&motion?.reach||motion?.swim){
+        const reaching=i===1&&motion.reach,weight=reaching?motion.reach:Math.min(1,motion.swim*2),target=reaching?motion.grip:motion.swimHands[i];
+        head.updateMatrix();gripDirection.copy(target).applyMatrix4(headInverse.copy(head.matrix).invert()).sub(arm.position);const length=gripDirection.length();
+        gripRotation.setFromUnitVectors(handDirections[i],gripDirection.normalize());arm.quaternion.slerp(gripRotation,weight);
+        arm.scale.setScalar(THREE.MathUtils.lerp(1,length/handLength,weight));
       }
       // Reach changes the limb's length, while the tube and palm retain their
       // thickness. Both tube ends lie on the actual shoulder-to-hand segment.

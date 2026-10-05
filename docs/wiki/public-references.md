@@ -189,3 +189,9 @@ Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐�
 2026-10-05 参考 Disney Animation 对[角色表演](https://www.disneyanimation.com/process/animation/)的说明，把动作准备、收势和次要动作用于有明确原因的指挥与停顿。本站的歪头反应对应访客关闭全部声部，而非固定插入的动画片段；姿态和指挥棒均为原创程序实现，没有引入角色片段或外部动作数据。
 
 按 Three.js [Object3D](https://threejs.org/docs/pages/Object3D.html) 核对局部矩阵、世界矩阵和更新顺序，在本站固定版本中以实际右手变换定位道具。指挥棒保持唱机的资源归属，按父级逆矩阵转换手部世界变换；独立比较连续帧中的手掌与握柄位置。节奏滤波以固定电平的拍点测试作工程依据，最终表演和声音感受仍需要人工评审。
+
+## 划水引起的波动与池底可见性
+
+2026-10-05 核对 Evan Wallace 的 [WebGL Water](https://www.madebyevan.com/webgl-water/) 对交互、高度场、折射与焦散的说明，并重读 NVIDIA [GPU Gems 水面章节](https://developer.nvidia.com/gpugems/gpugems/part-i-natural-effects/chapter-1-effective-water-simulation-physical-models) 的高度与表面方向关系。本站采用独立编写的固定步长阻尼高度场，直接取实际手掌输入；没有复制示例源码、纹理或视频。池底明暗来自高度曲率的受限近似，不具有参考示例的光线追踪或焦散求解范围。
+
+Three.js [DataTexture](https://threejs.org/docs/pages/DataTexture.html) 与本地固定版本用于核对 CPU 数据上传、过滤和恢复方式。池底原先被实心台面遮挡的判断来自实际网格与最终像素比较；采用实体开口，不通过提高亮度掩盖遮挡。媒体查询事件缺失仅在本次 Chromium 自动化中实际观察，渲染循环补偿另以受控不发送回调及移除补偿的反证验证，不推断所有浏览器都有同一问题。

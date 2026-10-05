@@ -7,7 +7,9 @@ export function createLeisureProps(root){
   const cream=new THREE.MeshStandardMaterial({color:0xdfd4b8,roughness:.57}),metal=brass();
   mesh(new THREE.CylinderGeometry(1,1,.16,128).scale(1.7,1,1.05),ink(),root,[0,-.87,0]);
   mesh(new THREE.CylinderGeometry(1,1,.025,128).scale(1.68,1,1.03),metal,root,[0,-.777,0]);
-  mesh(new THREE.CylinderGeometry(1,1,.035,128).scale(1.64,1,.99),new THREE.MeshStandardMaterial({color:0x6d7461,roughness:.85}),root,[0,-.747,0]);
+  const platform=new THREE.Shape();platform.absellipse(0,0,1.64,.99,0,Math.PI*2,false,0);
+  const well=new THREE.Path();well.moveTo(-1.05,-.35);well.lineTo(-1.05,.35);well.lineTo(.01,.35);well.lineTo(.01,-.35);well.closePath();platform.holes.push(well);
+  mesh(new THREE.ExtrudeGeometry(platform,{depth:.035,bevelEnabled:false,curveSegments:64}).rotateX(-Math.PI/2),new THREE.MeshStandardMaterial({color:0x6d7461,roughness:.85}),root,[0,-.7645,0]);
   const shape=new THREE.Shape();shape.absellipse(0,0,1.60,.95,0,Math.PI*2,false,0);
   const hole=new THREE.Path();hole.absellipse(0,0,1.13,.51,0,Math.PI*2,true,0);shape.holes.push(hole);
   const trackMaterial=new THREE.MeshStandardMaterial({color:0xa35f46,roughness:.93});
@@ -24,7 +26,7 @@ export function createLeisureProps(root){
   track.name='leisure-track';track.userData.activity='run';
   for(let i=0;i<3;i++)mesh(new THREE.BoxGeometry(.025,.007,.068),cream,root,[-.04+i*.06,-.71,.805]);
   const pool=new THREE.Group();pool.position.x=-.52;root.add(pool);
-  mesh(casing(1.10,.07,.76,.04),cream,pool,[0,-.81,0]);
+  const poolBase=mesh(casing(1.10,.07,.76,.04),cream,pool,[0,-.825,0]);poolBase.name='leisure-pool-base';
   for(const sign of [-1,1]){
     mesh(casing(.04,.16,.74,.01),cream,pool,[sign*.53,-.72,0]);
     mesh(casing(1.10,.16,.04,.015),cream,pool,[0,-.72,sign*.35]);
