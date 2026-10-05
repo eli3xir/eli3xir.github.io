@@ -11,18 +11,12 @@ import {loadRoomReflections,bindRoomReflection} from './room-reflections.js';
 import {roomFocusBounds} from './room-framing.js';
 import {loadRoomProfile,installRoomArtwork,roomPaletteX} from './room-artwork.js';
 import {installRoomNotes} from './room-notes.js';
+import {ROOM_VIEWS} from './room-views.js';
+export {ROOM_VIEWS} from './room-views.js';
 
 const ZONES = {
   lab: [4.7,7.1,.25,1.6,-1.2,.15], blog: [3,4.7,.25,1.4,-1.2,.15],
   radio: [1.9,3,.25,2.2,-1.2,.15], about: [.3,.9,1.35,1.89,-.4,.15], projects:[.7,2.05,1.9,2.55,-.4,.15], skin: [.55,1.85,.55,1.35,-.4,.15],
-};
-export const ROOM_VIEWS = {
-  lab: { camera:[1.85,.3,-2.8], target:[1.85,-.15,-.5] },
-  blog: { camera:[-.15,.3,-2.8], target:[-.15,-.2,-.5] },
-  radio: { camera:[-1.55,.4,-2.4], target:[-1.55,.05,-.45] },
-  about: { camera:[-3.38,.72,-2.4], target:[-3.38,.52,-.05] },
-  projects:{camera:[-2.75,.95,-2.65],target:[-2.75,.92,-.05]},
-  skin: { camera:[-2.8,.15,-2.2], target:[-2.8,-.05,-.06],actor:[-2.42,.65,-.25] },
 };
 let cached = null;
 

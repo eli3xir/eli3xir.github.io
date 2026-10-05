@@ -7,26 +7,12 @@ import { pageContent, enhanceContent } from './content.js';
 import { Router,scrollToAnchor } from './router.js';
 import {createTitleReveal} from './title-reveal.js';
 import { readingEntries, bindReading } from './reading.js';
-import {createMessageRelay} from './message-relay.js';
-import {bindProjectSignal} from './project-signal.js';
-import {createCompiler} from './compiler-expression.js';
-import {bindCompiler} from './project-compiler.js';
-import {createVision} from './vision.js';
-import {bindRadio} from './radio.js';
-import {bindSkin} from './skin.js';
-import {bindAbout} from './about.js';
-import {bindOcean} from './ocean.js';
-import {bindPartext} from './partext.js';
-import {bindMoon} from './moon.js';
-import {bindFluid} from './fluid.js';
-import {bindTrails} from './trails.js';
-import {bindGalaxy} from './galaxy.js';
-import {bindGlass} from './glass.js';
-import {bindBreakout} from './breakout.js';
-import {bindBullet} from './bullet.js';
+import {prepareRoute,preparePath} from './route-assets.js';
 import {visualQuality,watchVisualQuality} from './visual-quality.js';
 import {createRoomExplorer} from './room-explorer.js';
 
+// Keep the native document intact if a first-route module cannot be fetched.
+await preparePath(location.pathname);
 const original=document.cloneNode(true);
 const score=new Score();
 let world=null,router=null,route=null,contentEvents=null;
@@ -83,9 +69,10 @@ function stylesheet(href){
   document.head.insertBefore(link,document.querySelector('link[data-experience-style]'));
 }
 async function mount(doc,url){
+  const nextRoute=routeFor(url.pathname,doc),features=await prepareRoute(nextRoute);
   contentEvents?.abort();contentEvents=new AbortController();
-  route=routeFor(url.pathname,doc);route.readingEntries=readingEntries(doc,route);document.body.dataset.chapter=route.id;
-  if(route.id==='projects'){route.relay=createMessageRelay();route.compiler=createCompiler();route.vision=createVision();}
+  route=nextRoute;route.readingEntries=readingEntries(doc,route);document.body.dataset.chapter=route.id;
+  if(route.id==='projects'){route.relay=features.createMessageRelay();route.compiler=features.createCompiler();route.vision=features.createVision();}
   if(route.id==='radio')route.radioPlayback=()=>({active:score.audible,time:score.time,cycle:score.rhythm.cycleBar/32,levels:score.levels(),stems:score.stemEnabled,volume:score.volume});
   document.body.classList.toggle('article-view',route.article);document.body.classList.toggle('experiment-view',route.experiment);
   explorer.reset();tooltip.hidden=true;
@@ -99,20 +86,20 @@ async function mount(doc,url){
   else{skip.href='#content';const footer=document.createElement('footer');footer.className='studio-footer';footer.innerHTML='<span>eli3xir / A CABINET OF CURIOSITIES</span><span>© 2026 · KEEP WONDERING.</span>';view.append(footer);}
   world?.show(route);world?.applySkin(readSetting('room-skin','default'));score.scene(route.id);chrome.update(route);
   const reading=bindReading(section,route.readingEntries,{world,signal:contentEvents.signal,article:route.article});
-  if(route.relay)bindProjectSignal(section,doc,{world,score,relay:route.relay,signal:contentEvents.signal});
-  if(route.compiler)bindCompiler(section,main,{world,score,compiler:route.compiler,vision:route.vision,signal:contentEvents.signal});
-  if(route.id==='radio')bindRadio(section,main,{world,score,signal:contentEvents.signal,announce});
-  if(route.id==='skin')bindSkin(section,main,{world,score,signal:contentEvents.signal,announce});
-  if(route.id==='about')bindAbout(section,{world,score,signal:contentEvents.signal});
-  if(route.experimentId==='ocean')bindOcean(section,main,{world,score,signal:contentEvents.signal});
-  if(route.experimentId==='partext')bindPartext(section,main,{world,score,signal:contentEvents.signal});
-  if(route.experimentId==='moon')bindMoon(section,main,{world,score,signal:contentEvents.signal});
-  if(route.experimentId==='fluid')bindFluid(section,main,{world,score,signal:contentEvents.signal});
-  if(route.experimentId==='trails')bindTrails(section,main,{world,score,signal:contentEvents.signal});
-  if(route.experimentId==='galaxy')bindGalaxy(section,main,{world,score,signal:contentEvents.signal});
-  if(route.experimentId==='glass')bindGlass(section,main,{world,score,signal:contentEvents.signal});
-  if(route.experimentId==='breakout')bindBreakout(section,main,{world,score,signal:contentEvents.signal});
-  if(route.experimentId==='bullet')bindBullet(section,main,{world,score,signal:contentEvents.signal});
+  if(route.relay)features.bindProjectSignal(section,doc,{world,score,relay:route.relay,signal:contentEvents.signal});
+  if(route.compiler)features.bindCompiler(section,main,{world,score,compiler:route.compiler,vision:route.vision,signal:contentEvents.signal});
+  if(route.id==='radio')features.bindRadio(section,main,{world,score,signal:contentEvents.signal,announce});
+  if(route.id==='skin')features.bindSkin(section,main,{world,score,signal:contentEvents.signal,announce});
+  if(route.id==='about')features.bindAbout(section,{world,score,signal:contentEvents.signal});
+  if(route.experimentId==='ocean')features.bindOcean(section,main,{world,score,signal:contentEvents.signal});
+  if(route.experimentId==='partext')features.bindPartext(section,main,{world,score,signal:contentEvents.signal});
+  if(route.experimentId==='moon')features.bindMoon(section,main,{world,score,signal:contentEvents.signal});
+  if(route.experimentId==='fluid')features.bindFluid(section,main,{world,score,signal:contentEvents.signal});
+  if(route.experimentId==='trails')features.bindTrails(section,main,{world,score,signal:contentEvents.signal});
+  if(route.experimentId==='galaxy')features.bindGalaxy(section,main,{world,score,signal:contentEvents.signal});
+  if(route.experimentId==='glass')features.bindGlass(section,main,{world,score,signal:contentEvents.signal});
+  if(route.experimentId==='breakout')features.bindBreakout(section,main,{world,score,signal:contentEvents.signal});
+  if(route.experimentId==='bullet')features.bindBullet(section,main,{world,score,signal:contentEvents.signal});
   if(route.id==='lab'&&!route.experiment&&world){
     const trigger=document.createElement('button');trigger.type='button';trigger.className='explore-button reaction-trigger';
     trigger.textContent='试一次反应 ↗';trigger.setAttribute('aria-label','触发药瓶反应');
@@ -134,7 +121,7 @@ async function loadMath(main){
     if(main.isConnected&&window.renderMathInElement)window.renderMathInElement(main.querySelector('.post-content'),{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]});
   }catch{announce('公式渲染暂时未能加载，原始公式仍保留在文章中。');}
 }
-router=new Router({score,mount,announce,onIntent:url=>{
+router=new Router({score,mount,announce,prepare:url=>preparePath(url.pathname),onIntent:url=>{
   const destination=routeFor(url.pathname);
   curtain.querySelector('.portal-label').textContent=`${destination.number} / ${destination.label}`;
   curtain.querySelector('.portal-heading').textContent=({home:'灯还亮着。',lab:'有点乱，有点意思。',blog:'给思路，找张纸。',radio:'好奇心，调到下一拍。',projects:'念头，开始通电。',about:'代码之外，还有本人。',skin:'今天，换个色温。'})[destination.id];

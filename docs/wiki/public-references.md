@@ -195,3 +195,7 @@ Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐�
 2026-10-05 核对 Evan Wallace 的 [WebGL Water](https://www.madebyevan.com/webgl-water/) 对交互、高度场、折射与焦散的说明，并重读 NVIDIA [GPU Gems 水面章节](https://developer.nvidia.com/gpugems/gpugems/part-i-natural-effects/chapter-1-effective-water-simulation-physical-models) 的高度与表面方向关系。本站采用独立编写的固定步长阻尼高度场，直接取实际手掌输入；没有复制示例源码、纹理或视频。池底明暗来自高度曲率的受限近似，不具有参考示例的光线追踪或焦散求解范围。
 
 Three.js [DataTexture](https://threejs.org/docs/pages/DataTexture.html) 与本地固定版本用于核对 CPU 数据上传、过滤和恢复方式。池底原先被实心台面遮挡的判断来自实际网格与最终像素比较；采用实体开口，不通过提高亮度掩盖遮挡。媒体查询事件缺失仅在本次 Chromium 自动化中实际观察，渲染循环补偿另以受控不发送回调及移除补偿的反证验证，不推断所有浏览器都有同一问题。
+
+## 首次进入与按页准备
+
+2026-10-05 使用 MDN [PerformanceResourceTiming](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming) 的请求、响应、压缩字节和协议字段，分开检查 HTML、依赖网络、图形初始化与声音合成。参考 MDN [动态 import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import) 的条件加载、模块缓存与失败语义，把网站已有专属模型和控制器按路由载入；浏览器缓存模块命名空间，应用只保存工厂，不缓存每次创建的场景。性能判断来自本机受控网络与代理线上样本，不将 GitHub 响应等待全部归因于 JavaScript，也不将模拟结果当作手机性能。

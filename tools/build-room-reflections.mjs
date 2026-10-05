@@ -4,7 +4,7 @@ import {gzipSync} from 'node:zlib';
 import {startServer,launchBrowser,ready,settle,observe} from './browser-support.mjs';
 import {encodeReflections} from './reflection-encoding.mjs';
 const sha=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
-const inputs=['assets/room/room.glb','assets/room/lightmaps/manifest.json','assets/room/lightmaps.bin','assets/profile/github-avatar.png','assets/profile/manifest.json','js/world/room-lighting.js','js/world/room-artwork.js','js/world/room-print.js','js/world/room.js','js/world/room-notes.js','js/world/room-projects.js','js/experience/domain.js','projects/index.html','tools/build-room-reflections.mjs','tools/reflection-encoding.mjs'];
+const inputs=['assets/room/room.glb','assets/room/lightmaps/manifest.json','assets/room/lightmaps.bin','assets/profile/github-avatar.png','assets/profile/manifest.json','js/world/room-lighting.js','js/world/room-artwork.js','js/world/room-print.js','js/world/room.js','js/world/room-views.js','js/world/room-notes.js','js/world/room-projects.js','js/experience/domain.js','projects/index.html','tools/build-room-reflections.mjs','tools/reflection-encoding.mjs'];
 for(const path of inputs)if(/\.(?:js|mjs|json|html)$/.test(path)&&fs.readFileSync(path).includes(13))throw Error(`${path}: use repository LF line endings before capture`);
 const server=await startServer(),browser=await launchBrowser();
 const output=process.env.REFLECTION_OUTPUT||'assets/room/reflections';fs.mkdirSync(output,{recursive:true});

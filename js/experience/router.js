@@ -9,9 +9,9 @@ export function scrollToAnchor(hash){
 }
 
 export class Router {
-  constructor({mount,transition,score,announce,onIntent=()=>{}}) {
+  constructor({mount,transition,score,announce,onIntent=()=>{},prepare=async()=>{}}) {
     this.mount=mount;this.transition=transition;this.score=score;this.announce=announce;
-    this.onIntent=onIntent;
+    this.onIntent=onIntent;this.prepare=prepare;
     this.cache=new Map();this.busy=false;this.pending=null;this.animation=null;
     this.currentURL=new URL(location.href);
     addEventListener('click',e=>this.click(e));
@@ -56,6 +56,17 @@ export class Router {
     });
   }
 
+  async loadReady(url){
+    let timer;
+    try{
+      const [doc]=await Promise.race([
+        Promise.all([this.load(url),this.prepare(url)]),
+        new Promise((resolve,reject)=>{timer=setTimeout(()=>reject(new Error('页面场景加载超时')),12000);}),
+      ]);
+      return doc;
+    }finally{clearTimeout(timer);}
+  }
+
   async navigate(href,{history:push=true}={}) {
     const url=new URL(href,location.href);
     if(this.busy){this.pending={href:url.href,options:{history:push}};return;}
@@ -64,7 +75,7 @@ export class Router {
     try{
       this.onIntent(url);
       // Attach both handlers immediately: a failed fetch can precede the cover animation.
-      const loading=this.load(url).then(doc=>({doc}),error=>({error}));
+      const loading=this.loadReady(url).then(doc=>({doc}),error=>({error}));
       const delay=nextBeatDelay(this.score.time);
       if(this.score.audible)await new Promise(resolve=>setTimeout(resolve,delay*1000));
       this.score.cue('reveal');

@@ -99,12 +99,13 @@
     "js/world/room-lighting.js": "03397803782232574f72a2ab44cc114ad3a6391ff1f9f1a00cf153e6eb123a2f",
     "js/world/room-artwork.js": "73188672cdb92b0e8758ff04919ea2bf0b447dcb0e224c058debf62ed9a93e10",
     "js/world/room-print.js": "96e93b7af4fc23c90294be7d529adc514fd08d38d1c05b3b5f67d2c16fe9672f",
-    "js/world/room.js": "dcdb070c382ddb14014b9f93a508f08b08c209a50edd002c45d5ba120a6def56",
+    "js/world/room.js": "208fb13c5ce569e494c503a5051a9cdc8b39d556ce4392ae2543a19e5276a17a",
+    "js/world/room-views.js": "a672df3c63cd4448c3adf57c4371d816606519f46cd4668289c54827c3662d95",
     "js/world/room-notes.js": "e7fd313dce5befdb0c6d40588515567da2c5c9532125940cf610a8467eeee0ef",
     "js/world/room-projects.js": "5f5cbf47500022043fb34813179df977f63fa7cc36bca7d9fb83448b3420dc47",
     "js/experience/domain.js": "e3ea16087a685df5a5198c01bf391832177467d79505b7b694f4c8d5a37575f0",
     "projects/index.html": "01f6b8269c1e7ec22e03d04677dc706daaa668e53f0f2a21f56715c5d7395966",
-    "tools/build-room-reflections.mjs": "031e39f5de205d06c47c9b55dfb545397e80cb781dec4b6d052394c547073f9d",
+    "tools/build-room-reflections.mjs": "90f352d7b72e03321afc4b1b39cd54d5a3d764d3f437755a257c8e0ce2540ebb",
     "tools/reflection-encoding.mjs": "287066a599d60c3d798e5939b74ae3061df9052c75b3ddcb394ceb09c89b016f"
   },
   "notes": "One static room probe per palette; excludes the character and particles. Baked diffuse is not added twice. No parallax correction or live-object reflection."

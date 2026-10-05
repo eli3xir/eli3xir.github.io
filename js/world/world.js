@@ -6,7 +6,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { createModel } from './models.js';
-import { createRoom, ROOM_VIEWS } from './room.js';
+import { ROOM_VIEWS } from './room-views.js';
 import { createParticles } from './particles.js';
 import { createCharacter } from './character.js';
 import { disposeGroup } from './materials.js';
@@ -149,7 +149,7 @@ export class World {
   show(route) {
     if(this.model){this.model.dispose?.();this.scene.remove(this.model.root);if(!this.model.persistent)disposeGroup(this.model.root);}
     this.route=route;this.focused=null;this.focusJourney=null;this.hovered=null;this.scroll=0;
-    this.model=route.id==='home'?createRoom((...args)=>{if(this.route?.id==='home')this.status(...args);},this.renderer):createModel(route,this.renderer);
+    this.model=createModel(route,this.renderer,(...args)=>{if(this.route?.id==='home')this.status(...args);});
     this.renderer.localClippingEnabled=Boolean(this.model.localClipping);
     this.model.focus?.(null);
     this.scene.add(this.model.root);
