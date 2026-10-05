@@ -25,6 +25,7 @@ for(const image of [...restored.images,...recovered.flatMap(article=>article.ima
 try{execFileSync(process.execPath,['tools/pack-room-lightmaps.mjs','--check'],{cwd:root,stdio:'pipe'});}catch(error){failures.push(`Lightmap bundle: ${error.stderr||error.message}`);}
 try{execFileSync(process.execPath,['tools/validate-room-reflections.mjs'],{cwd:root,stdio:'pipe'});}catch(error){failures.push(`Room reflections: ${error.stderr||error.message}`);}
 try{execFileSync(process.execPath,['tools/validate-room-artwork.mjs'],{cwd:root,stdio:'pipe'});}catch(error){failures.push(`Room artwork: ${error.stderr||error.message}`);}
+try{execFileSync(process.execPath,['tools/validate-vision.mjs'],{cwd:root,stdio:'pipe'});}catch(error){failures.push(`Vision assets: ${error.stderr||error.message}`);}
 function files(dir,excluded=new Set(['.git','node_modules','temp-docs','.playwright-cli'])){
   return fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>excluded.has(entry.name)?[]:entry.isDirectory()?files(path.join(dir,entry.name),excluded):[path.join(dir,entry.name)]);
 }

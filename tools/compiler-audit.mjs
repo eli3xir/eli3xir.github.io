@@ -48,7 +48,7 @@ try{
   await page.evaluate(()=>{const m=window.studio.world.model.syntax;window.compilerOld=window.studio.route.compiler;window.releases={atlas:0,rods:0};m.atlas.addEventListener('dispose',()=>window.releases.atlas++);m.rods.geometry.addEventListener('dispose',()=>window.releases.rods++);});
   await page.evaluate(()=>window.studio.router.navigate('/blog/'));await settle(page);assert.deepEqual(await page.evaluate(()=>window.releases),{atlas:1,rods:1});
   await page.evaluate(()=>window.studio.router.navigate('/projects/'));await settle(page);assert.equal(await page.evaluate(()=>window.studio.route.compiler.state.serial),0);
-  await page.locator('.compiler-entry').click();await page.waitForTimeout(100);assert.equal(await source.evaluate(el=>document.activeElement===el),true);assert.equal(await page.locator('[data-instrument=compiler]').getAttribute('aria-pressed'),'true');
+  await page.locator('#pascal-s-compiler .compiler-entry').click();await page.waitForTimeout(100);assert.equal(await source.evaluate(el=>document.activeElement===el),true);assert.equal(await page.locator('[data-instrument=compiler]').getAttribute('aria-pressed'),'true');
   await source.fill('x := 7;');await source.press('Enter');assert.equal(await page.evaluate(()=>window.studio.route.compiler.state.phase),'done');
   assert.deepEqual(log.errors,[]);assert.deepEqual(log.failed,[]);report.cases.push({name:'input, actual tree, errors, clock suspension, continuous switching, stable resources and cleanup',viewport,grouped,tree,motion,memory});await context.close();console.log(`PASS compiler behavior ${viewport.width}`);
  }

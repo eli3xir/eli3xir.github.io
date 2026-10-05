@@ -8,7 +8,7 @@ export const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'
 export const output=path.join(root,'tools/test-results');
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript','.mjs':'text/javascript',
   '.css':'text/css','.json':'application/json','.png':'image/png','.jpg':'image/jpeg',
-  '.svg':'image/svg+xml','.glb':'model/gltf-binary','.ttf':'font/ttf','.woff2':'font/woff2'};
+  '.svg':'image/svg+xml','.glb':'model/gltf-binary','.ttf':'font/ttf','.woff2':'font/woff2','.wasm':'application/wasm'};
 
 export async function startServer(){
   const server=http.createServer((request,response)=>{

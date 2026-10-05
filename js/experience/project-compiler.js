@@ -1,11 +1,12 @@
 import {BPM} from '../audio/composition.js';
 import {nextBeatDelay} from './domain.js';
 import {COMPILER_EXAMPLE} from './compiler-expression.js';
+import {bindVision} from './project-vision.js';
 
-export function bindCompiler(section,main,{world,score,compiler,signal}){
+export function bindCompiler(section,main,{world,score,compiler,vision,signal}){
   const copy=section.querySelector('.hero-copy'),relayPanel=copy.querySelector('.signal-panel');
   const tools=document.createElement('div');tools.className='project-workbench';
-  tools.innerHTML='<div class="project-instruments" role="group" aria-label="选择项目工作台"><button type="button" data-instrument="signal" aria-pressed="true">01 / 消息回路</button><button type="button" data-instrument="compiler" aria-pressed="false">03 / 语法工作台</button></div><div class="project-panels"></div>';
+  tools.innerHTML='<div class="project-instruments" role="group" aria-label="选择项目工作台"><button type="button" data-instrument="signal" aria-pressed="true">01 / 消息回路</button><button type="button" data-instrument="vision" aria-pressed="false">02 / 视觉工作台</button><button type="button" data-instrument="compiler" aria-pressed="false">03 / 语法工作台</button></div><div class="project-panels"></div>';
   copy.append(tools);const panels=tools.querySelector('.project-panels');panels.append(relayPanel);
   const panel=document.createElement('div');panel.className='compiler-panel';panel.hidden=true;panel.inert=true;
   panel.innerHTML='<p class="signal-caption">Pascal-S / 整数表达式演示</p><form class="compiler-form"><label for="compiler-source">把一个念头写成算式</label><div><input id="compiler-source" name="source" autocomplete="off" spellcheck="false" maxlength="64" aria-describedby="compiler-help compiler-status"><button type="submit">运行 ↗</button></div></form><p id="compiler-help" class="compiler-help">变量 := 整数算式;　支持 + − * 和括号。<br>浏览器内解析与求值；原项目使用 lex / yacc / LLVM。</p><div class="compiler-examples" role="group" aria-label="表达式示例"><button type="button" data-source="x := 2 + 3 * 4;">先乘后加</button><button type="button" data-source="x := (2 + 3) * 4;">加一对括号</button></div><p id="compiler-status" role="status" aria-live="polite"></p><div class="compiler-trace" aria-label="本次求值顺序"></div><div class="signal-links"><a class="compiler-repository" target="_blank" rel="noopener">原项目源码 ↗</a><a href="#pascal-s-compiler">项目介绍 ↓</a></div>';
@@ -13,10 +14,12 @@ export function bindCompiler(section,main,{world,score,compiler,signal}){
   const input=panel.querySelector('input'),run=panel.querySelector('[type="submit"]'),status=panel.querySelector('#compiler-status'),trace=panel.querySelector('.compiler-trace');input.value=COMPILER_EXAMPLE;
   const timing=()=>({now:performance.now()/1000,delay:score.audible&&!world?.reduced.matches?nextBeatDelay(score.time,1):0,reduced:!world||world.reduced.matches});
   let instrument='signal',lastSerial=0,lastPhase='',lastStep=-1;
+  const visionView=bindVision(main,{world,score,vision,signal,section,select:()=>select('vision')});panels.append(visionView.panel);
   const select=id=>{
     if(id===instrument)return;instrument=id;const options=timing();
     for(const button of tools.querySelectorAll('[data-instrument]'))button.setAttribute('aria-pressed',String(button.dataset.instrument===id));
-    relayPanel.hidden=relayPanel.inert=id!=='signal';panel.hidden=panel.inert=id!=='compiler';
+    relayPanel.hidden=relayPanel.inert=id!=='signal';panel.hidden=panel.inert=id!=='compiler';visionView.panel.hidden=visionView.panel.inert=id!=='vision';
+    if(id==='vision')visionView.activate();
     world?.model.setInstrument(id,{...options,duration:120/BPM});if(world)world.moving=1;score.cue('hover',options.delay);
   };
   tools.querySelectorAll('[data-instrument]').forEach(button=>button.addEventListener('click',()=>select(button.dataset.instrument),{signal}));

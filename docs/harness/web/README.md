@@ -140,3 +140,9 @@
 `npm run test:room-projects` 共三组，支持 `BASE_URL`。桌面鼠标与窄屏模拟触控逐一命中三张真实便签，检查近景名称、选中状态和进入链接，再实际进入原项目卡片，核对焦点、标题可见及仓库地址；另检查三处锚点的直接访问。独立读取原 GLB 的十张纸面，比较 position、uv、uv1、原变换和光照通道，确认单一 1024×1024 图集、与缩微房间共享的几何/纹理及返回后的身份和版本。关闭提示不残留；使用明确的边缘坐标诊断长提示的边界，再用真实鼠标移动到控件验证清除。输出 `room-projects-audit.json` 与两尺寸的项目近景截图。
 
 探索专项的项目改选路径还逐帧检查角色几何与相机距真实天花板的余量，并沿相机到角色灯点的射线排查不透明遮挡。此检查来自录像中发现的穿顶失败；投影在视口内不等于角色没有被房间遮住。最后两组菜单检查使用项目近景中的完整按钮面板。原始失败录像、修正录像及抽取帧留在临时证据，浏览器录像没有音轨，不能由时间标记推断声画同步精度。
+
+`npm run test:vision` 检查两视口的真实 Worker 推理、与独立 Python 参考的所有候选/置信值/五点比较、主线程响应、实际手柄接触、同一照片 UV 与标记映射、停止和重新运行、空白/本地文件、三种装置快速改选、重复资源与跨页释放；另检查七种尺寸和无 WebGL 的真实推理。`test:vision-failures` 分别注入权重 404、单字节损坏、挂起下载后取消、显式旧 Worker 事件、迟到示例与错误照片，要求真实重试成功。预期网络失败与未预期页面错误分开记录。
+
+`npm run test:vision-timing` 另用 320×512、512×320 的原图左上裁切核对非正方形运算，并实际启动、暂停音频，验证推理后按整拍开始及独立界面时钟完成。三份报告分别为 `vision-audit.json`、`vision-failure-audit.json`、`vision-timing-audit.json`，均支持 `BASE_URL`；GPU 工作顺序运行。坐标阶段帧使用真实 controller 时钟推进，不手改状态冒充完整用户流程；连续录像另保存以检查中间动作。
+
+`npm run validate:vision` 检查全部导出张量、运行库、示例文件和来源摘要，已加入 `validate`。模型重导出用 `python tools/pack-vision-models.py --source 固定原仓库 --runtime TFJS的node_modules --sample 原astronaut.png --license TFJS上游LICENSE`，需 numpy/h5py。独立参考用 `python tools/reference-vision.py --source 固定原仓库`，需另有 opencv-python；直接读取原 H5 和未经修改的原 Python 后处理，不依赖导出模型或浏览器算法。参考包含正方形及横竖裁切，按唯一几何对应检查全部数值（最大绝对容差 0.005），不能以置信分数极接近时的行交换判为完全错误的框，也不能省略一对一数量检查。

@@ -1,0 +1,597 @@
+{
+  "version": 1,
+  "source": {
+    "repository": "https://gitee.com/buptsg2019/flask-face-recognition-api",
+    "commit": "630512dacf9715d4bb5a798814bf6282b34a5417",
+    "license": "MIT",
+    "licenseFile": "/assets/vision/LICENSE-models.txt"
+  },
+  "weights": {
+    "file": "/assets/vision/weights.bin",
+    "bytes": 1983400,
+    "sha256": "c1c7b81955d611c31d03f03769ae23dd8cc15fabf11aea92e0f9df863b640559",
+    "format": "concatenated little-endian float32, no quantization"
+  },
+  "models": {
+    "pnet": {
+      "sourceFile": "model_data/pnet.h5",
+      "sourceSha256": "71038ab241de7409985db8eed0feb9ebb71b162fddb1da68ddbb617fefebf165",
+      "weights": [
+        {
+          "name": "PReLU1/alpha",
+          "shape": [
+            1,
+            1,
+            10
+          ],
+          "offset": 0,
+          "length": 10,
+          "sha256": "45adbefa01108f1850f388347de1ee3b006f48ed52424aae6cf7525af777b4de"
+        },
+        {
+          "name": "PReLU2/alpha",
+          "shape": [
+            1,
+            1,
+            16
+          ],
+          "offset": 40,
+          "length": 16,
+          "sha256": "6540801da4f978193418df14aed56198a2ed4f2d5115dedac9834b2aa1dd51d7"
+        },
+        {
+          "name": "PReLU3/alpha",
+          "shape": [
+            1,
+            1,
+            32
+          ],
+          "offset": 104,
+          "length": 32,
+          "sha256": "6465b2b6d0df8df6f4b885dad47d6d3bd496dfc1efa927ff114113629b6f9b79"
+        },
+        {
+          "name": "conv1/bias",
+          "shape": [
+            10
+          ],
+          "offset": 232,
+          "length": 10,
+          "sha256": "83fd809228678b048d14590e70d3b8fe0877d60dfab0751e346b169a14820d69"
+        },
+        {
+          "name": "conv1/kernel",
+          "shape": [
+            3,
+            3,
+            3,
+            10
+          ],
+          "offset": 272,
+          "length": 270,
+          "sha256": "238b9a3468a4250e7cd71e184b5b940847fc93dd2a0e71f84bfa094edb991a0f"
+        },
+        {
+          "name": "conv2/bias",
+          "shape": [
+            16
+          ],
+          "offset": 1352,
+          "length": 16,
+          "sha256": "72bd983207b4b5c5d2add45b3198bfd674c501b533700df4ecbe89c79432fa02"
+        },
+        {
+          "name": "conv2/kernel",
+          "shape": [
+            3,
+            3,
+            10,
+            16
+          ],
+          "offset": 1416,
+          "length": 1440,
+          "sha256": "9854f14d50afb4c469187fd2833f39cfc79a0a60cb91b8e96c3f80eb20e698c3"
+        },
+        {
+          "name": "conv3/bias",
+          "shape": [
+            32
+          ],
+          "offset": 7176,
+          "length": 32,
+          "sha256": "dd636cec55f59b368fa1ce376726222be7c375c801f934970f2c3fe2b6e281ea"
+        },
+        {
+          "name": "conv3/kernel",
+          "shape": [
+            3,
+            3,
+            16,
+            32
+          ],
+          "offset": 7304,
+          "length": 4608,
+          "sha256": "5c81bf6e5b4d06517f884758dd84632073763256813d03e3224463450fddedfb"
+        },
+        {
+          "name": "conv4-1/bias",
+          "shape": [
+            2
+          ],
+          "offset": 25736,
+          "length": 2,
+          "sha256": "575f7af6d2ed0b636450300dece77fc6c7ec66d9ff134d29f7aaf385f96d796e"
+        },
+        {
+          "name": "conv4-1/kernel",
+          "shape": [
+            1,
+            1,
+            32,
+            2
+          ],
+          "offset": 25744,
+          "length": 64,
+          "sha256": "12d8f4fcdf413cc841df0509b0c11424878066f71bbec425cfd31ab44e73e995"
+        },
+        {
+          "name": "conv4-2/bias",
+          "shape": [
+            4
+          ],
+          "offset": 26000,
+          "length": 4,
+          "sha256": "7376962a9927027d4d84ae4cacba02846a2736bb982bd6b1f9897b13b2f4faee"
+        },
+        {
+          "name": "conv4-2/kernel",
+          "shape": [
+            1,
+            1,
+            32,
+            4
+          ],
+          "offset": 26016,
+          "length": 128,
+          "sha256": "421f913ca8b156938c17ca48eadce2f78ddcba08906c6528656f0ee5b7270dbe"
+        }
+      ]
+    },
+    "rnet": {
+      "sourceFile": "model_data/rnet.h5",
+      "sourceSha256": "1d0b507b9e75e0dc075620e7e452527dd519f2e8cf67142fb50177169af499d8",
+      "weights": [
+        {
+          "name": "conv1/bias",
+          "shape": [
+            28
+          ],
+          "offset": 26528,
+          "length": 28,
+          "sha256": "f7bd9286c7b3aa48d0c3be6dc2077f723e7bc40eea5f938fbdaf9cff9edf59b7"
+        },
+        {
+          "name": "conv1/kernel",
+          "shape": [
+            3,
+            3,
+            3,
+            28
+          ],
+          "offset": 26640,
+          "length": 756,
+          "sha256": "278f6338e9972fca28e9be04145702fb49f16df14858296d36cae8aae3a55c3b"
+        },
+        {
+          "name": "conv2/bias",
+          "shape": [
+            48
+          ],
+          "offset": 29664,
+          "length": 48,
+          "sha256": "04b80fb5aae9d77c0d90aa01d5bc9af98ba0301fe4649a30974d9e5363740e3c"
+        },
+        {
+          "name": "conv2/kernel",
+          "shape": [
+            3,
+            3,
+            28,
+            48
+          ],
+          "offset": 29856,
+          "length": 12096,
+          "sha256": "baaabe482e88424c830c5a43ce538e2af544e6692f7aad24d7bc9fb9fb4d206d"
+        },
+        {
+          "name": "conv3/bias",
+          "shape": [
+            64
+          ],
+          "offset": 78240,
+          "length": 64,
+          "sha256": "b3e6770cbe228a16a5fe03a333963927e75d782f8e584f8a9c1da5e6885b1bcd"
+        },
+        {
+          "name": "conv3/kernel",
+          "shape": [
+            2,
+            2,
+            48,
+            64
+          ],
+          "offset": 78496,
+          "length": 12288,
+          "sha256": "665dabbd4da243ef50dcefcefa76b93b142660f7efc884df2b76112fca501af9"
+        },
+        {
+          "name": "conv4/bias",
+          "shape": [
+            128
+          ],
+          "offset": 127648,
+          "length": 128,
+          "sha256": "0cf842da76d58e25aa0f9a2168244a455531da1c53e2f0e800c161e70e1ca2d9"
+        },
+        {
+          "name": "conv4/kernel",
+          "shape": [
+            576,
+            128
+          ],
+          "offset": 128160,
+          "length": 73728,
+          "sha256": "602a550cc920b785fb8964de78e296cff0f6e2b141af3def68e0b9f2d93a83d2"
+        },
+        {
+          "name": "conv5-1/bias",
+          "shape": [
+            2
+          ],
+          "offset": 423072,
+          "length": 2,
+          "sha256": "b555be378329f96cc72396ded6bfe102813c5c4242bcf91a78fab74f8f5d8b0c"
+        },
+        {
+          "name": "conv5-1/kernel",
+          "shape": [
+            128,
+            2
+          ],
+          "offset": 423080,
+          "length": 256,
+          "sha256": "eace71c331459216fc427a8df0f98a94f4262fa6be93ec571e87db2c095cae1a"
+        },
+        {
+          "name": "conv5-2/bias",
+          "shape": [
+            4
+          ],
+          "offset": 424104,
+          "length": 4,
+          "sha256": "e582b351d83a667780b63643c3ec38759d58440f31ef09a09d5c35b00e6fe5d3"
+        },
+        {
+          "name": "conv5-2/kernel",
+          "shape": [
+            128,
+            4
+          ],
+          "offset": 424120,
+          "length": 512,
+          "sha256": "7e2915debff805c0461b7037525f1ddb718a2d3ceb037ee14df77e18e4aa1c08"
+        },
+        {
+          "name": "prelu1/alpha",
+          "shape": [
+            1,
+            1,
+            28
+          ],
+          "offset": 426168,
+          "length": 28,
+          "sha256": "42b0c54781fc7361782aa3620f59e670bf175a114894abf5628493e62bb7a560"
+        },
+        {
+          "name": "prelu2/alpha",
+          "shape": [
+            1,
+            1,
+            48
+          ],
+          "offset": 426280,
+          "length": 48,
+          "sha256": "0aa91929316a7cd09db9b086762c6fec8779df30cadb728993a789854fb6e1d0"
+        },
+        {
+          "name": "prelu3/alpha",
+          "shape": [
+            1,
+            1,
+            64
+          ],
+          "offset": 426472,
+          "length": 64,
+          "sha256": "a5b79c5059bed19d59e139c15df2e39db7eed4310784f962308f5d3937e9dfbe"
+        },
+        {
+          "name": "prelu4/alpha",
+          "shape": [
+            128
+          ],
+          "offset": 426728,
+          "length": 128,
+          "sha256": "35584fab2394cae7b0330d536a87f36009eb9fb68c1bd422d8eafcfc11cf6cf4"
+        }
+      ]
+    },
+    "onet": {
+      "sourceFile": "model_data/onet.h5",
+      "sourceSha256": "e93c04667523725ee52b84b4c6af1e314b14346428025b886fd0f27f5c444d7b",
+      "weights": [
+        {
+          "name": "conv1/bias",
+          "shape": [
+            32
+          ],
+          "offset": 427240,
+          "length": 32,
+          "sha256": "ab2cb50b8ab09e34e4f8be6c0d05837f344a136bdab7b6870e4b4c931761ff32"
+        },
+        {
+          "name": "conv1/kernel",
+          "shape": [
+            3,
+            3,
+            3,
+            32
+          ],
+          "offset": 427368,
+          "length": 864,
+          "sha256": "9cc33b852715c706e18c4325cfd7d7fdb8c5fc3bf53bbbfe35711e630d91919b"
+        },
+        {
+          "name": "conv2/bias",
+          "shape": [
+            64
+          ],
+          "offset": 430824,
+          "length": 64,
+          "sha256": "b15ef643de6dffadf107cc74a001d59192a6d01e54faae1c8576755c8806970a"
+        },
+        {
+          "name": "conv2/kernel",
+          "shape": [
+            3,
+            3,
+            32,
+            64
+          ],
+          "offset": 431080,
+          "length": 18432,
+          "sha256": "043e38a28c82571bb87f8bc7fce307502b626f9f634341248d7ebfb8796ea5c4"
+        },
+        {
+          "name": "conv3/bias",
+          "shape": [
+            64
+          ],
+          "offset": 504808,
+          "length": 64,
+          "sha256": "bcc269e5ac7a34fd2929afdb9e0fdca43b47b5352657aadb54e6b16748f2770d"
+        },
+        {
+          "name": "conv3/kernel",
+          "shape": [
+            3,
+            3,
+            64,
+            64
+          ],
+          "offset": 505064,
+          "length": 36864,
+          "sha256": "175605cde9fc5a1260073545e034db7f8ecf9ed8a21b5cb14739837d5fbd39d0"
+        },
+        {
+          "name": "conv4/bias",
+          "shape": [
+            128
+          ],
+          "offset": 652520,
+          "length": 128,
+          "sha256": "428c93386721bda360dae5617ffcdb4339f59e588c8b961ebbbc26484b699040"
+        },
+        {
+          "name": "conv4/kernel",
+          "shape": [
+            2,
+            2,
+            64,
+            128
+          ],
+          "offset": 653032,
+          "length": 32768,
+          "sha256": "640af0ef010b5c04846fde74b0d1808b514000f7fd86d854d413e8809a3b8607"
+        },
+        {
+          "name": "conv5/bias",
+          "shape": [
+            256
+          ],
+          "offset": 784104,
+          "length": 256,
+          "sha256": "f0036a201d80624aac96d63f20c2422bffc1fce7eebf31e840fed6e175796b3e"
+        },
+        {
+          "name": "conv5/kernel",
+          "shape": [
+            1152,
+            256
+          ],
+          "offset": 785128,
+          "length": 294912,
+          "sha256": "a34d48107ea0c453d34c10748b37802c8fdf46ea7922637f03b956dc3b9cbb85"
+        },
+        {
+          "name": "conv6-1/bias",
+          "shape": [
+            2
+          ],
+          "offset": 1964776,
+          "length": 2,
+          "sha256": "25661428eefab11c70dd8954027d414e4186a028da9da931c9e5c390a31aab40"
+        },
+        {
+          "name": "conv6-1/kernel",
+          "shape": [
+            256,
+            2
+          ],
+          "offset": 1964784,
+          "length": 512,
+          "sha256": "b42e8b4fd838d9ffa17d687c0e4f1974310b337ff3819a84b3cb293bf9173a76"
+        },
+        {
+          "name": "conv6-2/bias",
+          "shape": [
+            4
+          ],
+          "offset": 1966832,
+          "length": 4,
+          "sha256": "425d0d73964abbf08e19665d7a99b42df20b26e9b7a2a67d7328bc24d00dcf4a"
+        },
+        {
+          "name": "conv6-2/kernel",
+          "shape": [
+            256,
+            4
+          ],
+          "offset": 1966848,
+          "length": 1024,
+          "sha256": "dbcf6d87d46e2e7edb9e9443e1af2303645dd6304e00b3fa40adb6bc56147739"
+        },
+        {
+          "name": "conv6-3/bias",
+          "shape": [
+            10
+          ],
+          "offset": 1970944,
+          "length": 10,
+          "sha256": "d0f2173da9dc0ab3e53074c4ff34f55d00437584e2b93f102e13f6c87e10acb8"
+        },
+        {
+          "name": "conv6-3/kernel",
+          "shape": [
+            256,
+            10
+          ],
+          "offset": 1970984,
+          "length": 2560,
+          "sha256": "a2d10315612a6cc1e821d061553b8f75501b96d11051dd1299cf695103a671e5"
+        },
+        {
+          "name": "prelu1/alpha",
+          "shape": [
+            1,
+            1,
+            32
+          ],
+          "offset": 1981224,
+          "length": 32,
+          "sha256": "086c5ebd4e3fe6a10dcc1eb37306c47c9757fe4136ca45e1c86e04024e22c69f"
+        },
+        {
+          "name": "prelu2/alpha",
+          "shape": [
+            1,
+            1,
+            64
+          ],
+          "offset": 1981352,
+          "length": 64,
+          "sha256": "f845e959e39af5a2cd61bc278436e0403cb91f51c04ea9616fa25fdb3b512cd7"
+        },
+        {
+          "name": "prelu3/alpha",
+          "shape": [
+            1,
+            1,
+            64
+          ],
+          "offset": 1981608,
+          "length": 64,
+          "sha256": "3c2ce013c59bb6135d7b86acdf67c125c77ad783df8e232ed08e1b13699c6e5a"
+        },
+        {
+          "name": "prelu4/alpha",
+          "shape": [
+            1,
+            1,
+            128
+          ],
+          "offset": 1981864,
+          "length": 128,
+          "sha256": "b1c63881685c7d1acdb658204fa332383a5ac0b21790e88bed9cb30c4a68496c"
+        },
+        {
+          "name": "prelu5/alpha",
+          "shape": [
+            256
+          ],
+          "offset": 1982376,
+          "length": 256,
+          "sha256": "c56085cb34fc1985ff29d5fec0ac7ca6f8ab53090a735eec2c68295bf4753e1f"
+        }
+      ]
+    }
+  },
+  "runtime": [
+    {
+      "file": "/vendor/tfjs/tf-core.min.js",
+      "bytes": 294062,
+      "sha256": "0924438788ff7da57b14d0f7c45a05d81611a5a4b52653da6d065e86d348757c",
+      "package": "@tensorflow/tfjs-core",
+      "version": "4.22.0"
+    },
+    {
+      "file": "/vendor/tfjs/tf-backend-wasm.min.js",
+      "bytes": 149861,
+      "sha256": "691bbec0ef8b5a7f17f212e9c5d85832030f90d030b46e99acb4dea1fb16f009",
+      "package": "@tensorflow/tfjs-backend-wasm",
+      "version": "4.22.0"
+    },
+    {
+      "file": "/vendor/tfjs/tfjs-backend-wasm.wasm",
+      "bytes": 311123,
+      "sha256": "70a5d516060464e5269f01c74bac1772d6b8ab6cb612acf16b5cdaf61f78d892",
+      "package": "@tensorflow/tfjs-backend-wasm",
+      "version": "4.22.0"
+    },
+    {
+      "file": "/vendor/tfjs/tfjs-backend-wasm-simd.wasm",
+      "bytes": 424594,
+      "sha256": "77ebb28a6d34f371dbbf2086b7f2de8994acd8ea5a3cf1fa24d2c26c840cac7b",
+      "package": "@tensorflow/tfjs-backend-wasm",
+      "version": "4.22.0"
+    },
+    {
+      "file": "/vendor/tfjs/tfjs-backend-wasm-threaded-simd.wasm",
+      "bytes": 435643,
+      "sha256": "c052228d4bef185c27bbe59a9e029570c78bbb9f08b3cb46b597851650373de2",
+      "package": "@tensorflow/tfjs-backend-wasm",
+      "version": "4.22.0"
+    }
+  ],
+  "sample": {
+    "file": "/assets/vision/astronaut.png",
+    "bytes": 791555,
+    "sha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+    "width": 512,
+    "height": 512,
+    "credit": "NASA / Eileen Collins",
+    "source": "https://www.flickr.com/photos/nasacommons/16504233985/",
+    "archive": "https://raw.githubusercontent.com/scikit-image/scikit-image/v0.25.2/skimage/data/astronaut.png",
+    "license": "Public domain; NASA on The Commons / scikit-image data attribution"
+  },
+  "scope": "MTCNN face boxes and five landmarks from the original detector weights; no FaceNet identity matching or original personal dataset."
+}

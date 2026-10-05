@@ -4,8 +4,9 @@ import {terminal,display} from './signal-hardware.js';
 import {casing} from './hardware.js';
 import {batchStatic} from './batch.js';
 import {createCompilerBench} from './compiler-bench.js';
+import {createVisionBench} from './vision-bench.js';
 
-export function createSignalBench(relay,compiler){
+export function createSignalBench(relay,compiler,vision){
   const root=new THREE.Group(),bench=new THREE.Group();root.add(bench);bench.rotation.set(.24,-.23,0);
   const metal=brass(),dark=ink();
   const finish=new THREE.MeshPhysicalMaterial({color:0x23372e,metalness:.45,roughness:.35,clearcoat:.5});
@@ -46,7 +47,10 @@ export function createSignalBench(relay,compiler){
   batchStatic(circuit,moving);batchStatic(cage);
   const staticCircuit=new Set();circuit.traverse(obj=>staticCircuit.add(obj));batchStatic(bench,staticCircuit);
   const syntax=createCompilerBench(compiler);bench.add(syntax.root);syntax.root.visible=false;syntax.root.scale.y=.001;syntax.root.position.y=-.72;
-  let instrument='signal',blend=0,switching=null;
+  const optical=createVisionBench(vision);bench.add(optical.root);optical.root.visible=false;optical.root.scale.y=.001;optical.root.position.y=-.72;
+  const anchor=new THREE.Object3D();root.add(anchor);const rest=new THREE.Vector3(),destination=new THREE.Vector3(),contactPoint=new THREE.Vector3();
+  const actorMotion={grounded:false,reach:0,grip:new THREE.Vector3()};
+  let instrument='signal',switching=null;const levels={signal:1,compiler:0,vision:0};
   const state=relay.state;let stamp='',disposed=false;
   function refresh(){
     const next=[state.serial,state.phase,state.sender].join(':');if(next===stamp)return;stamp=next;
@@ -58,20 +62,26 @@ export function createSignalBench(relay,compiler){
     gauge.draw('MESSAGE RELAY',state.busy?'ROUTING':state.serial?String(state.serial).padStart(3,'0'):'READY','A LOCAL CIRCUIT');
   }
   refresh();
-  const model={root,syntax,circuit,actorPosition:[.9,1.42,-.15],actorMobilePosition:[1.12,1.42,-.15],displayScale:.92,onPick:null,
-    get instrument(){return instrument;},get instrumentBlend(){return blend;},
+  const model={root,syntax,circuit,optical,actorPosition:[.9,1.42,-.15],actorMobilePosition:[1.12,1.42,-.15],actorAnchor:anchor,actorMotion,displayScale:.92,onPick:null,
+    layoutBounds:new THREE.Box3(new THREE.Vector3(-2.05,-1.17,-1.3),new THREE.Vector3(1.86,1.9,1.55)),
+    get instrument(){return instrument;},get instrumentBlend(){return levels.compiler;},get instrumentLevels(){return{...levels};},
     setInstrument(id,{now,delay=0,duration=.8,reduced=false}){
-      if(!['signal','compiler'].includes(id)||id===instrument)return;
-      instrument=id;switching={from:blend,to:id==='compiler'?1:0,start:now+delay,duration:reduced?0:duration};
+      if(!Object.hasOwn(levels,id)||id===instrument)return;
+      instrument=id;switching={from:{...levels},start:now+delay,duration:reduced?0:duration};
     },
     get relay(){return relay;},
-    pick(ray){if(instrument!=='signal'||blend>.01)return null;root.updateMatrixWorld(true);const hit=ray.intersectObjects(terminals.map(t=>t.root),true)[0];if(!hit)return null;return terminals.findIndex(t=>{let object=hit.object;while(object){if(object===t.root)return true;object=object.parent;}return false;});},
+    pick(ray){if(instrument!=='signal'||levels.signal<.99)return null;root.updateMatrixWorld(true);const hit=ray.intersectObjects(terminals.map(t=>t.root),true)[0];if(!hit)return null;return terminals.findIndex(t=>{let object=hit.object;while(object){if(object===t.root)return true;object=object.parent;}return false;});},
     update(t,beat,scroll,now,reduced){
       if(disposed)return;relay.advance(now,reduced);refresh();
-      if(switching){const p=reduced||!switching.duration?1:THREE.MathUtils.clamp((now-switching.start)/switching.duration,0,1);blend=THREE.MathUtils.lerp(switching.from,switching.to,p*p*(3-2*p));if(p===1)switching=null;}
-      const lift=THREE.MathUtils.smoothstep(blend,.28,1),lower=1-THREE.MathUtils.smoothstep(blend,0,.72);
-      circuit.visible=lower>.001;circuit.scale.y=Math.max(.001,lower);circuit.position.y=-.72*(1-lower);
-      syntax.root.visible=lift>.001;syntax.root.scale.y=Math.max(.001,lift);syntax.root.position.y=-.72*(1-lift);syntax.update(now,reduced);
+      if(switching){
+        const p=reduced||!switching.duration?1:THREE.MathUtils.clamp((now-switching.start)/switching.duration,0,1);
+        for(const id of Object.keys(levels)){const amount=id===instrument?THREE.MathUtils.smoothstep(p,.28,1):THREE.MathUtils.smoothstep(p,0,.72);levels[id]=THREE.MathUtils.lerp(switching.from[id],id===instrument?1:0,amount);}
+        if(p===1)switching=null;
+      }
+      for(const [id,group] of [['signal',circuit],['compiler',syntax.root],['vision',optical.root]]){const lift=levels[id];group.visible=lift>.001;group.scale.y=Math.max(.001,lift);group.position.y=-.72*(1-lift);}
+      syntax.update(now,reduced);optical.update(now,reduced);
+      rest.set((innerWidth<=850?1.12:.9)/.92,1.42/.92,-.15/.92);bench.updateMatrix();destination.copy(optical.actorHome).applyMatrix4(bench.matrix);anchor.position.lerpVectors(rest,destination,levels.vision);
+      actorMotion.grounded=levels.vision>.01;actorMotion.reach=levels.vision*levels.vision;
       const p=state.progress;filament.material.emissiveIntensity=.55+(state.busy?Math.sin(Math.PI*p)**2*3:0);
       cage.rotation.y=state.busy?Math.sin(p*Math.PI)*.08:0;
       terminals.forEach((terminal,i)=>{terminal.root.rotation.z=state.busy&&i===state.sender?Math.sin(Math.min(1,p/.3)*Math.PI)*-.015:0;});
@@ -85,7 +95,9 @@ export function createSignalBench(relay,compiler){
       }
       packets.instanceMatrix.needsUpdate=true;
     },
-    dispose(){disposed=true;model.onPick=null;relay.dispose();compiler.dispose();}
+    afterTransform(){root.updateMatrixWorld(true);optical.contact.getWorldPosition(contactPoint);actorMotion.grip.copy(anchor.worldToLocal(contactPoint)).multiplyScalar(.92);},
+    dispose(){disposed=true;model.onPick=null;relay.dispose();compiler.dispose();vision.dispose();}
   };
+  model.update(0,{},0,0,true);
   return model;
 }

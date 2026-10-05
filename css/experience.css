@@ -55,8 +55,8 @@ body[data-skin="brick"]{--studio-gold:#c78870}body[data-skin="forest"]{--studio-
 .reading-actions span{margin-left:14px}.reading-actions a{padding:8px 0}
 .signal-panel{max-width:420px;pointer-events:auto}
 .project-workbench{max-width:420px;pointer-events:auto}
-.project-instruments{display:flex;gap:20px;margin-bottom:16px}
-.project-instruments button{font:11px/1.4 monospace;color:#adb6a5;min-height:44px;padding:8px 0;background:none;border:0;border-bottom:1px solid #71816b55;cursor:pointer}
+.project-instruments{display:flex;gap:clamp(8px,1vw,16px);margin-bottom:16px}
+.project-instruments button{flex:1;font:10px/1.4 monospace;white-space:nowrap;text-align:left;color:#adb6a5;min-height:44px;padding:8px 0;background:none;border:0;border-bottom:1px solid #71816b55;cursor:pointer}
 .project-instruments button[aria-pressed=true]{color:#f0dcb1;border-color:#d9ba7c}
 .project-panels{display:grid;min-height:272px}.project-panels>div{grid-area:1/1}
 [data-experience] .project-panels>[hidden]{display:block!important;visibility:hidden;pointer-events:none}
@@ -72,6 +72,15 @@ body[data-skin="brick"]{--studio-gold:#c78870}body[data-skin="forest"]{--studio-
 .compiler-trace{display:flex;gap:12px;height:38px;overflow-x:auto;white-space:nowrap;font:10px/1.8 monospace}
 .compiler-trace [data-state=waiting]{color:#86917e}.compiler-trace [data-state=active]{color:#eed1a0}.compiler-trace [data-state=done]{color:#c1d9ba}
 .compiler-entry{display:block;margin-top:12px;min-height:44px;padding:8px 0;border:0;border-bottom:1px solid #8c977566;background:none;color:inherit;font:inherit;font-size:12px;cursor:pointer}
+.vision-panel{font-size:11px;color:#c6d7be}.vision-inputs{display:flex;gap:12px;align-items:center}
+.vision-inputs button,.vision-inputs label,.vision-run{font:12px monospace;color:#ece5d3;background:#14241de6;border:1px solid #6d806366;min-height:44px;padding:8px 10px;box-sizing:border-box;cursor:pointer}
+.vision-inputs label{position:relative;display:flex;align-items:center}.vision-inputs input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.vision-inputs label:focus-within{outline:2px solid #d8ba78;outline-offset:3px}.vision-panel :disabled,.vision-inputs label:has(:disabled){opacity:.5;cursor:wait}
+.vision-inputs input:disabled{opacity:0}
+.vision-source{height:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10px;color:#9fb9a8;margin:7px 0}.vision-source a{color:inherit}
+.vision-run{min-width:136px;color:#edcf93;border-color:#bf9c6066}.vision-help{font-size:10px;line-height:1.8;margin:5px 0 12px;color:#a6b5a1}
+#vision-status{height:42px;overflow:auto;line-height:1.7;font-size:12px;margin:9px 0 0}.vision-trace{display:flex;gap:12px;font:10px/1.8 monospace;min-height:24px;color:#788f80}.vision-trace [data-active=true]{color:#dfcfaa}
+.vision-preview{display:none;max-width:100%;height:auto;margin:12px 0}.no-webgl .vision-preview{display:block;max-height:330px;object-fit:contain}
 .world-hero:has(.project-workbench) .world-caption{display:none}
 @media(min-width:851px){.world-hero:has(.project-workbench) .hero-copy{top:clamp(110px,16vh,180px)}.world-hero:has(.project-workbench) .hero-title{font-size:clamp(58px,6vw,90px)}}
 @media(max-width:850px){[data-chapter="projects"] .world-hero:has(.project-workbench){min-height:1120px}.project-workbench{max-width:100%}}

@@ -11,6 +11,7 @@ import {createMessageRelay} from './message-relay.js';
 import {bindProjectSignal} from './project-signal.js';
 import {createCompiler} from './compiler-expression.js';
 import {bindCompiler} from './project-compiler.js';
+import {createVision} from './vision.js';
 import {bindRadio} from './radio.js';
 import {bindSkin} from './skin.js';
 import {bindAbout} from './about.js';
@@ -81,7 +82,7 @@ function stylesheet(href){
 async function mount(doc,url){
   contentEvents?.abort();contentEvents=new AbortController();
   route=routeFor(url.pathname,doc);route.readingEntries=readingEntries(doc,route);document.body.dataset.chapter=route.id;
-  if(route.id==='projects'){route.relay=createMessageRelay();route.compiler=createCompiler();}
+  if(route.id==='projects'){route.relay=createMessageRelay();route.compiler=createCompiler();route.vision=createVision();}
   if(route.id==='radio')route.radioPlayback=()=>({active:score.audible,time:score.time,cycle:score.rhythm.cycleBar/32,levels:score.levels()});
   document.body.classList.toggle('article-view',route.article);document.body.classList.toggle('experiment-view',route.experiment);
   explorer.reset();tooltip.hidden=true;
@@ -96,7 +97,7 @@ async function mount(doc,url){
   world?.show(route);world?.applySkin(readSetting('room-skin','default'));score.scene(route.id);chrome.update(route);
   const reading=bindReading(section,route.readingEntries,{world,signal:contentEvents.signal,article:route.article});
   if(route.relay)bindProjectSignal(section,doc,{world,score,relay:route.relay,signal:contentEvents.signal});
-  if(route.compiler)bindCompiler(section,main,{world,score,compiler:route.compiler,signal:contentEvents.signal});
+  if(route.compiler)bindCompiler(section,main,{world,score,compiler:route.compiler,vision:route.vision,signal:contentEvents.signal});
   if(route.id==='radio')bindRadio(section,main,{world,score,signal:contentEvents.signal,announce});
   if(route.id==='skin')bindSkin(section,main,{world,score,signal:contentEvents.signal,announce});
   if(route.id==='about')bindAbout(section,{world,score,signal:contentEvents.signal});

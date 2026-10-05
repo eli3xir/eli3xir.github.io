@@ -143,3 +143,15 @@ Three.js 0.185.1：来自官方 npm 包，模块文件与既有 core/module 逐�
 2026-10-05 从项目原链接只读克隆 [Pascal-S-compiler](https://gitee.com/buptsg2019/pascal-s-compiler)，实际 HEAD 为 `7a8b8917c8b1d3e2b1df6c7584c28cdcbb16a865`。网页抓取部分失败后改用仓库和 raw README 核实，没有把缓存页日期当作新提交。阅读 pascal.l、pascal.y、AbstractTree.cpp 与 pas/1.pas：赋值使用 `:=`，expr / term / factor 分层赋予乘法优先级，括号返回内部表达式；一元负号构造零减节点。整数加减乘由 LLVM Builder 的 CreateAdd / CreateSub / CreateMul 生成。词法器虽然有 div token，语法中的 DIVI 分支被注释；本次网页演示因此没有声称支持它。
 
 阅读 LLVM 官方 [Implementing a Parser and AST](https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl02.html) 的 AST、表达式和括号部分，核对树表示语义结构以及括号不必成为节点的解释。该教程的语言是 Kaleidoscope，不能据此推断原 Pascal 项目的全部功能。网页新增解析器由本仓库实现，限定一条整数赋值式；它真实生成树和结果，但不是原 LLVM 编译器的浏览器移植。三维字块、连杆与传值动画也由本仓库程序生成，没有引入第三方视觉资产。
+
+## 真实的浏览器人脸检测
+
+2026-10-05 继续核对原 [Flask 人脸项目](https://gitee.com/buptsg2019/flask-face-recognition-api) 的固定提交 `630512dacf9715d4bb5a798814bf6282b34a5417`：读取 net/mtcnn.py 的全部 P/R/O 网络层、utils.py 的缩放和三阶段后处理、align 与 camera 的 RGB/阈值调用，以及 H5 内部张量与 Keras 2.0.4 元数据。仅导出三份 MTCNN 权重并保留原 MIT 许可；没有发布原个人照片、结果目录或 92 MB 的 FaceNet 模型。
+
+实际阅读 [MTCNN 作者项目页](https://kpzhang93.github.io/MTCNN_face_detection_alignment/) 及 [论文 PDF](https://kpzhang93.github.io/MTCNN_face_detection_alignment/paper/spl.pdf) 的前三页相关文本，核对图像金字塔、三阶段网络和五个关键点。没有把 PDF 截图工具返回的引用当作已看见图像，也没有声称复现论文中的评估精度。网页阈值和边框计算依据原项目实现。
+
+阅读 TensorFlow 官方 [模型与层](https://www.tensorflow.org/js/guide/models_and_layers)、[运行环境与后端](https://www.tensorflow.org/js/guide/platform_environment)、[4.22 API](https://js.tensorflow.org/api/4.22.0/) 和固定版本 [WASM README](https://github.com/tensorflow/tfjs/blob/tfjs-v4.22.0/tfjs-backend-wasm/README.md)，据此选择 core + 单线程 WASM，并显式释放中间张量。上游运行文件保持原字节，Apache 许可和 README 保存在 vendor/tfjs；版本与摘要见模型清单。
+
+示例取自 [scikit-image 的 astronaut 数据说明](https://scikit-image.org/docs/0.25.x/api/skimage.data.html#skimage.data.astronaut) 与 [v0.25.2 原 PNG](https://raw.githubusercontent.com/scikit-image/scikit-image/v0.25.2/skimage/data/astronaut.png)。进一步用 curl 读取短链接跳转后的 [NASA on The Commons 原页](https://www.flickr.com/photos/nasacommons/16504233985/)，核对 canonical、Eileen Collins / STS-93 图注、NASA 署名与 Commons 许可入口；示例仅用于解释检测算法。图片保留 791,555 字节原内容及 SHA-256，没有重绘或修改肖像。
+
+数值参考由独立 NumPy 算子直接读取原 H5，组合未经修改的原 Python 后处理与 OpenCV 缩放；它不等同于运行完整旧版 Keras。初次逐行按顺序比较发现两个相近分数的候选互换，改为唯一几何对应后核对全部框、分数和关键点，并在验证记录保留该差异。
