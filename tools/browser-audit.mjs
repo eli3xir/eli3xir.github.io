@@ -220,7 +220,7 @@ try{
             const w=window.studio.world,r=window.studio.router;
             Object.defineProperty(window.studio.score,'time',{get:()=>4});
             const frame=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-            r.transition(1);w.show(window.studio.route);r.transition(.001);await frame();const before=w.actor.root.position.clone();
+            r.transition(1);w.show(window.studio.route);await w.whenRenderReady();r.transition(.001);await frame();const before=w.actor.root.position.clone();
             r.transition(0);await frame();return before.distanceTo(w.actor.root.position);
           });
           assert.ok(tail<.002,`reveal tail discontinuity ${tail}`);results.at(-1).revealTail=tail;

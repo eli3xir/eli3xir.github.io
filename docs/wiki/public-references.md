@@ -207,3 +207,5 @@ Three.js [DataTexture](https://threejs.org/docs/pages/DataTexture.html) 与本�
 同日复核 W3C [CSS Shapes](https://www.w3.org/TR/css-shapes-1/#funcdef-circle) 对圆半径、参考框和百分比尺度的定义，以及 MDN [circle()](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/basic-shape/circle) 的长度与圆心说明。本站将原固定 150% 半径改为实际最远角距离加 2 px，标题判断使用同一几何；没有依赖较新的角距离 CSS 关键字。覆盖与改尺寸行为另由实际浏览器命中、正常录像及旧样式反证验证，规范定义本身不等于视觉质量或帧率证明。
 
 剩余长帧的分段观测显示，多数同步时间落在首次程序信息查询。查阅 MDN [WebGL 最佳实践](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices) 的并行编译与非阻塞完成查询，以及 Three.js [WebGLRenderer](https://threejs.org/docs/pages/WebGLRenderer.html) 对 compileAsync 和预先配置光照、环境的要求。异步准备仅是下一轮待验证方向，当前纸幕改进没有改变着色程序生命周期，也未证明不同驱动和真实设备的收益。
+
+第五十二轮复核 MDN [KHR_parallel_shader_compile](https://developer.mozilla.org/en-US/docs/Web/API/KHR_parallel_shader_compile) 的非阻塞完成查询及支持范围。按本站固定 Three r185 源码检查 `compileAsync`、透明双面程序、RenderPass 的 readBuffer 与程序销毁：原异步方法没有取消接口，本站保留同一完成判断并管理轮询、期限及资源归属，不修改 vendor 或关闭错误检查。准备只减少对尚未完成程序的同步查询；没有据此推断总驱动工作量下降或不同设备一定更快。

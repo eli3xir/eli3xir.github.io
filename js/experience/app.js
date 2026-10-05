@@ -115,6 +115,7 @@ async function mount(doc,url){
   titleReveal=createTitleReveal(section,route,{score,signal:contentEvents.signal,held:Boolean(router?.busy)});
   if(route.article&&doc.querySelector('script[src*="katex"]')&&!window.renderMathInElement)loadMath(main);
   document.querySelector('link[rel="canonical"]')?.setAttribute('href','https://eli3xir.github.io'+url.pathname);
+  await world?.whenRenderReady?.();
 }
 async function loadMath(main){
   try{

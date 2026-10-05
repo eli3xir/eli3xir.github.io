@@ -41,6 +41,10 @@ export function publicRoutes(){
 export async function ready(page){
   await page.waitForFunction(()=>window.studio,null,{timeout:25000});
   await page.waitForFunction(()=>window.__ready||window.__error||window.studio.route.id!=='home',null,{timeout:150000});
+  // A late room attachment reports asset readiness before its shaders finish.
+  // Stable-scene audits wait for that work; opening/performance probes still
+  // measure the first actual rendered frame separately.
+  await page.evaluate(()=>window.studio.world?.whenRenderReady?.());
 }
 
 export async function settle(page){

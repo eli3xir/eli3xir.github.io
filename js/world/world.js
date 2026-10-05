@@ -18,6 +18,7 @@ import {visualQuality,qualityRatio} from '../experience/visual-quality.js';
 import { BPM } from '../audio/composition.js';
 import {frameRoomCorner,roomFocusActor,roomFlightArc} from './room-framing.js';
 import {createAntialiasing} from './antialiasing.js';
+import {prepareShaders,finishPrograms} from './shader-preparation.js';
 
 export class World {
   constructor(container,score,{status,onHover,onPick,onPortal}={}) {
@@ -73,7 +74,7 @@ export class World {
     this.previewObserver=new ResizeObserver(()=>{if(this.focused&&!this.focusJourney)this.resize();});
     const preview=document.querySelector('.object-preview');if(preview)this.previewObserver.observe(preview);
     const options={signal:this.events.signal};
-    this.renderer.domElement.addEventListener('webglcontextrestored',()=>{this.restoreEnvironment();this.antialiasing.refresh();this.applyQuality();},options);
+    this.renderer.domElement.addEventListener('webglcontextrestored',()=>{this.restoreEnvironment();this.antialiasing.refresh();this.applyQuality();if(this.model)this.prepareRender();},options);
     addEventListener('resize',()=>this.resize(),options);
     addEventListener('pointermove',e=>this.move(e),{...options,passive:true});
     addEventListener('pointerdown',e=>{if(!e.target.closest('a,button,input,select,textarea'))this.down=[e.clientX,e.clientY];},options);
@@ -147,7 +148,16 @@ export class World {
   }
 
   show(route) {
-    if(this.model){this.model.dispose?.();this.scene.remove(this.model.root);if(!this.model.persistent)disposeGroup(this.model.root);}
+    if(this.model){
+      const previous=this.model;this.scene.remove(previous.root);
+      const dispose=()=>{previous.dispose?.();if(!previous.persistent)disposeGroup(previous.root);};
+      if(this.preparingRender&&!previous.persistent){
+        // Detach immediately, but let in-flight driver work finish before freeing
+        // its materials. The new scene can prepare concurrently on the same GPU.
+        const programs=[...this.renderer.info.programs];this.shaderPreparation=null;
+        this.renderReady.then(result=>{if(result.state!=='ready')finishPrograms(this.renderer,programs);dispose();});
+      }else{this.shaderPreparation?.abort();dispose();}
+    }
     this.route=route;this.focused=null;this.focusJourney=null;this.hovered=null;this.scroll=0;
     this.model=createModel(route,this.renderer,(...args)=>{if(this.route?.id==='home')this.status(...args);});
     this.renderer.localClippingEnabled=Boolean(this.model.localClipping);
@@ -183,6 +193,34 @@ export class World {
     const copy=document.querySelector('.hero-copy');if(copy)this.heroObserver.observe(copy);
     this.renderer.domElement.dataset.chapter=route.id;
     this.container.dataset.ready='true';
+    this.prepareRender();this.watchModelReady();
+  }
+
+  prepareRender(){
+    this.shaderPreparation?.abort();
+    const preparation=new AbortController();this.shaderPreparation=preparation;
+    this.preparingRender=true;
+    this.renderReady=prepareShaders(this.renderer,this.scene,this.camera,this.composer.readBuffer,{signal:preparation.signal}).then(result=>{
+      if(this.shaderPreparation===preparation){
+        this.preparingRender=false;this.shaderStatus=result;this.last=performance.now();this.moving=1;this.updateVisibility();
+        if(result.state==='timeout')console.warn('Shader preparation timed out; continuing with normal rendering.');
+      }
+      return result;
+    });
+    return this.renderReady;
+  }
+
+  watchModelReady(){
+    const model=this.model,pending=model?.ready;
+    if(!pending||pending===this.observedModelReady)return;
+    this.observedModelReady=pending;
+    pending.then(()=>{if(this.model===model)this.prepareRender();}).catch(()=>{});
+    return true;
+  }
+
+  async whenRenderReady(){
+    let pending;
+    do{pending=this.renderReady;await pending;}while(pending!==this.renderReady);
   }
 
   focus(id) {
@@ -264,6 +302,8 @@ export class World {
   }
 
   frame(now) {
+    if(this.watchModelReady()){this.last=now;return;}
+    if(this.preparingRender||this.renderer.getContext().isContextLost()){this.last=now;return;}
     const dt=Math.max(0,Math.min((now-this.last)/1000,.06));this.last=now;
     const reduced=this.reduced.matches;
     // Some browser/media-emulation paths update matches before delivering the
@@ -364,5 +404,6 @@ export class World {
 
   diagnostics(){return{chapter:this.route?.id,drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,
     geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,pixelRatio:this.renderer.getPixelRatio(),antialiasing:this.antialiasing.mode,
-    roomReady:this.model?.loaded??null,rendering:this.running,renderedFrames:this.renderedFrames,story:this.storyFrame,frameTimes:this.frames};}
+    roomReady:this.model?.loaded??null,shaders:this.shaderStatus,preparingRender:this.preparingRender,
+    rendering:this.running,renderedFrames:this.renderedFrames,story:this.storyFrame,frameTimes:this.frames};}
 }

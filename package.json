@@ -45,6 +45,7 @@
     "test:conductor": "node tools/conductor-audit.mjs",
     "test:title-reveal": "node tools/title-reveal-audit.mjs",
     "test:portal": "node tools/portal-audit.mjs",
+    "test:shaders": "node tools/shader-preparation-audit.mjs",
     "test:book-binding": "node tools/book-binding-audit.mjs",
     "test:potion": "node tools/potion-audit.mjs",
     "test:skin": "node tools/skin-audit.mjs",
