@@ -76,18 +76,26 @@ try{for(const width of [1440,390]){
   const context=await browser.newContext({viewport:{width:900,height:800}}),page=await context.newPage(),log=observe(page);
   await page.addInitScript(()=>{
    const add=MediaQueryList.prototype.addEventListener;
-   MediaQueryList.prototype.addEventListener=function(type,...args){if(type==='change'&&this.media.includes('prefers-reduced-motion'))return;return add.call(this,type,...args);};
+   window.poolSuppressedCallbacks=0;
+   MediaQueryList.prototype.addEventListener=function(type,...args){if(type==='change'&&this.media.includes('prefers-reduced-motion')){window.poolSuppressedCallbacks++;return;}return add.call(this,type,...args);};
   });
   if(negative){
    const source=fs.readFileSync(new URL('../js/world/world.js',import.meta.url),'utf8'),guard='if(reduced!==this.appliedReduced)this.applyMotionPreference();';assert.ok(source.includes(guard));
    await page.route('**/js/world/world.js',route=>route.fulfill({body:source.replace(guard,''),contentType:'text/javascript'}));
   }
   await page.goto(server.base+'/about/');await ready(page);await settle(page);await page.locator('[data-activity="swim"]').click();
-  await page.waitForFunction(()=>window.studio.world.model.diagnostics().water.injections>20&&window.studio.world.moving<.001);
+  await page.waitForFunction(()=>window.studio.world.model.diagnostics().water.injections>20);
+  const before=await page.evaluate(()=>{
+   const w=window.studio.world,frame=w.frame,result={energy:w.model.diagnostics().water.energy,progress:w.model.progress,guard:frame.toString().includes('if(reduced!==this.appliedReduced)this.applyMotionPreference();'),suppressed:window.poolSuppressedCallbacks};
+   // Both variants enter the same idle render budget. Unrelated resize/font
+   // callbacks must not wake the negative control and conceal the missing guard.
+   w.frame=function(now){this.moving=0;return frame.call(this,now);};return result;
+  });
+  assert.equal(before.guard,!negative);assert.ok(before.suppressed>0&&before.energy>0&&before.progress<1,JSON.stringify(before));
   await page.emulateMedia({reducedMotion:'reduce'});await page.waitForTimeout(220);
   const result=await page.evaluate(()=>{const w=window.studio.world;return{energy:w.model.diagnostics().water.energy,progress:w.model.progress,bloom:w.bloom.enabled,matched:w.reduced.matches};});
   const accepted=result.energy===0&&result.progress===1&&!result.bloom;assert.equal(accepted,!negative,JSON.stringify(result));
-  assert.deepEqual(log.errors,[]);assert.deepEqual(log.failed,[]);report.cases.push({name:'missing media callback',negative,accepted,...result});await context.close();console.log('PASS preference callback fallback',negative?'negative control':'normal');
+  assert.deepEqual(log.errors,[]);assert.deepEqual(log.failed,[]);report.cases.push({name:'missing media callback',negative,accepted,before,...result});await context.close();console.log('PASS preference callback fallback',negative?'negative control':'normal');
  }
 }catch(error){report.failures.push(error.stack);process.exitCode=1;}
 finally{fs.writeFileSync(`${output}/pool-audit.json`,JSON.stringify(report,null,2));await browser.close();await server.close();}
