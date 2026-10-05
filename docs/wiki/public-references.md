@@ -127,3 +127,7 @@ MTCNN 级联与图像金字塔的两张时间戳图片尚未确认。已检索�
 2026-10-05 核对原关于页已链接的 [eli3xir GitHub 资料](https://github.com/eli3xir)，下载该页使用的[账户头像](https://avatars.githubusercontent.com/u/307186276?s=256&v=4)并实际查看。文件为 420×420 的几何图案，保留 1,569 字节原文件；来源、日期、尺寸与 SHA-256 记录在 [清单](../../assets/profile/manifest.json)。没有从头像推断个人身份或新增经历。画框色样直接取本站既有五种配色，文字、纸纹与指针由本仓库绘制。
 
 同轮阅读 Three.js 官方 [Texture](https://threejs.org/docs/pages/Texture.html) 和 [CanvasTexture](https://threejs.org/docs/pages/CanvasTexture.html)，核对 channel、颜色空间和纹理更新；结合实际 GLB 的属性与顶点，选择新增 uv2 而保留原烘焙坐标。最初尝试让头像旋转对齐纸卡，但实际查看原 photo_card 光照图后确认阴影已烘焙在原位置，最终恢复原变换。采用依据来自原资产和真实截图，没有把文档接口说明当作成品视觉验证。
+
+2026-10-05 项目便签的事实取自仓库既有 [项目页](../../projects/index.html)：C++ 多客户端聊天室与 MySQL、Flask 接口和 MTCNN/FaceNet、Pascal-S 的 lex/yacc/LLVM 技术路线。只增加三个卡片锚点，原介绍和仓库链接保留；没有以搜索摘要补造项目进度。通信节点、检测框、语法树与存储草图为代码绘制的解释性示意，不声称是实际程序输出。
+
+复核 Three.js 官方 [CanvasTexture](https://threejs.org/docs/pages/CanvasTexture.html)、[Texture](https://threejs.org/docs/pages/Texture.html) 与 [Raycaster](https://threejs.org/docs/pages/Raycaster.html)，用于一次生成的共享图集、独立 UV 与按实际相交物件选择项目。实际 GLB 保留十张纸面的不同尺寸和旋转，天花板下表面用于限制飞行高度。连续录像发现穿过顶面的失败，比只检查屏幕投影得到更强的反证；后续加入实际几何高度与角色灯点到镜头的遮挡检查。

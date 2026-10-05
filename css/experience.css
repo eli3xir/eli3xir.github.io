@@ -110,11 +110,17 @@ body[data-skin="brick"]{--studio-gold:#c78870}body[data-skin="forest"]{--studio-
 .scene-status.loading{opacity:1}.scene-status.loading:after{content:"";display:block;margin-top:8px;width:calc(120px*var(--progress,.05));height:1px;background:#bbbf8f;transition:width .3s}
 .studio-toast{position:fixed;left:50%;bottom:85px;transform:translate(-50%,12px);max-width:min(560px,88vw);z-index:120;background:#e8e1ce;color:#263228;padding:12px 20px;font-size:11px;border:1px solid #c8c4aa;box-shadow:0 8px 40px #0003;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
 .studio-toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}.studio-toast a{margin-left:15px;text-decoration:underline}
-.object-label{position:fixed;padding:7px 13px;z-index:50;background:#e4dcc7;color:#263228;font-size:11px;transform:translate(-50%,-150%);pointer-events:none}
+.object-label{position:fixed;padding:7px 13px;z-index:50;background:#e4dcc7;color:#263228;font-size:11px;transform:translate(-50%,-150%);pointer-events:none;white-space:nowrap;max-width:calc(100vw - 16px);overflow:hidden;text-overflow:ellipsis}
 .object-preview{position:fixed;z-index:40;left:8.3vw;top:35%;width:320px;background:#101513cc;padding:35px;border:1px solid #77866a55;backdrop-filter:blur(18px)}
 .object-preview h2{font:400 45px/1.1 Georgia,"Microsoft YaHei",serif;margin:0 0 18px}.object-preview p{font-size:12px;color:#b9c1aa}
 .preview-close{position:absolute;right:6px;top:4px;color:#b8c0a8;background:none;border:0;width:44px;height:44px;font-size:25px}
 .preview-actions{display:flex;align-items:center;gap:8px;margin-top:10px}
+.preview-projects:not([hidden]){display:flex;gap:5px;margin-top:12px}
+.preview-projects button{flex:1;min-width:44px;min-height:44px;padding:5px;border:1px solid #77866a55;background:transparent;color:#b9c1aa;font:inherit;font-size:11px;cursor:pointer}
+.preview-projects button[aria-pressed="true"]{background:#b9c1aa;color:#101513;border-color:#b9c1aa}
+.preview-projects button:hover,.preview-projects button:focus-visible{outline:1px solid #d8decc;outline-offset:2px}
+.object-preview[data-project] h2{font-size:clamp(21px,3vw,32px)}
+.pcard[id]{scroll-margin-top:100px}
 .preview-actions .explore-button{margin:0;margin-right:auto;min-height:44px;gap:18px}
 .preview-step{width:44px;height:44px;flex:none;background:#bec7a50a;color:#d3d5c0;border:1px solid #78826355}
 body.room-focused[data-chapter="home"] .world-hero:before{background:linear-gradient(180deg,#10151333,transparent 28%,transparent 75%,#10151355)}
@@ -271,6 +277,8 @@ body.room-focused{overflow:hidden}.room-focused .studio-header{position:fixed}.r
 }
 @media(max-height:599px) and (min-aspect-ratio:5/4){
   .object-preview{left:5vw;right:auto;top:50%;bottom:auto;transform:translateY(-50%);width:min(270px,40vw)}
+  .object-preview:has(.preview-projects:not([hidden])){top:80px;transform:none;padding:10px 12px}
+  .room-focused:has(.preview-projects:not([hidden])) .sound-dock{left:auto;right:24px}
   .object-preview .eyebrow{padding-right:20px;font-size:7px}
   .preview-actions{gap:5px}.preview-actions .explore-button{gap:7px;font-size:10px}
 }

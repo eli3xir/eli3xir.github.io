@@ -16,7 +16,7 @@ import { composeHero } from './composition.js';
 import { nextBeatDelay } from '../experience/domain.js';
 import {visualQuality,qualityRatio} from '../experience/visual-quality.js';
 import { BPM } from '../audio/composition.js';
-import {frameRoomCorner,roomFocusActor} from './room-framing.js';
+import {frameRoomCorner,roomFocusActor,roomFlightArc} from './room-framing.js';
 
 export class World {
   constructor(container,score,{status,onHover,onPick,onPortal}={}) {
@@ -168,13 +168,14 @@ export class World {
   }
 
   focus(id) {
-    if(id===this.focused)return;
+    if(id===this.focused||(id&&!ROOM_VIEWS[id]))return;
+    this.hovered=null;this.onHover(null,this.pointerEvent);this.pointerEvent=null;
     const audible=this.score.audible,clock=audible?this.score.time:performance.now()/1000;
     this.focusJourney=this.reduced.matches?null:{from:this.actor.root.position.clone(),scale:this.actor.root.scale.x,fromView:this.viewState(),
       fromCamera:this.camera.position.clone(),fromTarget:this.target.clone(),
       clock:audible?'audio':'ui',start:clock+(audible?nextBeatDelay(clock):0),progress:0,duration:120/BPM};
     this.onPick(id);this.focused=id;this.model?.focus?.(id);this.offsetCamera();this.setRig();this.moving=1;this.actor.react();
-    if(this.focusJourney){this.focusJourney.toView=this.viewState();this.focusJourney.toCamera=this.desiredCamera.clone();this.focusJourney.toTarget=this.desiredTarget.clone();this.focusProjection(0);}
+    if(this.focusJourney){this.focusJourney.toView=this.viewState();this.focusJourney.toCamera=this.desiredCamera.clone();this.focusJourney.toTarget=this.desiredTarget.clone();this.focusJourney.arc=roomFlightArc(this,ROOM_VIEWS[id]);this.focusProjection(0);}
     if(this.reduced.matches){this.camera.position.copy(this.desiredCamera);this.target.copy(this.desiredTarget);this.camera.lookAt(this.target);}
   }
   viewState(){return this.camera.view?.enabled?{...this.camera.view}:{fullWidth:innerWidth,fullHeight:innerHeight,offsetX:0,offsetY:0};}
@@ -205,7 +206,8 @@ export class World {
 
   move(event) {
     this.targetPointer.set(event.clientX/innerWidth*2-1,-(event.clientY/innerHeight)*2+1);
-    this.pointerEvent=event;this.moving=1;
+    this.pointerEvent=event.pointerType==='touch'||event.target.closest('a,button,input,select,textarea,.object-preview,.sound-dock,.studio-header')?null:event;this.moving=1;
+    if(!this.pointerEvent&&this.hovered!==null){this.hovered=null;this.onHover(null,event);}
     if(event.pointerType==='touch'&&this.down&&this.route?.id==='home')this.targetPointer.x*=-1;
   }
 
@@ -264,7 +266,7 @@ export class World {
       const flight=this.focusJourney,clock=this.score.audible?'audio':'ui',current=clock==='audio'?t:now/1000;
       if(clock!==flight.clock){flight.clock=clock;flight.start=current-flight.progress*flight.duration;}
       flight.progress=Math.max(flight.progress,THREE.MathUtils.clamp((current-flight.start)/flight.duration,0,1));
-      const p=flight.progress,pacing=p*p*(3-2*p),arc=Math.sin(p*Math.PI)*.48;
+      const p=flight.progress,pacing=p*p*(3-2*p),arc=Math.sin(p*Math.PI)*flight.arc;
       this.focusProjection(pacing);this.camera.position.lerpVectors(flight.fromCamera,flight.toCamera,pacing);this.target.lerpVectors(flight.fromTarget,flight.toTarget,pacing);
       this.camera.position.y+=arc;this.target.y+=arc;
       this.camera.position.addScaledVector(this.camera.position.clone().sub(this.target).normalize(),Math.sin(p*Math.PI)*.2);
@@ -283,7 +285,7 @@ export class World {
     const actorPos=this.route?.id==='home'&&this.focused?roomFocusActor(ROOM_VIEWS[this.focused]):((this.compact&&this.model?.actorMobilePosition)||this.model?.actorPosition||[0,0,0]);
     const actorScale=this.layoutScale||1;
     const journey=this.transition*this.transition*(3-2*this.transition);
-    const idleScale=(this.model?.actorScale||1)*(this.route?.id==='home'&&this.focused?.5:1);
+    const idleScale=(this.model?.actorScale||1)*(this.route?.id==='home'&&this.focused?(ROOM_VIEWS[this.focused].actorScale??.5):1);
     let bodyScale=THREE.MathUtils.lerp(this.portalReveal?idleScale*actorScale:(this.portalScale??idleScale*actorScale),actorScale,journey);
     if(this.transition===0)bodyScale=idleScale*actorScale;
     const focusedView=this.route?.id==='home'&&ROOM_VIEWS[this.focused];
@@ -299,7 +301,7 @@ export class World {
     }else if(this.focusJourney){
       const flight=this.focusJourney;
       const p=flight.progress,pacing=p*p*(3-2*p);
-      position.lerpVectors(flight.from,position.clone(),pacing);position.y+=Math.sin(p*Math.PI)*.48;
+      position.lerpVectors(flight.from,position.clone(),pacing);position.y+=Math.sin(p*Math.PI)*flight.arc;
       bodyScale=THREE.MathUtils.lerp(flight.scale,bodyScale,pacing);
       if(p===1)this.focusJourney=null;
     }
@@ -329,7 +331,7 @@ export class World {
     this.particles.visible=true;
     this.model.root.visible=true;this.actor.root.visible=true;
     this.film.uniforms.uTime.value=t;this.film.uniforms.uTransition.value=this.transition;
-    if(this.route?.id==='home'&&!this.focused&&this.pointerEvent&&this.moving>.2){
+    if(this.route?.id==='home'&&!this.focused&&!this.focusJourney&&this.pointerEvent&&this.moving>.2){
       this.ray.setFromCamera(this.pointer,this.camera);
       const id=this.model.pick?.(this.ray)||null;
       if(id!==this.hovered){this.hovered=id;this.onHover(id,this.pointerEvent);}

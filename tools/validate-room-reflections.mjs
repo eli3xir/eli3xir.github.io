@@ -7,7 +7,7 @@ assert.equal(packed.length,manifest.bytes);assert.equal(sha(packed),manifest.sha
 assert.deepEqual(manifest.palettes,Object.fromEntries(Object.entries(SKINS).map(([id,skin])=>[id,skin.wall])));
 for(const [path,expected] of Object.entries(manifest.inputs)){
  const source=fs.readFileSync(path);
- if(/\.(?:js|mjs|json)$/.test(path))assert.equal(source.includes(13),false,`${path}: reflection inputs must use repository LF line endings before building`);
+ if(/\.(?:js|mjs|json|html)$/.test(path))assert.equal(source.includes(13),false,`${path}: reflection inputs must use repository LF line endings before building`);
  assert.equal(sha(source),expected,path);
 }
 assert.deepEqual(manifest.entries.map(entry=>entry.id),Object.keys(SKINS));

@@ -10,6 +10,7 @@ import { createRoomLightmaps } from './room-lightmaps.js';
 import {loadRoomReflections,bindRoomReflection} from './room-reflections.js';
 import {roomFocusBounds} from './room-framing.js';
 import {loadRoomProfile,installRoomArtwork,roomPaletteX} from './room-artwork.js';
+import {installRoomNotes} from './room-notes.js';
 
 const ZONES = {
   lab: [4.7,7.1,.25,1.6,-1.2,.15], blog: [3,4.7,.25,1.4,-1.2,.15],
@@ -55,6 +56,7 @@ export function createRoom(status,renderer) {
   model.pick = ray => {
     if (!model.loaded) return null;
     for (const hit of ray.intersectObject(room, true)) {
+      if(hit.object.userData.roomProject)return hit.object.userData.roomProject;
       const p = room.worldToLocal(hit.point.clone());
       for (const id of ['about','projects','skin','radio','blog','lab']) {
         const [x0,x1,y0,y1,z0,z1] = ZONES[id];
@@ -107,6 +109,7 @@ export function createRoom(status,renderer) {
     });
     const results=await Promise.allSettled(pending);
     model.artwork=installRoomArtwork(gltf.scene,await profile,renderer);
+    model.notes=installRoomNotes(gltf.scene,renderer);Object.assign(ROOM_VIEWS,model.notes.views);
     model.reflections=await reflections;
     if(model.reflections)materials.forEach(material=>bindRoomReflection(material,model.reflections.texture));
     if(model.reflections&&model.artwork.cursor)bindRoomReflection(model.artwork.cursor.material,model.reflections.texture);
@@ -117,6 +120,7 @@ export function createRoom(status,renderer) {
     vinyl=new THREE.Group();vinyl.position.copy(center);gltf.scene.add(vinyl);gltf.scene.updateWorldMatrix(true,true);
     parts.forEach(object=>vinyl.attach(object));
     model.focusBounds=roomFocusBounds(gltf.scene);
+    model.ceilingY=new THREE.Box3().setFromObject(gltf.scene.getObjectByName('ceiling')).min.y;
     model.batching=batchStatic(gltf.scene,new Set(parts));
     model.asset=gltf.scene;
     model.loaded=true;

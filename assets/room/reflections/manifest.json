@@ -39,10 +39,10 @@
     ]
   },
   "file": "probes.bin",
-  "bytes": 1068747,
+  "bytes": 1068580,
   "decodedBytes": 3932160,
-  "sha256": "6342637695286cc37d7121894ce602f46eb05dba848857e208dd1973b10b5928",
-  "decodedSha256": "e73e7c232a054baa6a8f6dd5b44596528d66c9acd8c330059e95c5a5c07add89",
+  "sha256": "575f7216dfefe9af2aef123ceecc8786957c486e1e7385664f070f5d5810f4ff",
+  "decodedSha256": "ae917bec88e1f4c96c2e81ca9b557dc67af8444a6d1119eaaa3b7b7879b2dab2",
   "entries": [
     {
       "id": "default",
@@ -50,7 +50,7 @@
       "height": 512,
       "pixelOffset": 0,
       "pixels": 196608,
-      "capturedSha256": "01fc38f2b66e34d63454957cb24507da04b84afe103076473891a2f8b6373adc"
+      "capturedSha256": "ce6de464040ee58b247b023eb161dff3dd660675f5d351ae42dc0a78fe4feb08"
     },
     {
       "id": "brick",
@@ -58,7 +58,7 @@
       "height": 512,
       "pixelOffset": 196608,
       "pixels": 196608,
-      "capturedSha256": "bf2ddc4dcf9682f1af4f37b5df073d7684bffbb1c96103ba760fbaab26f72f3e"
+      "capturedSha256": "0a0b47a497cf9f7d692a1edd2ae81af0b7bfebc7042fa1e9d6e4c1791b7fdae5"
     },
     {
       "id": "forest",
@@ -66,7 +66,7 @@
       "height": 512,
       "pixelOffset": 393216,
       "pixels": 196608,
-      "capturedSha256": "aa5d2f30c613caddc5b9172bdc50eb3c0c50ef8aa1cb2f0a7e4a5d010bb2ffc5"
+      "capturedSha256": "c75fde46a3f05a7c56a3abdda75f4c2fe42d94d379d21594a547cd48e13f7565"
     },
     {
       "id": "ocean",
@@ -74,7 +74,7 @@
       "height": 512,
       "pixelOffset": 589824,
       "pixels": 196608,
-      "capturedSha256": "37bf609d7e285f06152bdee39fe43855fdb539bd6eece08f57b6ef0f7a7fb491"
+      "capturedSha256": "53694ad572b9aba2d91cedaf8dde31ccd98967bc82d41338f9ca87777c5688c8"
     },
     {
       "id": "cream",
@@ -82,11 +82,11 @@
       "height": 512,
       "pixelOffset": 786432,
       "pixels": 196608,
-      "capturedSha256": "0cd25985b1c70a43d49f357049276095250adb987144c666fc82e2036d68fea4"
+      "capturedSha256": "082fb82a6f10c91e171de073c7f14f32cbae80d6922408d06e0acd2810f7da1e"
     }
   ],
   "error": {
-    "meanAbsolute": 0.00046790714798274654,
+    "meanAbsolute": 0.0004679063548063555,
     "maxRelativeToPixelPeak": 0.003917742706838819,
     "capturedPeak": 12.0703125
   },
@@ -97,8 +97,14 @@
     "assets/profile/github-avatar.png": "176c0b579f13286542dc77f8b7a2948e91e520175de3c661c240570ff8e1a3a0",
     "assets/profile/manifest.json": "2d056fc28fc24391f0c7b6706030bd2d2603be913c4f1b1bb1b9ae6ad90a0ac4",
     "js/world/room-lighting.js": "03397803782232574f72a2ab44cc114ad3a6391ff1f9f1a00cf153e6eb123a2f",
-    "js/world/room-artwork.js": "0b22c7195d4bb8263d07659a490e74748cd8714df2e17187a303c5dbdb963dd5",
-    "tools/build-room-reflections.mjs": "b3d10d004123760c759e4504c4b3086f2b0d46820c209833d9b0431956be782b",
+    "js/world/room-artwork.js": "73188672cdb92b0e8758ff04919ea2bf0b447dcb0e224c058debf62ed9a93e10",
+    "js/world/room-print.js": "96e93b7af4fc23c90294be7d529adc514fd08d38d1c05b3b5f67d2c16fe9672f",
+    "js/world/room.js": "dcdb070c382ddb14014b9f93a508f08b08c209a50edd002c45d5ba120a6def56",
+    "js/world/room-notes.js": "e7fd313dce5befdb0c6d40588515567da2c5c9532125940cf610a8467eeee0ef",
+    "js/world/room-projects.js": "5f5cbf47500022043fb34813179df977f63fa7cc36bca7d9fb83448b3420dc47",
+    "js/experience/domain.js": "e3ea16087a685df5a5198c01bf391832177467d79505b7b694f4c8d5a37575f0",
+    "projects/index.html": "01f6b8269c1e7ec22e03d04677dc706daaa668e53f0f2a21f56715c5d7395966",
+    "tools/build-room-reflections.mjs": "031e39f5de205d06c47c9b55dfb545397e80cb781dec4b6d052394c547073f9d",
     "tools/reflection-encoding.mjs": "287066a599d60c3d798e5939b74ae3061df9052c75b3ddcb394ceb09c89b016f"
   },
   "notes": "One static room probe per palette; excludes the character and particles. Baked diffuse is not added twice. No parallax correction or live-object reflection."

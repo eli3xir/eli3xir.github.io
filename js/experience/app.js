@@ -1,5 +1,6 @@
 import { Score } from '../audio/score.js';
 import { World } from '../world/world.js';
+import {roomProject} from '../world/room-projects.js';
 import { CHAPTERS, routeFor, nextBeatDelay, readSetting } from './domain.js';
 import { createChrome, hero } from './chrome.js';
 import { pageContent, enhanceContent } from './content.js';
@@ -56,7 +57,7 @@ function sceneStatus(progress,message,error){
 }
 function objectHover(id,event){
   tooltip.hidden=!id;
-  if(id){tooltip.textContent=CHAPTERS.find(c=>c.id===id)?.label||'';tooltip.style.left=event.clientX+'px';tooltip.style.top=event.clientY+'px';}
+  if(id){tooltip.textContent=roomProject(id)?.label||CHAPTERS.find(c=>c.id===id)?.label||'';const half=tooltip.offsetWidth/2;tooltip.style.left=Math.max(half+8,Math.min(innerWidth-half-8,event.clientX))+'px';tooltip.style.top=Math.max(tooltip.offsetHeight*1.5+8,event.clientY)+'px';}
   stage.classList.toggle('has-hover',Boolean(id));
 }
 function objectFocus(id){
