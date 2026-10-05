@@ -48,21 +48,28 @@ try{
    try{
     await page.goto(server.base+'/about/');await ready(page);await settle(page);
     await page.locator('.sound-toggle').click();await page.waitForFunction(()=>window.studio.score.audible);
-    await page.evaluate(()=>{const s=window.studio;window.openingBefore={renderer:s.world.renderer,actor:s.world.actor,model:s.world.model,hero:document.querySelector('.world-hero'),sources:[...s.score.sources],time:s.score.time,frames:s.world.renderedFrames};});
+    await page.evaluate(()=>{const s=window.studio;window.openingBefore={renderer:s.world.renderer,actor:s.world.actor,model:s.world.model,hero:document.querySelector('.world-hero'),sources:[...s.score.sources],time:s.score.time,frames:s.world.renderedFrames};window.openingVisited=[];const show=s.world.show.bind(s.world);s.world.show=route=>{window.openingVisited.push(route.id);show(route);};});
     const request=page.waitForRequest('**/js/world/phonograph.js');
     // A real navigation click starts both HTML and module requests.
     if(await page.locator('.menu-toggle').isVisible())await page.locator('.menu-toggle').click();
     await page.locator('.studio-nav a[href="/radio/"]').click();await request;
-    await page.waitForFunction(()=>window.studio.world.transition===1);
+    await page.waitForFunction(()=>document.body.classList.contains('is-preparing'));
+    await page.locator('[data-activity="swim"]').click();await page.waitForFunction(()=>window.studio.world.model.actorMotion.swim>.1);
     result.held=await page.evaluate(()=>({route:window.studio.route.id,url:location.pathname,hero:document.querySelector('.world-hero')===window.openingBefore.hero,
-     model:window.studio.world.model===window.openingBefore.model,time:window.studio.score.time-window.openingBefore.time,frames:window.studio.world.renderedFrames-window.openingBefore.frames}));
+     model:window.studio.world.model===window.openingBefore.model,time:window.studio.score.time-window.openingBefore.time,frames:window.studio.world.renderedFrames-window.openingBefore.frames,
+     transition:window.studio.world.transition,cover:+document.querySelector('.portal-layer').style.getPropertyValue('--portal'),notice:getComputedStyle(document.querySelector('.navigation-status')).visibility,
+     menu:document.querySelector('.menu-toggle').getAttribute('aria-expanded'),activity:window.studio.world.model.activity}));
     assert.equal(result.held.route,'about');assert.equal(result.held.url,'/about/');assert.ok(result.held.hero&&result.held.model);assert.ok(result.held.time>0&&result.held.frames>0);
+    assert.equal(result.held.transition,0);assert.equal(result.held.cover,0);assert.equal(result.held.notice,'visible');assert.equal(result.held.menu,'false');assert.equal(result.held.activity,'swim');
     await page.evaluate(()=>{window.studio.router.navigate('/lab/');window.studio.router.navigate('/blog/');});
-    release();await page.waitForFunction(()=>window.studio.route.id==='blog'&&!window.studio.router.busy);await settle(page);
+    // The last choice must arrive even while the first destination is still blocked.
+    await page.waitForFunction(()=>window.studio.route.id==='blog'&&!window.studio.router.busy);await settle(page);
     result.after=await page.evaluate(()=>({route:window.studio.route.id,url:location.pathname,renderer:window.studio.world.renderer===window.openingBefore.renderer,
      actor:window.studio.world.actor===window.openingBefore.actor,sources:window.studio.score.sources.every((s,i)=>s===window.openingBefore.sources[i]),
-     oldHeroGone:!window.openingBefore.hero.isConnected,oldHandlersReleased:window.openingBefore.model.onPick===null,focused:document.activeElement===document.querySelector('.hero-title')}));
+     oldHeroGone:!window.openingBefore.hero.isConnected,oldHandlersReleased:window.openingBefore.model.onPick===null,focused:document.activeElement===document.querySelector('.hero-title'),visited:window.openingVisited}));
     assert.equal(result.after.url,'/blog/');for(const key of ['renderer','actor','sources','oldHeroGone','oldHandlersReleased','focused'])assert.equal(result.after[key],true,key);
+    assert.deepEqual(result.after.visited,['blog']);release();await page.evaluate(()=>window.studio.router.prepare(new URL('/radio/',location.href)));
+    assert.equal(await page.evaluate(()=>window.studio.route.id),'blog');
     clean(log);
    }finally{release();}
   });

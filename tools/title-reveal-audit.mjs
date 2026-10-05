@@ -81,8 +81,9 @@ try{
   let release;const gate=new Promise(resolve=>{release=resolve;});
   await page.route('**/projects/',async route=>{await gate;await route.continue();});
   const slow=capture(page,'/projects/');
-  await page.waitForFunction(()=>window.studio.world.transition===1);
-  await page.waitForTimeout(550);assert.notEqual(await page.evaluate(()=>window.studio.route.id),'projects');release();
+  await page.waitForFunction(()=>document.body.classList.contains('is-preparing'));
+  await page.waitForTimeout(550);assert.notEqual(await page.evaluate(()=>window.studio.route.id),'projects');
+  assert.equal(await page.evaluate(()=>window.studio.world.transition),0);release();
   report.cases.push({width,name:'slow destination',...await slow});await page.unroute('**/projects/');
   report.cases.push({width,name:'reduce during reveal',...await capture(page,'/about/',{reduce:true})});
   await page.evaluate(()=>window.studio.router.navigate('/blog/'));await settle(page);

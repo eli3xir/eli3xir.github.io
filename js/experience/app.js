@@ -22,6 +22,7 @@ document.body.replaceChildren();
 const stage=document.createElement('div');stage.id='world-stage';stage.setAttribute('aria-hidden','true');
 const view=document.createElement('div');view.id='page-view';
 const status=document.createElement('div');status.className='scene-status';status.setAttribute('role','status');
+const navigationStatus=document.createElement('div');navigationStatus.className='navigation-status';navigationStatus.setAttribute('role','status');
 const live=document.createElement('div');live.className='studio-toast';live.setAttribute('role','status');live.setAttribute('aria-live','polite');
 const tooltip=document.createElement('div');tooltip.className='object-label';tooltip.setAttribute('aria-hidden','true');tooltip.hidden=true;
 const preview=document.createElement('aside');preview.className='object-preview';preview.hidden=true;
@@ -37,7 +38,7 @@ function announce(message,href=null){
 const chrome=createChrome(score,{announce});
 const sendQuality=()=>document.querySelector('.experiment-frame')?.contentWindow?.postMessage({type:'visual-quality',value:visualQuality()},location.origin);
 watchVisualQuality(()=>{world?.applyQuality();sendQuality();});
-document.body.append(skip,stage,chrome.header,view,chrome.dock,chrome.corner,status,live,tooltip,preview,curtain);
+document.body.append(skip,stage,chrome.header,view,chrome.dock,chrome.corner,status,navigationStatus,live,tooltip,preview,curtain);
 
 function sceneStatus(progress,message,error){
   status.textContent=message;
@@ -123,6 +124,7 @@ async function loadMath(main){
 }
 router=new Router({score,mount,announce,prepare:url=>preparePath(url.pathname),onIntent:url=>{
   const destination=routeFor(url.pathname);
+  navigationStatus.textContent=`正在打开${destination.label}…`;chrome.closeMenu();
   curtain.querySelector('.portal-label').textContent=`${destination.number} / ${destination.label}`;
   curtain.querySelector('.portal-heading').textContent=({home:'灯还亮着。',lab:'有点乱，有点意思。',blog:'给思路，找张纸。',radio:'好奇心，调到下一拍。',projects:'念头，开始通电。',about:'代码之外，还有本人。',skin:'今天，换个色温。'})[destination.id];
 },transition:progress=>{

@@ -12,7 +12,7 @@ export class Router {
   constructor({mount,transition,score,announce,onIntent=()=>{},prepare=async()=>{}}) {
     this.mount=mount;this.transition=transition;this.score=score;this.announce=announce;
     this.onIntent=onIntent;this.prepare=prepare;
-    this.cache=new Map();this.busy=false;this.pending=null;this.animation=null;
+    this.cache=new Map();this.busy=false;this.pending=null;this.animation=null;this.wakePreparation=null;
     this.currentURL=new URL(location.href);
     addEventListener('click',e=>this.click(e));
     addEventListener('popstate',()=>this.navigate(location.href,{history:false}));
@@ -68,20 +68,28 @@ export class Router {
   }
 
   async navigate(href,{history:push=true}={}) {
-    const url=new URL(href,location.href);
-    if(this.busy){this.pending={href:url.href,options:{history:push}};return;}
+    let url=new URL(href,location.href);
+    if(this.busy){this.pending={href:url.href,options:{history:push}};this.wakePreparation?.();return;}
     if(url.href===this.currentURL.href)return;
-    this.busy=true;document.body.classList.add('is-transitioning');
+    this.busy=true;let transitioning=false;document.body.classList.add('is-preparing');
     try{
-      this.onIntent(url);
-      // Attach both handlers immediately: a failed fetch can precede the cover animation.
-      const loading=this.loadReady(url).then(doc=>({doc}),error=>({error}));
+      let doc;
+      for(;;){
+        if(url.href===this.currentURL.href){this.announce('已留在当前页面。');return;}
+        this.onIntent(url);
+        const redirected=new Promise(resolve=>{this.wakePreparation=()=>resolve({redirected:true});});
+        // A superseded import may finish later; consume its result without mounting it.
+        const loading=this.loadReady(url).then(doc=>({doc}),error=>({error}));
+        const result=await Promise.race([loading,redirected]);this.wakePreparation=null;
+        if(this.pending){const next=this.pending;this.pending=null;url=new URL(next.href);push=next.options.history;continue;}
+        if(result.error)throw result.error;
+        doc=result.doc;break;
+      }
+      document.body.classList.remove('is-preparing');document.body.classList.add('is-transitioning');transitioning=true;
       const delay=nextBeatDelay(this.score.time);
       if(this.score.audible)await new Promise(resolve=>setTimeout(resolve,delay*1000));
       this.score.cue('reveal');
       await this.animate(0,1,this.score.audible?60000/BPM:430);
-      const result=await loading;if(result.error)throw result.error;
-      const doc=result.doc;
       if(this.score.audible)await new Promise(resolve=>setTimeout(resolve,nextBeatDelay(this.score.time,1)*1000));
       await this.mount(doc,url);
       if(push)history.pushState({studio:true},'',url);
@@ -95,9 +103,9 @@ export class Router {
       if(!push)history.replaceState({studio:true},'',this.currentURL);
       this.announce(`暂时无法进入这个页面：${error.message}。可以重试或直接打开。`,url.href);
       // The current content stays usable when a destination cannot be fetched.
-      await this.animate(1,0,220);
+      if(transitioning)await this.animate(1,0,220);
     }finally{
-      this.busy=false;document.body.classList.remove('is-transitioning');
+      this.wakePreparation=null;this.busy=false;document.body.classList.remove('is-preparing','is-transitioning');
       if(this.pending){const pending=this.pending;this.pending=null;this.navigate(pending.href,pending.options);}
     }
   }

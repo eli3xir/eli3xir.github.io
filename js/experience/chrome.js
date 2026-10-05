@@ -49,9 +49,14 @@ export function createChrome(score, callbacks) {
     syncMeter();
   });
   const corner=document.createElement('a');corner.className='room-link';corner.href='/';corner.innerHTML='<span aria-hidden="true">↖</span> 回到房间';
-  return {header,dock,corner,update(route){
+  const closeMenu=()=>{
+    const restore=header.classList.contains('menu-open')&&header.querySelector('.studio-nav').contains(document.activeElement),button=header.querySelector('.menu-toggle');
+    header.classList.remove('menu-open');button.setAttribute('aria-expanded','false');
+    if(restore)button.focus({preventScroll:true});
+  };
+  return {header,dock,corner,closeMenu,update(route){
     header.querySelectorAll('[data-chapter]').forEach(a=>{if(a.dataset.chapter===route.id)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
-    header.classList.remove('menu-open');header.querySelector('.menu-toggle').setAttribute('aria-expanded','false');
+    closeMenu();
     corner.hidden=route.id==='home';
   }};
 }

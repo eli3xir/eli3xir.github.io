@@ -44,7 +44,7 @@ export async function ready(page){
 }
 
 export async function settle(page){
-  await page.waitForFunction(()=>!document.body.classList.contains('is-transitioning'));
+  await page.waitForFunction(()=>!window.studio?.router?.busy&&!document.body.classList.contains('is-transitioning'));
   await page.evaluate(()=>Promise.all(document.getAnimations().filter(a=>a.effect?.target?.classList?.contains('hero-word')).map(a=>a.finished.catch(()=>{}))));
 }
 
