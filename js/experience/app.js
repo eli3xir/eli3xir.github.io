@@ -1,11 +1,11 @@
 import { Score } from '../audio/score.js';
 import { World } from '../world/world.js';
 import {roomProject} from '../world/room-projects.js';
-import { CHAPTERS, routeFor, nextBeatDelay, readSetting } from './domain.js';
+import { CHAPTERS, routeFor, readSetting } from './domain.js';
 import { createChrome, hero } from './chrome.js';
 import { pageContent, enhanceContent } from './content.js';
 import { Router,scrollToAnchor } from './router.js';
-import { BPM } from '../audio/composition.js';
+import {createTitleReveal} from './title-reveal.js';
 import { readingEntries, bindReading } from './reading.js';
 import {createMessageRelay} from './message-relay.js';
 import {bindProjectSignal} from './project-signal.js';
@@ -30,6 +30,7 @@ import {createRoomExplorer} from './room-explorer.js';
 const original=document.cloneNode(true);
 const score=new Score();
 let world=null,router=null,route=null,contentEvents=null;
+let titleReveal=null,portalCover=0,portalPoint={x:.72,y:.5};
 document.body.dataset.experience='true';
 document.body.replaceChildren();
 const stage=document.createElement('div');stage.id='world-stage';stage.setAttribute('aria-hidden','true');
@@ -69,8 +70,10 @@ function objectFocus(id){
 const explorer=createRoomExplorer(preview,{world:()=>world,score});
 function unfocus(){world?.focus(null);}
 try{world=new World(stage,score,{status:sceneStatus,onHover:objectHover,onPick:objectFocus,onPortal:point=>{
-  curtain.style.setProperty('--portal-x',`${Math.max(.03,Math.min(.97,point.x))*100}%`);
-  curtain.style.setProperty('--portal-y',`${Math.max(.03,Math.min(.97,point.y))*100}%`);
+  portalPoint={x:Math.max(.03,Math.min(.97,point.x)),y:Math.max(.03,Math.min(.97,point.y))};
+  curtain.style.setProperty('--portal-x',`${portalPoint.x*100}%`);
+  curtain.style.setProperty('--portal-y',`${portalPoint.y*100}%`);
+  titleReveal?.reveal(portalCover,portalPoint);
 }});}
 catch(error){console.error(error);document.body.classList.add('no-webgl');sceneStatus(-1,'当前设备暂时无法显示 3D，文字内容和导航仍可使用。',error);}
 
@@ -117,14 +120,7 @@ async function mount(doc,url){
   }
   enhanceContent(main,route,{signal:contentEvents.signal,score,world,announce,reading});
   section.querySelector('[data-explore]')?.addEventListener('click',()=>{if(world?.model.loaded){world.focus('lab');score.cue('hover');}else announce('移动鼠标或轻轻拖动，点击桌上与墙上的物件。也可以使用下方入口。');},{signal:contentEvents.signal});
-  if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
-    const delay=score.audible?nextBeatDelay(score.time)*1000:80;
-    section.querySelectorAll('.hero-word').forEach((word,i)=>{
-      const stagger=route.article?Math.min(i,12)*(60000/BPM/16):i*(60000/BPM/4);
-      const animation=word.animate([{transform:'translateY(108%) rotate(2deg)',opacity:0},{transform:'translateY(0) rotate(0)',opacity:1}],{duration:score.audible?90000/BPM:780,delay:delay+stagger,easing:'cubic-bezier(.18,.75,.2,1)',fill:'both'});
-      contentEvents.signal.addEventListener('abort',()=>animation.cancel(),{once:true});
-    });
-  }
+  titleReveal=createTitleReveal(section,route,{score,signal:contentEvents.signal,held:Boolean(router?.busy)});
   if(route.article&&doc.querySelector('script[src*="katex"]')&&!window.renderMathInElement)loadMath(main);
   document.querySelector('link[rel="canonical"]')?.setAttribute('href','https://eli3xir.github.io'+url.pathname);
 }
@@ -143,8 +139,10 @@ router=new Router({score,mount,announce,onIntent:url=>{
   curtain.querySelector('.portal-label').textContent=`${destination.number} / ${destination.label}`;
   curtain.querySelector('.portal-heading').textContent=({home:'灯还亮着。',lab:'有点乱，有点意思。',blog:'给思路，找张纸。',radio:'好奇心，调到下一拍。',projects:'念头，开始通电。',about:'代码之外，还有本人。',skin:'今天，换个色温。'})[destination.id];
 },transition:progress=>{
-  curtain.style.setProperty('--portal',String(Math.max(0,(progress-.48)/.52)));
+  portalCover=Math.max(0,(progress-.48)/.52);
+  curtain.style.setProperty('--portal',String(portalCover));
   world?.transitionAt(progress);view.style.setProperty('--page-shift',String(progress));
+  titleReveal?.reveal(portalCover,portalPoint);
 }});
 addEventListener('keydown',event=>{if(event.key==='Escape'){unfocus();document.querySelector('.sound-settings').open=false;}});
 addEventListener('message',event=>{

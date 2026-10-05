@@ -348,7 +348,7 @@ body.room-focused{overflow:hidden}.room-focused .studio-header{position:fixed}.r
 /* The chapter on the physical page is the chapter reached in the article. */
 .article-view .hero-copy{top:clamp(145px,22vh,240px);max-width:min(39vw,560px)}
 .article-view .hero-title{font:500 clamp(32px,3.3vw,52px)/1.35 var(--font);letter-spacing:-.025em;text-wrap:pretty}
-.article-view .title-line{white-space:normal;overflow:visible;padding:0}
+.article-view .title-line{white-space:normal;overflow:clip;padding:0}
 .article-view .hero-title .hero-word{max-width:100%;text-wrap:balance;line-break:strict}
 .article-view .hero-subtitle{font-size:11px;line-height:1.9;letter-spacing:.025em;color:#b4baa8}
 .article-view .reading-title{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:3.4em;line-height:1.7}

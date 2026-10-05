@@ -1,5 +1,9 @@
 # 公开参考与核验
 
+2026-10-05 标题揭示对照 W3C [CSS Shapes 的方向无关尺寸和圆形半径](https://www.w3.org/TR/css-shapes-1/#supported-basic-shapes) 与 [Web Animations 时间模型](https://www.w3.org/TR/web-animations-1/)。按视口对角线除以 √2 解释圆形百分比，用实际文字框判断纸幕退出；可见后将同一次节拍选择映射到共同的文档时间原点。浏览器检查另外采用真实 CSS 命中检测确认遮挡，没有仅用同一公式自证。迪士尼 [Layout](https://www.disneyanimation.com/process/layout/) 对构图、动作可读性与时间安排的说明用于演出取舍；未采用参考视频或图像资产。
+
+同轮根据 W3C [CSS Overflow 的 clip 定义](https://www.w3.org/TR/css-overflow-3/#valdef-overflow-clip)，在文章标题行限制入场绘制，同时保留原格式化上下文。真实截图比较包含关闭裁切的负对照，另核对全部文章的最终布局；规范定义与本站实际结果分别作为语义和实现证据。
+
 2026-10-05 房间反射调整阅读 Three.js 官方 [PMREMGenerator](https://threejs.org/docs/pages/PMREMGenerator.html)、[MeshStandardMaterial](https://threejs.org/docs/pages/MeshStandardMaterial.html) 与 [MeshPhysicalMaterial](https://threejs.org/docs/pages/MeshPhysicalMaterial.html)，并对照本地固定 0.185.1 的生成器、物理材质着色块和 [r185 WebGLRenderer](https://github.com/mrdoob/three.js/blob/r185/src/renderers/WebGLRenderer.js)。采用按粗糙度过滤的静态房间环境；透射容器使用完整 opacity，液体作为后方实体绘制。文档与本地版本分开核对，未把最新版本算法直接归于本地依赖。实际比较固定取景的通用反射与房间反射、原透明表面与调整后的瓶口/液面；早期全画面角色眨眼不同，不能称为逐像素严格 A/B。全部新反射由既有房间生成，没有下载参考模型、视频或图像资产。
 
 研究日期：2026-10-03。公开搜索可以广泛覆盖主题，无法证明已穷尽全网；以下记录可追溯的来源、采用范围和不确定性。
