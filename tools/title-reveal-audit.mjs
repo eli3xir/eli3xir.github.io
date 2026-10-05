@@ -21,7 +21,7 @@ async function capture(page,path,options={}){
     const a=title.querySelector('.hero-word').getAnimations()[0],score=window.studio.score;
     window.titleFrames.push({now:performance.now(),covered,cover:+curtain.style.getPropertyValue('--portal'),
      progress:a?.effect.getComputedTiming().progress??1,state:a?.playState||'none',start:a?.startTime,
-     timeline:document.timeline.currentTime,audio:score.time,audible:score.audible});
+     timeline:document.timeline.currentTime,audio:score.time,audible:score.audible,reduced:matchMedia('(prefers-reduced-motion: reduce)').matches});
    }
    requestAnimationFrame(sample);
   };requestAnimationFrame(sample);
@@ -44,8 +44,12 @@ async function capture(page,path,options={}){
  });
  report.current={path,options,...result};
  assert.ok(result.visible&&result.oldCancelled&&result.focused);assert.equal(result.activeTitleAnimations,0);
- assert.ok(result.frames.length>8);
- if(!options.reduce){
+ if(options.reduce){
+  // A successful reduced-motion switch may finish in very few frames.
+  // Verify the visible settled result, not a minimum animation duration.
+  assert.ok(result.frames.some(frame=>frame.reduced&&!frame.covered&&frame.progress===1),'reduced motion must reveal the completed title');
+ }else{
+  assert.ok(result.frames.length>8);
   const first=result.frames.find(frame=>!frame.covered),lastCovered=result.frames.filter(frame=>frame.covered&&frame.now<first?.now).at(-1);
   assert.ok(first&&lastCovered,'record both sides of the curtain edge');
   // A sampled frame can be late. Check the actual scheduled start against the

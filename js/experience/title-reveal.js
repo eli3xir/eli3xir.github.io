@@ -33,10 +33,10 @@ export function createTitleReveal(section,route,{score,signal,held=false}){
  return{reveal(cover,point){
   if(!waiting||disposed)return;
   if(cover<=0){play();return;}
-  const rect=title.getBoundingClientRect(),x=point.x*innerWidth,y=point.y*innerHeight;
+  const rect=title.getBoundingClientRect(),x=point.centerX,y=point.centerY;
   const dx=Math.max(rect.left-x,0,x-rect.right),dy=Math.max(rect.top-y,0,y-rect.bottom);
-  // CSS circle percentages use the reference-box diagonal divided by sqrt(2).
-  const radius=cover*1.5*Math.hypot(innerWidth,innerHeight)/Math.SQRT2;
+  // Use the same measured reference box and radius as the actual CSS curtain.
+  const radius=cover*point.radius;
   if(Math.hypot(dx,dy)>radius+4)play();
  }};
 }

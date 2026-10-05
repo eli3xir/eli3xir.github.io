@@ -203,3 +203,5 @@ Three.js [DataTexture](https://threejs.org/docs/pages/DataTexture.html) 与本�
 随后从本站正常录像发现按需模块尚未就绪时纸幕停留过久，决定将网络准备放在可操作的当前场景中，成功后再进行原转场。参考 W3C 对 [状态消息](https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html) 的说明，状态提示使用语义角色并保留当前焦点，取消等待给予明确反馈。实际检查只覆盖 DOM、键盘、七尺寸几何和浏览器行为，不据此宣称完成辅助技术或 WCAG 的整体验收。
 
 2026-10-06 核对 MDN [modulepreload](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel/modulepreload)：原生提示可预先获取、解析和编译模块，执行仍由 import 触发；过多提示可能挤占其他资源。本站只提示当前路由闭包，以实际请求检查复用及范围。构建工具使用 [es-module-lexer](https://github.com/guybedford/es-module-lexer) 的 3.0.3 minimal API，核对已安装版本的类型声明后读取静态和字面量动态导入，拒绝不可分析的加载器；分析器不发送到访客浏览器。改进幅度以同条件测量及线上样本分别记录。
+
+同日复核 W3C [CSS Shapes](https://www.w3.org/TR/css-shapes-1/#funcdef-circle) 对圆半径、参考框和百分比尺度的定义，以及 MDN [circle()](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/basic-shape/circle) 的长度与圆心说明。本站将原固定 150% 半径改为实际最远角距离加 2 px，标题判断使用同一几何；没有依赖较新的角距离 CSS 关键字。覆盖与改尺寸行为另由实际浏览器命中、正常录像及旧样式反证验证，规范定义本身不等于视觉质量或帧率证明。

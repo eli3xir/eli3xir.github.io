@@ -10,6 +10,7 @@ import { readingEntries, bindReading } from './reading.js';
 import {prepareRoute,preparePath} from './route-assets.js';
 import {visualQuality,watchVisualQuality} from './visual-quality.js';
 import {createRoomExplorer} from './room-explorer.js';
+import {portalGeometry} from './portal-geometry.js';
 
 // Keep the native document intact if a first-route module cannot be fetched.
 await preparePath(location.pathname);
@@ -56,12 +57,15 @@ function objectFocus(id){
 }
 const explorer=createRoomExplorer(preview,{world:()=>world,score});
 function unfocus(){world?.focus(null);}
-try{world=new World(stage,score,{status:sceneStatus,onHover:objectHover,onPick:objectFocus,onPortal:point=>{
-  portalPoint={x:Math.max(.03,Math.min(.97,point.x)),y:Math.max(.03,Math.min(.97,point.y))};
+function updatePortal(point=portalPoint){
+  portalPoint=portalGeometry(point,curtain.getBoundingClientRect());
   curtain.style.setProperty('--portal-x',`${portalPoint.x*100}%`);
   curtain.style.setProperty('--portal-y',`${portalPoint.y*100}%`);
+  curtain.style.setProperty('--portal-radius',`${portalPoint.radius}px`);
   titleReveal?.reveal(portalCover,portalPoint);
-}});}
+}
+updatePortal();addEventListener('resize',()=>updatePortal());
+try{world=new World(stage,score,{status:sceneStatus,onHover:objectHover,onPick:objectFocus,onPortal:updatePortal});}
 catch(error){console.error(error);document.body.classList.add('no-webgl');sceneStatus(-1,'当前设备暂时无法显示 3D，文字内容和导航仍可使用。',error);}
 
 function stylesheet(href){
@@ -131,7 +135,7 @@ router=new Router({score,mount,announce,prepare:url=>preparePath(url.pathname),o
   portalCover=Math.max(0,(progress-.48)/.52);
   curtain.style.setProperty('--portal',String(portalCover));
   world?.transitionAt(progress);view.style.setProperty('--page-shift',String(progress));
-  titleReveal?.reveal(portalCover,portalPoint);
+  updatePortal();
 }});
 addEventListener('keydown',event=>{if(event.key==='Escape'){unfocus();document.querySelector('.sound-settings').open=false;}});
 addEventListener('message',event=>{

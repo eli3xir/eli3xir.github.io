@@ -167,7 +167,7 @@ body.room-focused{overflow:hidden}.room-focused .studio-header{position:fixed}.r
 .room-focused .studio-header.menu-open{z-index:70}
 .room-focused .hero-copy,.room-focused .world-caption{opacity:0;transform:translateY(15px);pointer-events:none}
 .portal-layer{--portal:0;position:fixed;inset:0;z-index:100;pointer-events:none}
-.portal-surface{position:absolute;inset:0;background:#e7dfc8;clip-path:circle(calc(var(--portal)*150%) at var(--portal-x,72%) var(--portal-y,50%));display:flex;align-items:center;justify-content:center;color:#46513b;overflow:hidden}
+.portal-surface{position:absolute;inset:0;background:#e7dfc8;clip-path:circle(calc(var(--portal)*var(--portal-radius,150%)) at var(--portal-x,72%) var(--portal-y,50%));display:flex;align-items:center;justify-content:center;color:#46513b;overflow:hidden}
 .portal-label{font-size:10px;letter-spacing:.28em;position:absolute;left:8.3%;top:48%}
 .portal-heading{position:absolute;left:8.3%;top:53%;max-width:75%;font:400 clamp(24px,3vw,48px)/1.4 Georgia,"Microsoft YaHei",serif;letter-spacing:.04em}
 .portal-symbol{font-size:clamp(200px,40vw,650px);font-family:Georgia,serif;font-weight:400;position:absolute;right:2%;opacity:.12;transform:rotate(calc(var(--portal)*90deg))}
@@ -326,7 +326,7 @@ body.room-focused{overflow:hidden}.room-focused .studio-header{position:fixed}.r
 }
 @media(prefers-reduced-motion:reduce){
   [data-experience] *,[data-experience] *:before,[data-experience] *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
-  .hero-word{transform:none!important;opacity:1!important}.portal-surface{clip-path:circle(calc(var(--portal)*150%) at 50% 50%)}
+  .hero-word{transform:none!important;opacity:1!important}
 }
 .word-controls{pointer-events:auto;max-width:370px;text-align:left;font-size:12px;line-height:1.6;color:#cecbb8}.word-controls label{display:block}.word-controls label>span:first-child{float:right;font-size:10px;color:#9dafa1}.word-entry{display:flex;gap:8px;margin-top:8px}.word-controls input{width:0;flex:1;min-width:0;border:1px solid #78816b88;background:#0c211d88;color:#eee5cf;padding:10px 12px;font:inherit;font-size:16px;border-radius:0}.word-controls button{min-height:44px;padding:8px 14px;border:1px solid #a8966b99;background:#c9bc920b;color:#eee1ba;cursor:pointer;font:inherit}.word-actions{display:flex;gap:8px;margin-top:8px}.word-status{min-height:1.6em;font-size:10px;color:#aab6a6}.world-hero:has(.word-controls) .world-caption{display:none}
 @media(max-width:850px){.world-hero:has(.word-controls){min-height:1000px}.word-controls{max-width:100%}}
