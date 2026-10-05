@@ -73,9 +73,10 @@ try{
    await page.evaluate(()=>window.studio.router.navigate('/lab/moon.html'));await settle(page);
    result.failure=await page.evaluate(()=>({route:window.studio.route.id,url:location.pathname,current:window.studio.router.currentURL.pathname,
     sameModel:window.studio.world.model===window.openingModel,sameHero:document.querySelector('.world-hero')===window.openingHero,
-    link:document.querySelector('.studio-toast a')?.getAttribute('href'),busy:window.studio.router.busy}));
+    link:document.querySelector('.studio-toast a')?.getAttribute('href'),message:document.querySelector('.studio-toast').textContent,busy:window.studio.router.busy}));
    assert.equal(result.failure.route,'about');assert.equal(result.failure.url,'/about/');assert.equal(result.failure.current,'/about/');
    assert.ok(result.failure.sameModel&&result.failure.sameHero);assert.equal(result.failure.busy,false);assert.ok(result.failure.link.endsWith('/lab/moon.html'));
+   assert.ok(result.failure.message.includes('互动场景暂时未能载入'));assert.ok(!result.failure.message.includes('/js/'));
    await page.locator('[data-activity="chess"]').click();await page.waitForFunction(()=>window.studio.world.model.activity==='chess');
    await page.evaluate(()=>window.studio.router.navigate('/radio/'));await settle(page);assert.equal(await page.evaluate(()=>window.studio.route.id),'radio');
    assert.deepEqual(log.errors,[]);assert.ok(log.failed.some(f=>f.status===503&&f.url.endsWith('/js/world/moon.js')));

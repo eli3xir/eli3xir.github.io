@@ -60,7 +60,7 @@ export class Router {
     let timer;
     try{
       const [doc]=await Promise.race([
-        Promise.all([this.load(url),this.prepare(url)]),
+        Promise.all([this.load(url),this.prepare(url).catch(error=>{throw new Error('互动场景暂时未能载入',{cause:error});})]),
         new Promise((resolve,reject)=>{timer=setTimeout(()=>reject(new Error('页面场景加载超时')),12000);}),
       ]);
       return doc;
