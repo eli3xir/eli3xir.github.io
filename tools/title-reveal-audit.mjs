@@ -42,10 +42,15 @@ async function capture(page,path,options={}){
    text:document.querySelector('.hero-title').textContent,activeTitleAnimations:words.flatMap(w=>w.getAnimations()).filter(a=>a.playState==='running'||a.playState==='paused').length,
    focused:document.activeElement===document.querySelector('.hero-title')};
  });
+ report.current={path,options,...result};
  assert.ok(result.visible&&result.oldCancelled&&result.focused);assert.equal(result.activeTitleAnimations,0);
  assert.ok(result.frames.length>8);
  if(!options.reduce){
-  const first=result.frames.find(frame=>!frame.covered);assert.ok(first&&first.progress<.12,JSON.stringify(first));
+  const first=result.frames.find(frame=>!frame.covered),lastCovered=result.frames.filter(frame=>frame.covered&&frame.now<first?.now).at(-1);
+  assert.ok(first&&lastCovered,'record both sides of the curtain edge');
+  // A sampled frame can be late. Check the actual scheduled start against the
+  // preceding covered sample rather than requiring an arbitrary first opacity.
+  assert.ok(first.start===null||first.start>=lastCovered.timeline-1,'title started behind the curtain');
   assert.ok(result.frames.filter(frame=>!frame.covered&&frame.progress>.05&&frame.progress<.95).length>5,'visible title movement');
   assert.ok(result.frames.filter(frame=>frame.covered).every(frame=>frame.progress===0),'title spent animation while covered');
   const start=result.frames.find(frame=>frame.start!==null&&frame.start!==undefined&&frame.state!=='paused');
@@ -55,6 +60,7 @@ async function capture(page,path,options={}){
    assert.ok(error<.035,JSON.stringify({beat,error}));result.beatError=error;
   }
  }
+ delete report.current;
  return result;
 }
 try{
@@ -91,6 +97,14 @@ try{
  await page.goto(server.base+'/radio/');await ready(page);await settle(page);
  report.cases.push({name:'no WebGL',...await capture(page,'/blog/')});
  assert.deepEqual(log.errors,[]);assert.deepEqual(log.failed,[]);await context.close();
+ const negativeContext=await browser.newContext({viewport:{width:390,height:844}}),negativePage=await negativeContext.newPage();
+ const source=fs.readFileSync(new URL('../js/experience/title-reveal.js',import.meta.url),'utf8').replace('const reduced=','held=false;const reduced=');
+ await negativePage.route('**/js/experience/title-reveal.js',route=>route.fulfill({contentType:'text/javascript',body:source}));
+ await negativePage.goto(server.base+'/radio/');await ready(negativePage);await settle(negativePage);
+ await assert.rejects(capture(negativePage,'/blog/'),/title started behind the curtain|title spent animation while covered/);
+ const coveredMotionFrames=report.current.frames.filter(frame=>frame.covered&&frame.progress>0).length;
+ assert.ok(coveredMotionFrames>5);report.cases.push({name:'disabled hold negative control',coveredMotionFrames});delete report.current;
+ await negativeContext.close();
 }catch(error){report.failures.push(error.stack);process.exitCode=1;}
 finally{fs.writeFileSync(`${output}/title-reveal-audit.json`,JSON.stringify(report,null,2));await browser.close();await server.close();}
 console.log(JSON.stringify({cases:report.cases.length,failures:report.failures}));
